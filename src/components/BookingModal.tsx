@@ -1,0 +1,423 @@
+import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../context/LanguageContext';
+import { Room } from '../types';
+import { roomsData } from '../data/mockData';
+import { X, Calendar as CalendarIcon, Clock, Users, ShieldCheck, CheckCircle2, Phone, Sparkles } from 'lucide-react';
+
+interface BookingModalProps {
+  isOpen: boolean;
+  selectedRoom: Room | null;
+  onClose: () => void;
+}
+
+export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, selectedRoom, onClose }) => {
+  const { lang, t } = useLanguage();
+
+  const [bookingType, setBookingType] = useState<'daily' | 'hourly'>('daily');
+  const [currentRoomId, setCurrentRoomId] = useState<string>(selectedRoom?.id || roomsData[0].id);
+
+  const today = new Date().toISOString().split('T')[0];
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+
+  const [checkInDate, setCheckInDate] = useState(today);
+  const [checkOutDate, setCheckOutDate] = useState(tomorrow);
+  const [stayDate, setStayDate] = useState(today);
+  const [checkInTime, setCheckInTime] = useState('14:00');
+  const [hoursCount, setHoursCount] = useState(2);
+  const [adults, setAdults] = useState(2);
+  const [children, setChildren] = useState(0);
+
+  // Guest details
+  const [guestName, setGuestName] = useState('');
+  const [guestPhone, setGuestPhone] = useState('');
+  const [guestEmail, setGuestEmail] = useState('');
+  const [specialRequests, setSpecialRequests] = useState('');
+
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [bookingCode, setBookingCode] = useState('');
+
+  useEffect(() => {
+    if (selectedRoom) {
+      setCurrentRoomId(selectedRoom.id);
+    }
+  }, [selectedRoom]);
+
+  if (!isOpen) return null;
+
+  const currentRoom = roomsData.find((r) => r.id === currentRoomId) || roomsData[0];
+
+  // Calculate estimated total
+  let totalAmount = 0;
+  let durationText = '';
+
+  if (bookingType === 'daily') {
+    const d1 = new Date(checkInDate);
+    const d2 = new Date(checkOutDate);
+    const diffDays = Math.max(1, Math.ceil((d2.getTime() - d1.getTime()) / (1000 * 3600 * 24)));
+    totalAmount = diffDays * currentRoom.pricePerNight;
+    durationText = `${diffDays} ${lang === 'vi' ? 'Đêm' : 'Night(s)'}`;
+  } else {
+    totalAmount = currentRoom.priceHourlyFirst2h + Math.max(0, hoursCount - 2) * currentRoom.priceHourlyExtra;
+    durationText = `${hoursCount} ${lang === 'vi' ? 'Giờ' : 'Hours'}`;
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const randomCode = 'GLX-' + Math.floor(100000 + Math.random() * 900000);
+    setBookingCode(randomCode);
+    setIsSuccess(true);
+  };
+
+  const handleResetAndClose = () => {
+    setIsSuccess(false);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fade-in">
+      <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-hotel-gold/40 relative p-6 sm:p-8">
+        
+        {/* Close Button */}
+        <button
+          onClick={handleResetAndClose}
+          className="absolute top-5 right-5 w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        {isSuccess ? (
+          /* Booking Success Screen */
+          <div className="text-center py-6 space-y-6 animate-fade-in">
+            <div className="w-16 h-16 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto shadow-sm">
+              <CheckCircle2 className="w-10 h-10" />
+            </div>
+
+            <div>
+              <span className="text-xs font-bold uppercase tracking-widest text-green-700 bg-green-50 px-3 py-1 rounded-full border border-green-200">
+                {lang === 'vi' ? 'Gửi Yêu Cầu Thành Công' : 'Request Sent Successfully'}
+              </span>
+              <h2 className="font-serif font-bold text-2xl sm:text-3xl text-hotel-navy mt-2">
+                {t('modal.success_title')}
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-600 max-w-md mx-auto mt-2">
+                {t('modal.success_msg')}
+              </p>
+            </div>
+
+            {/* Booking Summary Ticket */}
+            <div className="bg-hotel-cream p-5 rounded-2xl border border-hotel-gold/40 text-left space-y-2 text-xs text-gray-700">
+              <div className="flex justify-between items-center border-b border-gray-200 pb-2">
+                <span className="font-semibold text-gray-500">{lang === 'vi' ? 'Mã Đặt Phòng:' : 'Booking ID:'}</span>
+                <span className="font-serif font-bold text-base text-hotel-navy">{bookingCode}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>{lang === 'vi' ? 'Hạng phòng:' : 'Room Type:'}</span>
+                <span className="font-bold text-hotel-navy">{currentRoom.name[lang]}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>{lang === 'vi' ? 'Hình thức & Thời lượng:' : 'Type & Duration:'}</span>
+                <span className="font-semibold">{bookingType === 'daily' ? t('booking.tab_daily') : t('booking.tab_hourly')} ({durationText})</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>{lang === 'vi' ? 'Thời gian nhận:' : 'Check-in time:'}</span>
+                <span className="font-semibold text-green-700">
+                  {bookingType === 'daily' ? `${checkInDate} (14:00)` : `${stayDate} (${checkInTime})`}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span>{lang === 'vi' ? 'Khách hàng:' : 'Guest Name:'}</span>
+                <span className="font-semibold">{guestName} ({guestPhone})</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-gray-200 text-sm">
+                <span className="font-bold text-hotel-navy">{t('modal.total_summary')}</span>
+                <span className="font-serif font-bold text-base text-amber-800">{formatCurrency(totalAmount)}</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+              <a
+                href="tel:02836200182"
+                className="py-3 px-6 rounded-xl bg-hotel-navy text-hotel-gold font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow"
+              >
+                <Phone className="w-4 h-4" />
+                <span>{lang === 'vi' ? 'Gọi Lễ Tân Xác Nhận Ngay' : 'Call Front Desk to Confirm'}</span>
+              </a>
+              <button
+                onClick={handleResetAndClose}
+                className="py-3 px-6 rounded-xl border border-gray-300 text-gray-700 font-bold text-xs uppercase tracking-wider hover:bg-gray-100"
+              >
+                {lang === 'vi' ? 'Hoàn Tất & Đóng' : 'Done & Close'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* Booking Form Screen */
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-hotel-sand text-hotel-navy text-[11px] font-bold uppercase tracking-widest mb-1">
+                <Sparkles className="w-3 h-3 text-hotel-goldDark" />
+                <span>{t('hero.book_room')}</span>
+              </div>
+              <h2 className="font-serif font-bold text-2xl sm:text-3xl text-hotel-navy">
+                {t('modal.booking_title')}
+              </h2>
+            </div>
+
+            {/* Mode Switcher Tabs */}
+            <div className="flex items-center space-x-2 bg-hotel-sand/70 p-1 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setBookingType('daily')}
+                className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                  bookingType === 'daily'
+                    ? 'bg-hotel-navy text-white shadow'
+                    : 'text-gray-600 hover:text-hotel-navy'
+                }`}
+              >
+                <CalendarIcon className="w-3.5 h-3.5 text-hotel-gold" />
+                <span>{t('booking.tab_daily')}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setBookingType('hourly')}
+                className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                  bookingType === 'hourly'
+                    ? 'bg-hotel-navy text-white shadow'
+                    : 'text-gray-600 hover:text-hotel-navy'
+                }`}
+              >
+                <Clock className="w-3.5 h-3.5 text-hotel-gold" />
+                <span>{t('booking.tab_hourly')}</span>
+              </button>
+            </div>
+
+            {/* Room Selector */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
+                {t('modal.select_room')}
+              </label>
+              <select
+                value={currentRoomId}
+                onChange={(e) => setCurrentRoomId(e.target.value)}
+                className="w-full bg-hotel-sand/40 border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-hotel-navy focus:outline-none focus:ring-2 focus:ring-hotel-gold"
+              >
+                {roomsData.map((room) => (
+                  <option key={room.id} value={room.id}>
+                    {room.name[lang]} - {formatCurrency(room.pricePerNight)}{t('rooms.per_night')} ({formatCurrency(room.priceHourlyFirst2h)}{t('rooms.per_hour')})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Date & Time Pickers */}
+            {bookingType === 'daily' ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1">
+                    {t('modal.checkin_daily')}
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    min={today}
+                    value={checkInDate}
+                    onChange={(e) => setCheckInDate(e.target.value)}
+                    className="w-full bg-hotel-sand/40 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-hotel-gold"
+                  />
+                  <span className="text-[10px] text-gray-500 block mt-0.5">{lang === 'vi' ? 'Giờ nhận chuẩn: từ 14:00' : 'Standard check-in: from 14:00'}</span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1">
+                    {t('modal.checkout_daily')}
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    min={checkInDate || today}
+                    value={checkOutDate}
+                    onChange={(e) => setCheckOutDate(e.target.value)}
+                    className="w-full bg-hotel-sand/40 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-hotel-gold"
+                  />
+                  <span className="text-[10px] text-gray-500 block mt-0.5">{lang === 'vi' ? 'Giờ trả chuẩn: trước 12:00' : 'Standard check-out: before 12:00'}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1">
+                    {t('modal.stay_date')}
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    min={today}
+                    value={stayDate}
+                    onChange={(e) => setStayDate(e.target.value)}
+                    className="w-full bg-hotel-sand/40 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-hotel-gold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1">
+                    {t('modal.checkin_time')}
+                  </label>
+                  <select
+                    value={checkInTime}
+                    onChange={(e) => setCheckInTime(e.target.value)}
+                    className="w-full bg-hotel-sand/40 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-hotel-gold"
+                  >
+                    <option value="08:00">08:00 AM</option>
+                    <option value="10:00">10:00 AM</option>
+                    <option value="12:00">12:00 PM</option>
+                    <option value="14:00">02:00 PM</option>
+                    <option value="16:00">04:00 PM</option>
+                    <option value="18:00">06:00 PM</option>
+                    <option value="20:00">08:00 PM</option>
+                    <option value="22:00">10:00 PM</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1">
+                    {t('modal.duration_hourly')}
+                  </label>
+                  <select
+                    value={hoursCount}
+                    onChange={(e) => setHoursCount(Number(e.target.value))}
+                    className="w-full bg-hotel-sand/40 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-hotel-gold"
+                  >
+                    <option value={2}>{t('booking.hours_2')}</option>
+                    <option value={3}>{t('booking.hours_3')}</option>
+                    <option value={4}>{t('booking.hours_4')}</option>
+                    <option value={6}>{t('booking.hours_6')}</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {/* Guests Count */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1">
+                  {t('modal.adults_label')}
+                </label>
+                <select
+                  value={adults}
+                  onChange={(e) => setAdults(Number(e.target.value))}
+                  className="w-full bg-hotel-sand/40 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-hotel-gold"
+                >
+                  <option value={1}>1 {t('booking.adults')}</option>
+                  <option value={2}>2 {t('booking.adults')}</option>
+                  <option value={3}>3 {t('booking.adults')}</option>
+                  <option value={4}>4 {t('booking.adults')}</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1">
+                  {t('modal.children_label')}
+                </label>
+                <select
+                  value={children}
+                  onChange={(e) => setChildren(Number(e.target.value))}
+                  className="w-full bg-hotel-sand/40 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-hotel-gold"
+                >
+                  <option value={0}>0 {t('booking.children')}</option>
+                  <option value={1}>1 {t('booking.children')}</option>
+                  <option value={2}>2 {t('booking.children')}</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Guest Personal Information */}
+            <div className="space-y-3 pt-2 border-t border-gray-100">
+              <h4 className="font-bold text-xs uppercase tracking-wider text-hotel-navy">
+                {t('modal.customer_info')}
+              </h4>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <input
+                    type="text"
+                    required
+                    placeholder={t('modal.name_placeholder')}
+                    value={guestName}
+                    onChange={(e) => setGuestName(e.target.value)}
+                    className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-hotel-gold"
+                  />
+                </div>
+
+                <div>
+                  <input
+                    type="tel"
+                    required
+                    placeholder={t('modal.phone_placeholder')}
+                    value={guestPhone}
+                    onChange={(e) => setGuestPhone(e.target.value)}
+                    className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-hotel-gold"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <input
+                  type="email"
+                  placeholder={t('modal.email_placeholder')}
+                  value={guestEmail}
+                  onChange={(e) => setGuestEmail(e.target.value)}
+                  className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-hotel-gold"
+                />
+              </div>
+
+              <div>
+                <textarea
+                  rows={2}
+                  placeholder={t('modal.note_placeholder')}
+                  value={specialRequests}
+                  onChange={(e) => setSpecialRequests(e.target.value)}
+                  className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-hotel-gold"
+                />
+              </div>
+            </div>
+
+            {/* Total Summary */}
+            <div className="bg-hotel-sand/60 p-4 rounded-2xl flex items-center justify-between">
+              <div>
+                <span className="text-xs text-gray-500 block">{t('modal.duration_summary')} {durationText}</span>
+                <span className="text-xs font-bold text-gray-700">{t('modal.total_summary')}</span>
+              </div>
+              <span className="font-serif font-bold text-xl sm:text-2xl text-amber-800">
+                {formatCurrency(totalAmount)}
+              </span>
+            </div>
+
+            {/* Action Submit */}
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={handleResetAndClose}
+                className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-bold text-xs uppercase tracking-wider"
+              >
+                {t('modal.cancel')}
+              </button>
+              <button
+                type="submit"
+                className="px-8 py-3 rounded-xl bg-gradient-to-r from-hotel-gold to-hotel-goldDark hover:from-hotel-goldDark hover:to-hotel-gold text-hotel-navy font-bold text-xs sm:text-sm uppercase tracking-wider shadow-lg flex items-center gap-2"
+              >
+                <ShieldCheck className="w-4 h-4 text-hotel-navy" />
+                <span>{t('modal.confirm_btn')}</span>
+              </button>
+            </div>
+          </form>
+        )}
+
+      </div>
+    </div>
+  );
+};

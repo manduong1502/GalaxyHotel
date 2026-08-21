@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+    font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  
+  body {
+    background-color: #fcfbf8;
+    color: #222222;
+    overflow-x: hidden;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, .font-luxury {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    letter-spacing: -0.01em;
+    font-feature-settings: "kern" 1, "liga" 1;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1ede6;
+}
+::-webkit-scrollbar-thumb {
+  background: #ceb08f;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #002744;
+}
+
+/* Luxury Card Elevation with Physics */
+.card-hover-effect {
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.5s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+}
+.card-hover-effect:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 30px 60px -15px rgba(0, 39, 68, 0.16), 0 0 20px rgba(206, 176, 143, 0.12);
+}
+
+/* Kinetic Button Physics */
+.btn-magnetic {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, box-shadow;
+}
+.btn-magnetic:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(206, 176, 143, 0.4);
+}
+.btn-magnetic:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* Ken Burns Pan & Zoom Animation */
+@keyframes kenBurns {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  50% {
+    transform: scale(1.08) translate(-1%, -1%);
+  }
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+}
+
+.animate-ken-burns {
+  animation: kenBurns 16s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+/* Modal Spring Bounce Entrance */
+@keyframes modalPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modal-pop {
+  animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* Backdrop Fade In */
+@keyframes backdropFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-backdrop {
+  animation: backdropFade 0.3s ease-out forwards;
+}
+
+/* Staggered Scroll Reveal Helpers */
+.reveal-fade-up {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-fade-up.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Smooth Slide Carousel Indicator */
+@keyframes slideProgress {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+.animate-progress-bar {
+  animation: slideProgress 6s linear infinite;
+}
