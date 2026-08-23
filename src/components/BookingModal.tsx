@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useBookings } from '../context/BookingContext';
 import { Room } from '../types';
 import { roomsData } from '../data/mockData';
 import { X, Calendar as CalendarIcon, Clock, Users, ShieldCheck, CheckCircle2, Phone, Sparkles } from 'lucide-react';
@@ -12,9 +13,10 @@ interface BookingModalProps {
 
 export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, selectedRoom, onClose }) => {
   const { lang, t } = useLanguage();
+  const { addBooking, rooms } = useBookings();
 
   const [bookingType, setBookingType] = useState<'daily' | 'hourly'>('daily');
-  const [currentRoomId, setCurrentRoomId] = useState<string>(selectedRoom?.id || roomsData[0].id);
+  const [currentRoomId, setCurrentRoomId] = useState<string>(selectedRoom?.id || rooms[0]?.id || roomsData[0].id);
 
   const today = new Date().toISOString().split('T')[0];
   const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
@@ -44,7 +46,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, selectedRoom
 
   if (!isOpen) return null;
 
-  const currentRoom = roomsData.find((r) => r.id === currentRoomId) || roomsData[0];
+  const currentRoom = (rooms.length > 0 ? rooms : roomsData).find((r) => r.id === currentRoomId) || rooms[0] || roomsData[0];
 
   // Calculate estimated total
   let totalAmount = 0;
@@ -65,10 +67,26 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, selectedRoom
     return new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const randomCode = 'GLX-' + Math.floor(100000 + Math.random() * 900000);
-    setBookingCode(randomCode);
+    
+    const createdBooking = await addBooking({
+      bookingType,
+      roomId: currentRoom.id,
+      checkInDate: bookingType === 'daily' ? checkInDate : stayDate,
+      checkInTime: bookingType === 'daily' ? '14:00' : checkInTime,
+      checkOutDate: bookingType === 'daily' ? checkOutDate : stayDate,
+      checkOutTime: bookingType === 'daily' ? '12:00' : '16:00',
+      hoursCount: bookingType === 'hourly' ? hoursCount : 0,
+      adults,
+      children,
+      guestName,
+      guestPhone,
+      guestEmail,
+      specialRequests,
+    }, totalAmount);
+
+    setBookingCode(createdBooking.bookingCode);
     setIsSuccess(true);
   };
 

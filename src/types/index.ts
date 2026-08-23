@@ -1,5 +1,7 @@
 export type Language = 'vi' | 'en';
 
+export type RoomStatus = 'available' | 'occupied' | 'cleaning' | 'maintenance';
+
 export interface Room {
   id: string;
   name: {
@@ -38,6 +40,7 @@ export interface Room {
     vi: string[];
     en: string[];
   };
+  status?: RoomStatus;
   isPopular?: boolean;
 }
 
@@ -77,4 +80,49 @@ export interface BookingFormData {
   guestPhone: string;
   guestEmail: string;
   specialRequests: string;
+}
+
+export type BookingStatus = 'pending' | 'confirmed' | 'checked_in' | 'completed' | 'cancelled';
+
+export interface BookingRecord {
+  id: string;
+  bookingCode: string;
+  bookingType: 'daily' | 'hourly';
+  roomId: string;
+  roomName: string;
+  guestName: string;
+  guestPhone: string;
+  guestEmail: string;
+  checkInDate: string;
+  checkInTime: string;
+  checkOutDate: string;
+  checkOutTime: string;
+  hoursCount?: number;
+  nightsCount?: number;
+  adults: number;
+  children: number;
+  totalPrice: number;
+  specialRequests?: string;
+  staffNotes?: string;
+  status: BookingStatus;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface AdminUser {
+  id: string;
+  username: string;
+  name: string;
+  role: 'admin' | 'receptionist';
+  token?: string;
+}
+
+export interface DashboardStats {
+  totalBookings: number;
+  pendingCount: number;
+  confirmedCount: number;
+  todayCheckIns: number;
+  todayCheckOuts: number;
+  estimatedRevenue: number;
+  occupancyRate: number;
 }

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { Phone, Calendar, Menu, X, Globe, Sparkles } from 'lucide-react';
+import { Phone, Calendar, Menu, X, Globe, Sparkles, Lock } from 'lucide-react';
 
 interface HeaderProps {
   onOpenBooking: () => void;
+  onOpenAdmin?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenBooking }) => {
+export const Header: React.FC<HeaderProps> = ({ onOpenBooking, onOpenAdmin }) => {
   const { lang, setLang, t } = useLanguage();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -72,6 +73,19 @@ export const Header: React.FC<HeaderProps> = ({ onOpenBooking }) => {
                 EN
               </button>
             </div>
+            {onOpenAdmin && (
+              <>
+                <span className="text-gray-500">|</span>
+                <button
+                  onClick={onOpenAdmin}
+                  className="btn-magnetic flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-hotel-gold/20 hover:bg-hotel-gold text-hotel-gold hover:text-hotel-navy border border-hotel-gold/40 text-[11px] font-bold uppercase tracking-wider transition-all"
+                  title="Trang quản trị khách sạn"
+                >
+                  <Lock className="w-3 h-3" />
+                  <span>Admin</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
