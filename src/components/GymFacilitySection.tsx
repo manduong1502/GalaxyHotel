@@ -12,27 +12,27 @@ export const GymFacilitySection: React.FC = () => {
       icon: Dumbbell,
       title: t('facilities.gym_title'),
       desc: t('facilities.gym_desc'),
-      image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
+      image: '/images/rooms/phong-d.jpg',
       tag: t('facilities.gym_tag'),
-      hours: '06:00 - 22:00',
+      hours: '24/7',
       highlights: [t('facilities.gym_hl1'), t('facilities.gym_hl2'), t('facilities.gym_hl3')]
     },
     {
       icon: HeartHandshake,
       title: t('facilities.spa_title'),
       desc: t('facilities.spa_desc'),
-      image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=80',
+      image: '/images/facility-1.jpg',
       tag: t('facilities.spa_tag'),
-      hours: '09:00 - 23:00',
+      hours: '24/7',
       highlights: [t('facilities.spa_hl1'), t('facilities.spa_hl2'), t('facilities.spa_hl3')]
     },
     {
       icon: Waves,
       title: t('facilities.pool_title'),
       desc: t('facilities.pool_desc'),
-      image: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=800&q=80',
+      image: '/images/hero-1.jpg',
       tag: t('facilities.pool_tag'),
-      hours: '06:00 - 21:00',
+      hours: '24/7',
       highlights: [t('facilities.pool_hl1'), t('facilities.pool_hl2'), t('facilities.pool_hl3')]
     }
   ];

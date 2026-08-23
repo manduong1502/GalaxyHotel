@@ -12,22 +12,22 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ onOpenBooking }) => {
 
   const slides = [
     {
-      image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=2000&q=85',
+      image: '/images/hero-1.jpg',
       subtitle: t('hero.slide1.subtitle'),
       title: t('hero.slide1.title'),
-      highlight: 'SANG TRỌNG & ĐẲNG CẤP',
+      highlight: 'SẠCH SẼ & ẤM CÚNG',
     },
     {
-      image: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=2000&q=85',
+      image: '/images/hero-2.jpg',
       subtitle: t('hero.slide2.subtitle'),
       title: t('hero.slide2.title'),
-      highlight: 'TRẢI NGHIỆM ĐỈNH CAO',
+      highlight: 'TIỆN NGHI HOÀN HẢO',
     },
     {
-      image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2000&q=85',
+      image: '/images/facility-1.jpg',
       subtitle: t('hero.slide3.subtitle'),
       title: t('hero.slide3.title'),
-      highlight: 'VỊ TRÍ ĐẮC ĐỊA QUẬN 1',
+      highlight: 'TÂM ĐIỂM QUẬN 1',
     }
   ];
 

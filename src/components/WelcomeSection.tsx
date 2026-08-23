@@ -35,16 +35,16 @@ export const WelcomeSection: React.FC = () => {
             <div className="p-2 sm:p-3 rounded-3xl bg-white/70 border border-hotel-gold/40 shadow-luxury transition-all duration-700 hover:shadow-2xl">
               <div className="relative rounded-2xl overflow-hidden shadow-inner">
                 <img
-                  src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80"
-                  alt="Galaxy Hotel Facade and Lobby"
+                  src="/images/welcome-1.jpg"
+                  alt="Galaxy Boutique Hotel"
                   className="w-full h-[400px] sm:h-[480px] object-cover object-center transform hover:scale-105 transition-transform duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-hotel-navy/80 via-transparent to-transparent" />
                 
                 {/* Floating badge inside image */}
                 <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-hotel-dark/85 backdrop-blur-md border border-hotel-gold/30 text-white flex items-center gap-4 shadow-xl">
-                  <div className="w-12 h-12 rounded-full bg-hotel-gold text-hotel-navy flex items-center justify-center font-bold text-xl flex-shrink-0 font-brand">
-                    5★
+                  <div className="w-12 h-12 rounded-full bg-hotel-gold text-hotel-navy flex items-center justify-center font-bold text-base flex-shrink-0 font-brand">
+                    4.7★
                   </div>
                   <div>
                     <h4 className="font-brand font-bold text-sm sm:text-base text-hotel-gold tracking-wider">
@@ -61,8 +61,8 @@ export const WelcomeSection: React.FC = () => {
             {/* Overlapping secondary decorative image */}
             <div className="hidden sm:block absolute -bottom-6 -right-6 w-48 h-48 rounded-2xl overflow-hidden border-4 border-white shadow-2xl z-20 hover:scale-105 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
               <img
-                src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80"
-                alt="Luxury Room Interior"
+                src="/images/welcome-2.jpg"
+                alt="Cozy Room Interior"
                 className="w-full h-full object-cover"
               />
             </div>

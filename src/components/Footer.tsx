@@ -23,7 +23,7 @@ export const Footer: React.FC = () => {
                   GALAXY
                 </span>
                 <span className="text-[9px] tracking-[0.28em] uppercase text-hotel-gold font-medium -mt-0.5">
-                  HOTEL & SUITES
+                  BOUTIQUE HOTEL
                 </span>
               </div>
             </div>
@@ -35,27 +35,27 @@ export const Footer: React.FC = () => {
             <div className="space-y-2 pt-2 text-xs text-gray-300">
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-hotel-gold flex-shrink-0" />
-                <span>125 - 127 Lê Thánh Tôn, Bến Nghé, Quận 1, TP. HCM</span>
+                <span>269/19 Đề Thám, P. Bến Thành, Quận 1, TP. HCM</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-hotel-gold flex-shrink-0" />
-                <span>028 3620 0182 - 0908 123 456</span>
+                <span>028 2248 7782 • Hotline/Zalo: 079 329 5664</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-hotel-gold flex-shrink-0" />
-                <span>booking@galaxyhotel.vn</span>
+                <span>galaxyboutiquehotel2022@gmail.com</span>
               </div>
             </div>
 
             {/* Social Icons */}
             <div className="flex items-center space-x-3 pt-2">
-              <a href="#" className="w-8 h-8 rounded-full bg-white/10 hover:bg-hotel-gold hover:text-hotel-navy text-white flex items-center justify-center transition-colors">
+              <a href="https://www.facebook.com/hotelquan1giare" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/10 hover:bg-hotel-gold hover:text-hotel-navy text-white flex items-center justify-center transition-colors" title="Facebook">
                 <Facebook className="w-4 h-4" />
               </a>
-              <a href="#" className="w-8 h-8 rounded-full bg-white/10 hover:bg-hotel-gold hover:text-hotel-navy text-white flex items-center justify-center transition-colors">
-                <Instagram className="w-4 h-4" />
+              <a href="https://zalo.me/84793295664" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/10 hover:bg-hotel-gold hover:text-hotel-navy text-white flex items-center justify-center transition-colors font-bold text-xs" title="Zalo">
+                Z
               </a>
-              <a href="#" className="w-8 h-8 rounded-full bg-white/10 hover:bg-hotel-gold hover:text-hotel-navy text-white flex items-center justify-center transition-colors">
+              <a href="https://www.tiktok.com/@galaxy.boutique269" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/10 hover:bg-hotel-gold hover:text-hotel-navy text-white flex items-center justify-center transition-colors" title="TikTok">
                 <Youtube className="w-4 h-4" />
               </a>
             </div>

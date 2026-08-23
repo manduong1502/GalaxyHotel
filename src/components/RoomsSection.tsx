@@ -17,8 +17,8 @@ export const RoomsSection: React.FC<RoomsSectionProps> = ({ onSelectRoom, onBook
 
   const filteredRooms = roomsData.filter((room) => {
     if (filter === 'all') return true;
-    if (filter === 'suite') return room.slug.includes('suite');
-    if (filter === 'deluxe') return room.slug.includes('deluxe') || room.slug.includes('premier');
+    if (filter === 'suite') return room.maxAdults >= 4 || room.slug.includes('suite') || room.slug.includes('phong-c') || room.slug.includes('phong-d');
+    if (filter === 'deluxe') return room.maxAdults <= 3 && !room.slug.includes('phong-c') && !room.slug.includes('phong-d');
     return true;
   });
 

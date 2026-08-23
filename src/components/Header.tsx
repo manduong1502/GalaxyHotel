@@ -43,12 +43,16 @@ export const Header: React.FC<HeaderProps> = ({ onOpenBooking }) => {
               <Sparkles className="w-3.5 h-3.5" />
               <span>{t('hero.badge')}</span>
             </span>
-            <span className="text-gray-300">125 - 127 Lê Thánh Tôn, Quận 1, TP. Hồ Chí Minh</span>
+            <span className="text-gray-300">269/19 Đề Thám, P. Bến Thành, Quận 1, TP. Hồ Chí Minh</span>
           </div>
           <div className="flex items-center space-x-4">
-            <a href="tel:02836200182" className="flex items-center gap-1.5 text-gray-200 hover:text-hotel-gold transition-colors">
+            <a href="tel:02822487782" className="flex items-center gap-1.5 text-gray-200 hover:text-hotel-gold transition-colors">
               <Phone className="w-3.5 h-3.5 text-hotel-gold" />
-              <span className="font-semibold">028 3620 0182</span>
+              <span className="font-semibold">028 2248 7782</span>
+            </a>
+            <span className="text-gray-500">|</span>
+            <a href="https://zalo.me/84793295664" target="_blank" rel="noopener noreferrer" className="text-xs text-hotel-gold hover:underline">
+              Zalo: 079 329 5664
             </a>
             <span className="text-gray-500">|</span>
             {/* Language Switcher */}

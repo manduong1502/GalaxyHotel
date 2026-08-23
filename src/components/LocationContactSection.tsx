@@ -102,8 +102,8 @@ export const LocationContactSection: React.FC = () => {
             {/* Embedded Google Map */}
             <div className="rounded-2xl overflow-hidden shadow-luxury border border-gray-200 h-72 w-full relative transition-transform duration-500 hover:shadow-2xl">
               <iframe
-                title="Galaxy Hotel Location"
-                src="https://maps.google.com/maps?q=125%20L%C3%AA%20Th%C3%A1nh%20T%C3%B4n,%20Qu%E1%BA%ADn%201,%20H%E1%BB%93%20Ch%C3%AD%20Minh&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                title="Galaxy Boutique Hotel Location"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.5621599203555!2d106.69309!3d10.768188!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752fcaf428be75%3A0x323b5d4e6f707fb0!2sGalaxy%20Boutique%20Hotel!5e0!3m2!1svi!2s!4v1784154591201!5m2!1svi!2s"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
