@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useScrollReveal } from '../hooks/useScrollReveal';
-import { MapPin, Phone, Mail, Clock, Send, Sparkles, CheckCircle2 } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Send, Check } from 'lucide-react';
 
 export const LocationContactSection: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { ref: sectionRef, isVisible } = useScrollReveal<HTMLElement>(0.1);
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
@@ -26,73 +26,72 @@ export const LocationContactSection: React.FC = () => {
   return (
     <section 
       id="contact" 
-      ref={sectionRef}
-      className={`py-20 bg-white relative reveal-fade-up ${isVisible ? 'is-revealed' : ''}`}
+      ref={sectionRef} 
+      className={`py-24 bg-white relative reveal-fade-up ${isVisible ? 'is-revealed' : ''}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-14">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-hotel-sand border border-hotel-gold/50 text-hotel-navy text-xs font-bold uppercase tracking-widest mb-3 shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 text-hotel-goldDark" />
-            <span>{t('contact.eyebrow')}</span>
-          </div>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8A6943] block mb-2">
+            {lang === 'vi' ? 'VỊ TRÍ & LIÊN HỆ' : 'LOCATION & CONTACT'}
+          </span>
 
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-hotel-navy">
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-neutral-900 tracking-tight">
             {t('contact.title')}
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
           
           {/* Left: Contact Info & Map */}
           <div className="lg:col-span-7 space-y-6">
             
             {/* Info Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-hotel-cream p-5 rounded-2xl border border-gray-100 flex items-start gap-3.5 card-hover-effect">
-                <div className="w-10 h-10 rounded-xl bg-hotel-navy text-hotel-gold flex items-center justify-center flex-shrink-0">
-                  <MapPin className="w-5 h-5" />
+              <div className="bg-[#FAF9F5] p-5 rounded-xl border border-neutral-200/80 flex items-start gap-3.5">
+                <div className="w-9 h-9 rounded-lg bg-neutral-900 text-white flex items-center justify-center flex-shrink-0">
+                  <MapPin className="w-4 h-4 text-[#E8DCB9]" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-hotel-navy mb-1">{t('contact.address_title')}</h4>
-                  <p className="text-xs text-gray-600 leading-relaxed">
+                  <h4 className="font-semibold text-xs text-neutral-900 uppercase tracking-wider mb-1">{t('contact.address_title')}</h4>
+                  <p className="text-xs text-neutral-600 leading-relaxed font-sans">
                     {t('contact.address')}
                   </p>
                 </div>
               </div>
 
-              <div className="bg-hotel-cream p-5 rounded-2xl border border-gray-100 flex items-start gap-3.5 card-hover-effect">
-                <div className="w-10 h-10 rounded-xl bg-hotel-navy text-hotel-gold flex items-center justify-center flex-shrink-0">
-                  <Phone className="w-5 h-5" />
+              <div className="bg-[#FAF9F5] p-5 rounded-xl border border-neutral-200/80 flex items-start gap-3.5">
+                <div className="w-9 h-9 rounded-lg bg-neutral-900 text-white flex items-center justify-center flex-shrink-0">
+                  <Phone className="w-4 h-4 text-[#E8DCB9]" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-hotel-navy mb-1">{t('contact.phone_title')}</h4>
-                  <p className="text-xs text-gray-600 font-semibold">
+                  <h4 className="font-semibold text-xs text-neutral-900 uppercase tracking-wider mb-1">{t('contact.phone_title')}</h4>
+                  <p className="text-xs text-neutral-800 font-semibold font-sans">
                     {t('contact.phone')}
                   </p>
                 </div>
               </div>
 
-              <div className="bg-hotel-cream p-5 rounded-2xl border border-gray-100 flex items-start gap-3.5 card-hover-effect">
-                <div className="w-10 h-10 rounded-xl bg-hotel-navy text-hotel-gold flex items-center justify-center flex-shrink-0">
-                  <Mail className="w-5 h-5" />
+              <div className="bg-[#FAF9F5] p-5 rounded-xl border border-neutral-200/80 flex items-start gap-3.5">
+                <div className="w-9 h-9 rounded-lg bg-neutral-900 text-white flex items-center justify-center flex-shrink-0">
+                  <Mail className="w-4 h-4 text-[#E8DCB9]" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-hotel-navy mb-1">{t('contact.email_title')}</h4>
-                  <p className="text-xs text-gray-600">
+                  <h4 className="font-semibold text-xs text-neutral-900 uppercase tracking-wider mb-1">{t('contact.email_title')}</h4>
+                  <p className="text-xs text-neutral-600 font-sans">
                     {t('contact.email')}
                   </p>
                 </div>
               </div>
 
-              <div className="bg-hotel-cream p-5 rounded-2xl border border-gray-100 flex items-start gap-3.5 card-hover-effect">
-                <div className="w-10 h-10 rounded-xl bg-hotel-navy text-hotel-gold flex items-center justify-center flex-shrink-0">
-                  <Clock className="w-5 h-5" />
+              <div className="bg-[#FAF9F5] p-5 rounded-xl border border-neutral-200/80 flex items-start gap-3.5">
+                <div className="w-9 h-9 rounded-lg bg-neutral-900 text-white flex items-center justify-center flex-shrink-0">
+                  <Clock className="w-4 h-4 text-[#E8DCB9]" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-hotel-navy mb-1">{t('contact.hours_title')}</h4>
-                  <p className="text-xs text-gray-600">
+                  <h4 className="font-semibold text-xs text-neutral-900 uppercase tracking-wider mb-1">{t('contact.hours_title')}</h4>
+                  <p className="text-xs text-neutral-600 font-sans">
                     {t('contact.hours_desc')}
                   </p>
                 </div>
@@ -100,7 +99,7 @@ export const LocationContactSection: React.FC = () => {
             </div>
 
             {/* Embedded Google Map */}
-            <div className="rounded-2xl overflow-hidden shadow-luxury border border-gray-200 h-72 w-full relative transition-transform duration-500 hover:shadow-2xl">
+            <div className="rounded-xl overflow-hidden border border-neutral-200/90 shadow-sm h-72 w-full relative">
               <iframe
                 title="Galaxy Boutique Hotel Location"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.5621599203555!2d106.69309!3d10.768188!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752fcaf428be75%3A0x323b5d4e6f707fb0!2sGalaxy%20Boutique%20Hotel!5e0!3m2!1svi!2s!4v1784154591201!5m2!1svi!2s"
@@ -113,27 +112,27 @@ export const LocationContactSection: React.FC = () => {
             </div>
           </div>
 
-          {/* Right: Quick Inquiry Form */}
-          <div className="lg:col-span-5 bg-hotel-cream p-8 rounded-3xl border border-hotel-gold/30 shadow-luxury card-hover-effect">
-            <h3 className="font-serif font-bold text-2xl text-hotel-navy mb-2">
+          {/* Right: Clean Inquiry Form */}
+          <div className="lg:col-span-5 bg-[#FAF9F5] p-7 sm:p-8 rounded-2xl border border-neutral-200/90 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]">
+            <h3 className="font-serif font-semibold text-2xl text-neutral-900 mb-1 tracking-tight">
               {t('contact.inquiry_title')}
             </h3>
-            <p className="text-gray-600 text-xs sm:text-sm mb-6">
+            <p className="text-neutral-500 text-xs sm:text-sm mb-6 font-sans">
               {t('contact.inquiry_sub')}
             </p>
 
             {submitted ? (
-              <div className="p-6 rounded-2xl bg-green-50 border border-green-200 text-center animate-fade-in">
-                <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-2" />
-                <h4 className="font-bold text-green-800 font-serif text-lg">Gửi Thành Công!</h4>
-                <p className="text-xs text-green-700 mt-1">
-                  Cảm ơn quý khách. Chúng tôi sẽ liên hệ lại trong ít phút.
+              <div className="p-6 rounded-xl bg-emerald-50 border border-emerald-200 text-center animate-fade-in">
+                <Check className="w-10 h-10 text-emerald-600 mx-auto mb-2" />
+                <h4 className="font-semibold text-emerald-900 text-base">Gửi Thành Công!</h4>
+                <p className="text-xs text-emerald-700 mt-1 font-sans">
+                  Cảm ơn quý khách. Chúng tôi sẽ phản hồi trong ít phút.
                 </p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-600 mb-1.5">
                     {t('contact.form_name')} *
                   </label>
                   <input
@@ -141,14 +140,14 @@ export const LocationContactSection: React.FC = () => {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="VD: Nguyễn Văn A"
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-hotel-gold transition-all"
+                    placeholder="Nguyễn Văn A"
+                    className="w-full bg-white border border-neutral-200 rounded-lg px-3.5 py-2.5 text-xs text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-600 mb-1.5">
                       {t('contact.form_phone')} *
                     </label>
                     <input
@@ -156,13 +155,12 @@ export const LocationContactSection: React.FC = () => {
                       required
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      placeholder="0901234567"
-                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-hotel-gold transition-all"
+                      placeholder="0901 234 567"
+                      className="w-full bg-white border border-neutral-200 rounded-lg px-3.5 py-2.5 text-xs text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
                     />
                   </div>
-
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-600 mb-1.5">
                       {t('contact.form_email')}
                     </label>
                     <input
@@ -170,30 +168,31 @@ export const LocationContactSection: React.FC = () => {
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="email@example.com"
-                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-hotel-gold transition-all"
+                      className="w-full bg-white border border-neutral-200 rounded-lg px-3.5 py-2.5 text-xs text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                    {t('contact.form_message')}
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-600 mb-1.5">
+                    {t('contact.form_msg')} *
                   </label>
                   <textarea
                     rows={4}
+                    required
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    placeholder="Quý khách cần hỗ trợ thêm thông tin gì về đặt phòng, xe đưa đón..."
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-hotel-gold transition-all"
+                    placeholder={lang === 'vi' ? 'Quý khách cần hỗ trợ thêm thông tin gì...' : 'How can we help you...'}
+                    className="w-full bg-white border border-neutral-200 rounded-lg px-3.5 py-2.5 text-xs text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900 resize-none"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="btn-magnetic w-full py-3.5 rounded-xl bg-gradient-to-r from-hotel-navy to-hotel-deep hover:from-hotel-deep hover:to-hotel-navy text-hotel-gold font-bold text-sm uppercase tracking-wider shadow-md flex items-center justify-center gap-2"
+                  className="btn-magnetic w-full py-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2 transition-colors shadow-sm"
                 >
-                  <Send className="w-4 h-4 text-hotel-gold" />
-                  <span>{t('contact.form_send')}</span>
+                  <Send className="w-3.5 h-3.5 text-[#B89369]" />
+                  <span>{t('contact.form_submit')}</span>
                 </button>
               </form>
             )}
