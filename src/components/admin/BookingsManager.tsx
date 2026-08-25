@@ -151,12 +151,12 @@ export const BookingsManager: React.FC = () => {
     <div className="space-y-6 animate-fade-in">
       
       {/* Top Action Bar */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm">
         <div>
-          <h2 className="font-serif font-bold text-2xl text-hotel-navy">
+          <h2 className="font-sans font-bold text-2xl text-neutral-900 tracking-tight">
             Quản Lý Đơn Đặt Phòng
           </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-xs text-neutral-500 mt-0.5">
             Tổng cộng {bookings.length} đơn đặt phòng trong cơ sở dữ liệu
           </p>
         </div>
@@ -403,55 +403,55 @@ export const BookingsManager: React.FC = () => {
             
             <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-hotel-gold bg-hotel-navy px-3 py-1 rounded-full">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#E8DCB9] bg-neutral-900 px-2.5 py-1 rounded">
                   MÃ ĐƠN: {selectedBooking.bookingCode}
                 </span>
-                <h3 className="font-serif font-bold text-xl text-hotel-navy mt-2">
+                <h3 className="font-sans font-bold text-xl text-neutral-900 mt-2 tracking-tight">
                   Chi Tiết Đơn Đặt Phòng
                 </h3>
               </div>
               <button
                 onClick={() => setIsDetailModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-600 flex items-center justify-center transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-6 text-xs">
+            <div className="space-y-6 text-xs font-sans">
               
               {/* Guest & Room Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-hotel-sand/40 p-4 rounded-2xl space-y-2">
-                  <h4 className="font-bold text-hotel-navy text-sm uppercase tracking-wider">Thông Tin Khách Hàng</h4>
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <User className="w-4 h-4 text-hotel-goldDark" />
+                <div className="bg-[#FAF9F5] p-4 rounded-xl border border-neutral-200/80 space-y-2">
+                  <h4 className="font-bold text-neutral-900 text-xs uppercase tracking-wider">Thông Tin Khách Hàng</h4>
+                  <div className="flex items-center gap-2 text-neutral-700">
+                    <User className="w-4 h-4 text-[#8A6943]" />
                     <strong>{selectedBooking.guestName}</strong>
                   </div>
-                  <div className="flex items-center gap-2 text-gray-700">
-                    <Phone className="w-4 h-4 text-hotel-goldDark" />
+                  <div className="flex items-center gap-2 text-neutral-700">
+                    <Phone className="w-4 h-4 text-[#8A6943]" />
                     <a href={`tel:${selectedBooking.guestPhone}`} className="text-blue-600 font-bold hover:underline">
                       {selectedBooking.guestPhone}
                     </a>
                   </div>
                   {selectedBooking.guestEmail && (
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <Mail className="w-4 h-4 text-hotel-goldDark" />
+                    <div className="flex items-center gap-2 text-neutral-700">
+                      <Mail className="w-4 h-4 text-[#8A6943]" />
                       <span>{selectedBooking.guestEmail}</span>
                     </div>
                   )}
                 </div>
 
-                <div className="bg-hotel-sand/40 p-4 rounded-2xl space-y-2">
-                  <h4 className="font-bold text-hotel-navy text-sm uppercase tracking-wider">Thông Tin Lưu Trú</h4>
-                  <div className="text-gray-900 font-bold text-sm">{selectedBooking.roomName}</div>
-                  <div className="text-gray-600">
-                    Hình thức: <strong className="text-hotel-navy">{selectedBooking.bookingType === 'daily' ? `Theo Ngày (${selectedBooking.nightsCount} đêm)` : `Theo Giờ (${selectedBooking.hoursCount} giờ)`}</strong>
+                <div className="bg-[#FAF9F5] p-4 rounded-xl border border-neutral-200/80 space-y-2">
+                  <h4 className="font-bold text-neutral-900 text-xs uppercase tracking-wider">Thông Tin Lưu Trú</h4>
+                  <div className="text-neutral-900 font-bold text-sm">{selectedBooking.roomName}</div>
+                  <div className="text-neutral-600">
+                    Hình thức: <strong className="text-neutral-900">{selectedBooking.bookingType === 'daily' ? `Theo Ngày (${selectedBooking.nightsCount} đêm)` : `Theo Giờ (${selectedBooking.hoursCount} giờ)`}</strong>
                   </div>
-                  <div className="text-gray-600">
+                  <div className="text-neutral-600">
                     Check-in: <strong>{selectedBooking.checkInDate} ({selectedBooking.checkInTime})</strong>
                   </div>
-                  <div className="text-gray-600">
+                  <div className="text-neutral-600">
                     Check-out: <strong>{selectedBooking.checkOutDate} ({selectedBooking.checkOutTime})</strong>
                   </div>
                 </div>
@@ -459,24 +459,24 @@ export const BookingsManager: React.FC = () => {
 
               {/* Special Requests */}
               {selectedBooking.specialRequests && (
-                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900">
+                <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900">
                   <strong className="block mb-1">Yêu cầu đặc biệt từ khách hàng:</strong>
                   <p>{selectedBooking.specialRequests}</p>
                 </div>
               )}
 
               {/* Change Status Fast Actions */}
-              <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200">
-                <strong className="block text-gray-700 mb-2">Đổi Trạng Thái Đơn:</strong>
+              <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200">
+                <strong className="block text-neutral-700 mb-2">Đổi Trạng Thái Đơn:</strong>
                 <div className="flex flex-wrap gap-2">
                   {(['pending', 'confirmed', 'checked_in', 'completed', 'cancelled'] as BookingStatus[]).map((st) => (
                     <button
                       key={st}
                       onClick={() => handleStatusChange(selectedBooking.id, st)}
-                      className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
+                      className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${
                         selectedBooking.status === st
-                          ? 'bg-hotel-navy text-hotel-gold shadow-md'
-                          : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-100'
+                          ? 'bg-neutral-900 text-white shadow-sm'
+                          : 'bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-100'
                       }`}
                     >
                       {st === 'pending' && 'Chờ duyệt'}
@@ -491,17 +491,17 @@ export const BookingsManager: React.FC = () => {
 
               {/* Staff Notes */}
               <div>
-                <label className="block font-bold text-gray-700 mb-1">Ghi Chú Nội Bộ (Lễ tân/Chủ):</label>
+                <label className="block font-bold text-neutral-700 mb-1">Ghi Chú Nội Bộ (Lễ tân/Chủ):</label>
                 <textarea
                   rows={2}
                   value={editingNotes}
                   onChange={(e) => setEditingNotes(e.target.value)}
                   placeholder="Ghi lại thông tin khách cọc tiền, yêu cầu đặc biệt, lưu ý khi nhận phòng..."
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-xs focus:outline-none focus:ring-2 focus:ring-hotel-gold"
+                  className="w-full bg-neutral-50 border border-neutral-200 rounded-lg p-3 text-xs focus:outline-none focus:ring-1 focus:ring-neutral-900"
                 />
                 <button
                   onClick={handleSaveNotes}
-                  className="btn-magnetic mt-2 px-4 py-2 rounded-xl bg-hotel-navy text-white font-bold text-xs flex items-center gap-1.5"
+                  className="mt-2 px-4 py-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors"
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>Lưu Ghi Chú</span>
@@ -509,10 +509,10 @@ export const BookingsManager: React.FC = () => {
               </div>
 
               {/* Total Summary */}
-              <div className="p-4 rounded-2xl bg-hotel-navy text-white flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-neutral-900 text-white flex items-center justify-between">
                 <div>
-                  <span className="text-[11px] text-gray-300">Tổng tiền thanh toán</span>
-                  <div className="font-serif font-extrabold text-xl text-hotel-gold">
+                  <span className="text-[11px] text-neutral-400">Tổng tiền thanh toán</span>
+                  <div className="font-sans font-bold text-xl text-[#E8DCB9]">
                     {formatVND(selectedBooking.totalPrice)}
                   </div>
                 </div>
@@ -521,7 +521,7 @@ export const BookingsManager: React.FC = () => {
                     syncBookingToGoogleSheets(selectedBooking);
                     alert('Đã gửi dữ liệu sang Google Sheets!');
                   }}
-                  className="btn-magnetic px-3 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs flex items-center gap-1.5"
+                  className="px-3 py-2 rounded-lg bg-white/15 hover:bg-white/25 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors"
                 >
                   <span>Đẩy lại Google Sheets</span>
                 </button>
@@ -535,10 +535,10 @@ export const BookingsManager: React.FC = () => {
       {/* Manual Booking Modal (Tại quầy) */}
       {isManualBookingOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-backdrop">
-          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-gray-200 max-h-[90vh] overflow-y-auto animate-modal-pop">
+          <div className="bg-white rounded-2xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-neutral-200 max-h-[90vh] overflow-y-auto animate-modal-pop">
             
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
-              <h3 className="font-serif font-bold text-xl text-hotel-navy">
+            <div className="flex items-center justify-between pb-4 border-b border-neutral-100 mb-6">
+              <h3 className="font-sans font-bold text-xl text-neutral-900 tracking-tight">
                 Tạo Đơn Đặt Phòng Tại Quầy / Khách Gọi
               </h3>
               <button

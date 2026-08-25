@@ -105,13 +105,13 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ room, onClose,
             <div className="bg-[#FAF9F5] p-4 rounded-xl border border-neutral-200/80 flex items-center gap-6">
               <div>
                 <span className="text-[10px] text-neutral-500 uppercase block font-semibold">{t('rooms.price_night_label')}</span>
-                <span className="font-display font-bold text-xl text-neutral-900">
+                <span className="font-sans font-bold text-xl text-neutral-900 tracking-tight">
                   {formatCurrency(room.pricePerNight)}
                 </span>
               </div>
               <div className="border-l border-neutral-200 pl-4">
                 <span className="text-[10px] text-neutral-500 uppercase block font-semibold">{t('rooms.price_hour_label')}</span>
-                <span className="font-display font-bold text-base text-[#8A6943]">
+                <span className="font-sans font-bold text-base text-[#8A6943] tracking-tight">
                   {formatCurrency(room.priceHourlyFirst2h)} <span className="text-xs font-normal text-neutral-500">{t('rooms.per_hour')}</span>
                 </span>
               </div>

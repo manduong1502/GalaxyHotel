@@ -179,10 +179,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => 
         {/* Top Navbar */}
         <div className="bg-white px-6 py-4 border-b border-gray-200 hidden md:flex items-center justify-between sticky top-0 z-20 shadow-sm">
           <div>
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
+            <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider block">
               GALAXY BOUTIQUE HOTEL • 269/19 ĐỀ THÁM, Q1
             </span>
-            <h1 className="font-serif font-bold text-xl text-hotel-navy">
+            <h1 className="font-sans font-bold text-xl text-neutral-900 tracking-tight">
               {activeTab === 'dashboard' && 'Bảng Điều Khiển Tổng Quan'}
               {activeTab === 'bookings' && 'Quản Lý Đơn Đặt Phòng'}
               {activeTab === 'rooms' && 'Danh Mục Phòng & Bảng Giá'}

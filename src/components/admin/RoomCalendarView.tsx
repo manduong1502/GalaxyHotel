@@ -46,32 +46,32 @@ export const RoomCalendarView: React.FC = () => {
     <div className="space-y-6 animate-fade-in">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm">
         <div>
-          <h2 className="font-serif font-bold text-2xl text-hotel-navy">
+          <h2 className="font-sans font-bold text-2xl text-neutral-900 tracking-tight">
             Sơ Đồ Lịch Phòng Trực Quan
           </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-xs text-neutral-500 mt-0.5">
             Theo dõi tình trạng phòng trống và lịch đón khách từng ngày
           </p>
         </div>
 
         {/* Month Navigation */}
-        <div className="flex items-center gap-3 bg-gray-50 p-1.5 rounded-2xl border border-gray-200">
+        <div className="flex items-center gap-3 bg-[#FAF9F5] p-1.5 rounded-xl border border-neutral-200">
           <button
             onClick={prevMonth}
-            className="w-8 h-8 rounded-xl bg-white hover:bg-hotel-sand text-hotel-navy flex items-center justify-center shadow-sm"
+            className="w-8 h-8 rounded-lg bg-white hover:bg-neutral-100 text-neutral-900 flex items-center justify-center shadow-sm transition-colors"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
 
-          <span className="font-serif font-bold text-sm text-hotel-navy px-3 min-w-[120px] text-center">
+          <span className="font-sans font-bold text-sm text-neutral-900 px-3 min-w-[120px] text-center">
             {monthNames[month]}, {year}
           </span>
 
           <button
             onClick={nextMonth}
-            className="w-8 h-8 rounded-xl bg-white hover:bg-hotel-sand text-hotel-navy flex items-center justify-center shadow-sm"
+            className="w-8 h-8 rounded-lg bg-white hover:bg-neutral-100 text-neutral-900 flex items-center justify-center shadow-sm transition-colors"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -156,7 +156,7 @@ export const RoomCalendarView: React.FC = () => {
             <div className="flex items-center gap-2 pb-3 border-b border-gray-100 mb-4">
               <Calendar className="w-5 h-5 text-hotel-goldDark" />
               <div>
-                <h3 className="font-serif font-bold text-lg text-hotel-navy">
+                <h3 className="font-sans font-bold text-base text-neutral-900 tracking-tight">
                   Lịch Ngày: {new Date(selectedDay).toLocaleDateString('vi-VN')}
                 </h3>
                 <p className="text-[11px] text-gray-500">

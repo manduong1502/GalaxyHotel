@@ -43,13 +43,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToWebsite }) => {
       <div className="max-w-md w-full bg-white/95 backdrop-blur-xl rounded-3xl p-8 sm:p-10 shadow-2xl border border-hotel-gold/40 relative z-10 animate-fade-in">
         {/* Brand Logo Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-hotel-gold via-hotel-goldDark to-hotel-navy text-white font-brand font-bold text-3xl flex items-center justify-center mx-auto mb-4 shadow-gold-glow">
-            G
-          </div>
-          <h2 className="font-serif font-bold text-2xl sm:text-3xl text-hotel-navy uppercase tracking-wider">
+          <h2 className="font-sans font-bold text-2xl text-neutral-900 tracking-tight">
             GALAXY ADMIN
           </h2>
-          <p className="text-xs text-gray-500 font-medium tracking-widest uppercase mt-1">
+          <p className="text-xs text-neutral-500 font-semibold tracking-widest uppercase mt-1">
             Hệ Thống Quản Trị Khách Sạn
           </p>
         </div>

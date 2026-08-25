@@ -76,18 +76,18 @@ export const RoomsManager: React.FC = () => {
     <div className="space-y-6 animate-fade-in">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm">
         <div>
-          <h2 className="font-serif font-bold text-2xl text-hotel-navy">
+          <h2 className="font-sans font-bold text-2xl text-neutral-900 tracking-tight">
             Quản Lý Hạng Phòng & Bảng Giá
           </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-xs text-neutral-500 mt-0.5">
             Cập nhật giá theo đêm, giá theo giờ và trạng thái phòng tức thì trên website
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="px-3 py-1.5 rounded-xl bg-hotel-sand/60 text-hotel-navy text-xs font-bold">
+          <div className="px-3 py-1.5 rounded-lg bg-[#FAF9F5] border border-neutral-200 text-neutral-800 text-xs font-bold font-sans">
             Tổng {rooms.length} Hạng Phòng Thực Tế
           </div>
         </div>
@@ -98,11 +98,11 @@ export const RoomsManager: React.FC = () => {
         {rooms.map((room) => (
           <div
             key={room.id}
-            className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group"
+            className="bg-white rounded-2xl overflow-hidden border border-neutral-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group"
           >
             <div>
               {/* Room Image */}
-              <div className="relative h-48 w-full overflow-hidden bg-gray-100">
+              <div className="relative h-48 w-full overflow-hidden bg-neutral-100">
                 <img
                   src={room.images[0]}
                   alt={room.name.vi}
@@ -112,7 +112,7 @@ export const RoomsManager: React.FC = () => {
                   {getStatusBadge(room.status)}
                 </div>
                 {room.isPopular && (
-                  <div className="absolute top-3 left-3 bg-hotel-gold text-hotel-navy font-bold text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow">
+                  <div className="absolute top-3 left-3 bg-neutral-900 text-white font-bold text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded shadow">
                     Phổ Biến Nhất
                   </div>
                 )}
@@ -120,7 +120,7 @@ export const RoomsManager: React.FC = () => {
 
               {/* Content */}
               <div className="p-6">
-                <h3 className="font-serif font-bold text-lg text-hotel-navy mb-1">
+                <h3 className="font-sans font-bold text-lg text-neutral-900 mb-1 tracking-tight">
                   {room.name.vi}
                 </h3>
                 <p className="text-gray-500 text-xs line-clamp-1 mb-4">
@@ -181,10 +181,10 @@ export const RoomsManager: React.FC = () => {
             
             <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
               <div>
-                <span className="text-[10px] uppercase font-bold text-hotel-gold bg-hotel-navy px-3 py-1 rounded-full">
+                <span className="text-[10px] uppercase font-bold text-[#E8DCB9] bg-neutral-900 px-2.5 py-1 rounded">
                   MÃ PHÒNG: {editingRoom.id}
                 </span>
-                <h3 className="font-serif font-bold text-xl text-hotel-navy mt-1.5">
+                <h3 className="font-sans font-bold text-xl text-neutral-900 mt-1.5 tracking-tight">
                   Cập Nhật Phòng & Giá
                 </h3>
               </div>

@@ -96,26 +96,26 @@ export const AdminSettings: React.FC = () => {
     <div className="space-y-8 animate-fade-in max-w-4xl">
       
       {/* Header */}
-      <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-        <h2 className="font-serif font-bold text-2xl text-hotel-navy">
+      <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm">
+        <h2 className="font-sans font-bold text-2xl text-neutral-900 tracking-tight">
           Cài Đặt Hệ Thống & Tích Hợp
         </h2>
-        <p className="text-xs text-gray-500 mt-0.5">
+        <p className="text-xs text-neutral-500 mt-0.5">
           Cấu hình sao lưu song song Google Sheets, MySQL Database và bảo mật tài khoản
         </p>
       </div>
 
       {/* Google Sheets Dual-Sync Config */}
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
+      <div className="bg-white p-6 sm:p-8 rounded-2xl border border-neutral-200 shadow-sm space-y-6">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-green-50 text-green-700 flex items-center justify-center flex-shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center flex-shrink-0">
             <Sheet className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="font-serif font-bold text-xl text-hotel-navy">
+            <h3 className="font-sans font-bold text-xl text-neutral-900 tracking-tight">
               Sao Lưu Song Song Vào Google Sheets (Dual-Sync)
             </h3>
-            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+            <p className="text-xs text-neutral-500 mt-1 leading-relaxed font-sans">
               Mỗi khi khách đặt phòng trên website, thông tin sẽ được tự động đồng bộ ngay vào Google Sheet của bạn. Bạn có thể mở app Google Sheets trên điện thoại để xem và quản lý mọi lúc mọi nơi mà không cần đăng nhập website.
             </p>
           </div>
@@ -123,100 +123,92 @@ export const AdminSettings: React.FC = () => {
 
         <form onSubmit={handleSaveWebhook} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1.5 font-sans">
               Google Apps Script Web App URL
             </label>
             <input
               type="url"
               value={webhookInput}
               onChange={(e) => setWebhookInput(e.target.value)}
-              placeholder="https://script.google.com/macros/s/AKfycbx.../exec"
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs text-gray-900 font-mono focus:outline-none focus:ring-2 focus:ring-hotel-gold"
+              placeholder="https://script.google.com/macros/s/.../exec"
+              className="w-full bg-[#FAF9F5] border border-neutral-200 rounded-lg px-3.5 py-2.5 text-xs text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-3 pt-2">
             <button
               type="submit"
-              className="btn-magnetic px-5 py-2.5 rounded-xl bg-hotel-navy hover:bg-hotel-dark text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2"
+              className="px-5 py-2.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-xs tracking-wider uppercase flex items-center gap-2 transition-colors"
             >
-              <Save className="w-4 h-4 text-hotel-gold" />
+              <Save className="w-4 h-4 text-[#E8DCB9]" />
               <span>Lưu Cấu Hình Webhook</span>
             </button>
 
             <button
               type="button"
+              disabled={testingWebhook || !webhookInput}
               onClick={handleTestWebhook}
-              disabled={testingWebhook}
-              className="btn-magnetic px-4 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2"
+              className="px-4 py-2.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-semibold text-xs tracking-wider uppercase disabled:opacity-50 flex items-center gap-2 transition-colors"
             >
-              {testingWebhook ? 'Đang gửi...' : 'Gửi Dữ Liệu Test Thử'}
+              <span>{testingWebhook ? 'Đang gửi...' : 'Gửi Thử Nghiệm'}</span>
             </button>
           </div>
         </form>
 
-        {/* Setup guide collapsible box */}
-        <div className="p-5 rounded-2xl bg-hotel-sand/50 border border-hotel-gold/30 text-xs text-gray-700 space-y-2">
-          <div className="flex items-center gap-2 font-bold text-hotel-navy">
-            <HelpCircle className="w-4 h-4 text-hotel-goldDark" />
-            <span>Hướng dẫn tạo Webhook Google Sheets trong 2 phút:</span>
+        {webhookStatus === 'success' && (
+          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 animate-fade-in font-sans">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+            <span>Đã kết nối và đồng bộ thử nghiệm thành công sang Google Sheets!</span>
           </div>
-          <ol className="list-decimal list-inside space-y-1 text-[11px] text-gray-600 pl-1">
-            <li>Mở một Google Sheet mới tại <strong>sheets.new</strong> và đặt tên sheet là "Galaxy Hotel Bookings".</li>
-            <li>Vào mục <strong>Tiện ích mở rộng (Extensions) → Apps Script</strong>.</li>
-            <li>Mở file <code className="bg-white px-1 py-0.5 rounded border">api/google_apps_script_template.js</code> trong dự án này, copy toàn bộ code và dán vào Apps Script.</li>
-            <li>Bấm <strong>Triển khai (Deploy) → Tùy chọn triển khai mới → Ứng dụng web (Web App)</strong> (Quyền truy cập: Bất kỳ ai / Anyone).</li>
-            <li>Copy URL ứng dụng web nhận được và dán vào ô bên trên.</li>
-          </ol>
-        </div>
+        )}
       </div>
 
-      {/* MySQL & Hosting Information (AZDIGI cPanel) */}
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+      {/* MySQL Connection Status */}
+      <div className="bg-white p-6 sm:p-8 rounded-2xl border border-neutral-200 shadow-sm space-y-4">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center flex-shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center flex-shrink-0">
             <Database className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="font-serif font-bold text-xl text-hotel-navy">
+            <h3 className="font-sans font-bold text-xl text-neutral-900 tracking-tight">
               Cơ Sở Dữ Liệu MySQL (Hosting AZDIGI cPanel)
             </h3>
-            <p className="text-xs text-gray-500 mt-1">
-              File schema SQL đã được tạo sẵn tại <code className="bg-gray-100 px-1.5 py-0.5 rounded text-hotel-navy font-bold">api/schema.sql</code>.
+            <p className="text-xs text-neutral-500 mt-1 font-sans">
+              File schema SQL đã được tạo sẵn tại <code className="bg-neutral-100 px-1.5 py-0.5 rounded text-neutral-900 font-bold">api/schema.sql</code>.
             </p>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200 text-xs space-y-2">
+        <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200 text-xs space-y-2 font-sans">
           <div className="flex items-center justify-between">
-            <span className="text-gray-500">Môi trường hiện tại:</span>
-            <span className="font-bold text-green-700 bg-green-50 px-2.5 py-0.5 rounded-full border border-green-200">
+            <span className="text-neutral-500">Môi trường hiện tại:</span>
+            <span className="font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
               ● Hybrid LocalStorage + REST API Ready
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-gray-500">Hỗ trợ hosting:</span>
-            <span className="font-semibold text-gray-800">cPanel AZDIGI / DirectAdmin / VPS Linux</span>
+            <span className="text-neutral-500">Hỗ trợ hosting:</span>
+            <span className="font-semibold text-neutral-800">cPanel AZDIGI / DirectAdmin / VPS Linux</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-gray-500">File kết nối DB:</span>
-            <span className="font-mono text-gray-800">api/db.php</span>
+            <span className="text-neutral-500">File kết nối DB:</span>
+            <span className="font-mono text-neutral-800">api/db.php</span>
           </div>
         </div>
       </div>
 
       {/* Security & Password */}
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm space-y-4">
+      <div className="bg-white p-6 sm:p-8 rounded-2xl border border-neutral-200 shadow-sm space-y-4">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-700 flex items-center justify-center flex-shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center flex-shrink-0">
             <KeyRound className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="font-serif font-bold text-xl text-hotel-navy">
+            <h3 className="font-sans font-bold text-xl text-neutral-900 tracking-tight">
               Đổi Mật Khẩu Quản Trị
             </h3>
-            <p className="text-xs text-gray-500 mt-1">
-              Đổi mật khẩu đăng nhập cho tài khoản quản trị <strong className="text-hotel-navy">{user?.username}</strong>
+            <p className="text-xs text-neutral-500 mt-1 font-sans">
+              Đổi mật khẩu đăng nhập cho tài khoản quản trị <strong className="text-neutral-900">{user?.username}</strong>
             </p>
           </div>
         </div>

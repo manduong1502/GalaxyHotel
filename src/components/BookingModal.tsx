@@ -130,7 +130,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, selectedRoom
             <div className="bg-[#FAF9F5] p-5 rounded-xl border border-neutral-200 text-left space-y-2 text-xs text-neutral-700">
               <div className="flex justify-between items-center border-b border-neutral-200 pb-2">
                 <span className="font-semibold text-neutral-500">{lang === 'vi' ? 'Mã Đặt Phòng:' : 'Booking ID:'}</span>
-                <span className="font-display font-bold text-base text-neutral-900">{bookingCode}</span>
+                <span className="font-sans font-bold text-base text-neutral-900 tracking-tight">{bookingCode}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span>{lang === 'vi' ? 'Hạng phòng:' : 'Room Type:'}</span>
@@ -152,7 +152,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, selectedRoom
               </div>
               <div className="flex justify-between items-center pt-2 border-t border-neutral-200 text-sm">
                 <span className="font-bold text-neutral-900">{t('modal.total_summary')}</span>
-                <span className="font-display font-bold text-base text-neutral-900">{formatCurrency(totalAmount)}</span>
+                <span className="font-sans font-bold text-base text-neutral-900 tracking-tight">{formatCurrency(totalAmount)}</span>
               </div>
             </div>
 
@@ -409,7 +409,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, selectedRoom
                 <span className="text-[11px] text-neutral-500 block">{t('modal.duration_summary')} {durationText}</span>
                 <span className="text-xs font-semibold text-neutral-800">{t('modal.total_summary')}</span>
               </div>
-              <span className="font-display font-bold text-xl sm:text-2xl text-neutral-900">
+              <span className="font-sans font-bold text-xl sm:text-2xl text-neutral-900 tracking-tight">
                 {formatCurrency(totalAmount)}
               </span>
             </div>

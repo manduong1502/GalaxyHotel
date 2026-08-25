@@ -81,67 +81,67 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onNavigate
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
         {/* Doanh thu ước tính */}
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between text-gray-500 mb-3">
+        <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between text-neutral-500 mb-3">
             <span className="text-xs font-bold uppercase tracking-wider">Doanh Thu Dự Kiến</span>
-            <div className="w-9 h-9 rounded-xl bg-green-50 text-green-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
               <DollarSign className="w-5 h-5" />
             </div>
           </div>
-          <div className="font-serif font-extrabold text-2xl text-hotel-navy">
+          <div className="font-sans font-bold text-2xl text-neutral-900 tracking-tight">
             {formatVND(totalRevenue)}
           </div>
-          <div className="text-[11px] text-gray-500 mt-2 flex items-center gap-1">
-            <span className="text-green-600 font-bold">+{confirmedCount} đơn</span> đã xác nhận & hoàn tất
+          <div className="text-[11px] text-neutral-500 mt-2 flex items-center gap-1">
+            <span className="text-emerald-600 font-bold">+{confirmedCount} đơn</span> đã xác nhận & hoàn tất
           </div>
         </div>
 
         {/* Tổng số đơn đặt */}
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between text-gray-500 mb-3">
+        <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between text-neutral-500 mb-3">
             <span className="text-xs font-bold uppercase tracking-wider">Tổng Đơn Đặt</span>
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
               <CalendarCheck className="w-5 h-5" />
             </div>
           </div>
-          <div className="font-serif font-extrabold text-2xl text-hotel-navy">
-            {totalBookings} <span className="text-sm font-sans font-normal text-gray-500">đơn</span>
+          <div className="font-sans font-bold text-2xl text-neutral-900 tracking-tight">
+            {totalBookings} <span className="text-sm font-normal text-neutral-500">đơn</span>
           </div>
-          <div className="text-[11px] text-gray-500 mt-2 flex items-center gap-2">
+          <div className="text-[11px] text-neutral-500 mt-2 flex items-center gap-2">
             <span className="text-blue-600 font-bold">{dailyCount} theo Ngày</span> • 
             <span className="text-purple-600 font-bold">{hourlyCount} theo Giờ</span>
           </div>
         </div>
 
         {/* Check-in / Out Hôm Nay */}
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between text-gray-500 mb-3">
+        <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between text-neutral-500 mb-3">
             <span className="text-xs font-bold uppercase tracking-wider">Nhận / Trả Hôm Nay</span>
-            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
               <Clock className="w-5 h-5" />
             </div>
           </div>
-          <div className="font-serif font-extrabold text-2xl text-hotel-navy">
-            {todayCheckIns} <span className="text-sm font-sans font-normal text-gray-500">vào /</span> {todayCheckOuts} <span className="text-sm font-sans font-normal text-gray-500">ra</span>
+          <div className="font-sans font-bold text-2xl text-neutral-900 tracking-tight">
+            {todayCheckIns} <span className="text-sm font-normal text-neutral-500">vào /</span> {todayCheckOuts} <span className="text-sm font-normal text-neutral-500">ra</span>
           </div>
-          <div className="text-[11px] text-gray-500 mt-2">
+          <div className="text-[11px] text-neutral-500 mt-2">
             Ngày: {new Date().toLocaleDateString('vi-VN')}
           </div>
         </div>
 
-        {/* Tỷ lệ phòng có khách */}
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between text-gray-500 mb-3">
+        {/* Tình trạng phòng */}
+        <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between text-neutral-500 mb-3">
             <span className="text-xs font-bold uppercase tracking-wider">Tình Trạng Phòng</span>
-            <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
               <BedDouble className="w-5 h-5" />
             </div>
           </div>
-          <div className="font-serif font-extrabold text-2xl text-hotel-navy">
-            {rooms.length} <span className="text-sm font-sans font-normal text-gray-500">hạng phòng</span>
+          <div className="font-sans font-bold text-2xl text-neutral-900 tracking-tight">
+            {rooms.length} <span className="text-sm font-normal text-neutral-500">hạng phòng</span>
           </div>
-          <div className="text-[11px] text-gray-500 mt-2 flex items-center gap-2">
-            <span className="text-green-600 font-bold">{rooms.filter(r => r.status === 'available').length} Trống</span> •
+          <div className="text-[11px] text-neutral-500 mt-2 flex items-center gap-2">
+            <span className="text-emerald-600 font-bold">{rooms.filter(r => r.status === 'available').length} Trống</span> •
             <span className="text-red-500 font-bold">{rooms.filter(r => r.status === 'occupied').length} Có khách</span>
           </div>
         </div>
@@ -152,19 +152,19 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onNavigate
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Booking Distribution Card */}
-        <div className="lg:col-span-2 bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm">
+        <div className="lg:col-span-2 bg-white p-6 sm:p-8 rounded-2xl border border-neutral-200 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="font-serif font-bold text-lg text-hotel-navy">
+              <h3 className="font-sans font-bold text-lg text-neutral-900 tracking-tight">
                 Phân Bố Loại Hình Thuê Phòng
               </h3>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-neutral-500">
                 Thống kê đặt phòng theo đêm và đặt phòng theo giờ
               </p>
             </div>
             <button
               onClick={() => onNavigateToTab('bookings')}
-              className="text-xs text-hotel-goldDark hover:underline font-bold flex items-center gap-1"
+              className="text-xs text-[#8A6943] hover:underline font-bold flex items-center gap-1"
             >
               <span>Xem chi tiết</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
@@ -173,69 +173,69 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onNavigate
 
           <div className="space-y-4">
             <div>
-              <div className="flex justify-between text-xs font-bold text-gray-700 mb-1.5">
+              <div className="flex justify-between text-xs font-bold text-neutral-700 mb-1.5">
                 <span>Thuê Theo Ngày / Qua Đêm ({dailyCount} đơn)</span>
                 <span>{totalBookings ? Math.round((dailyCount / totalBookings) * 100) : 0}%</span>
               </div>
-              <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+              <div className="w-full h-2.5 bg-neutral-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-hotel-navy to-hotel-gold rounded-full transition-all duration-1000"
+                  className="h-full bg-neutral-900 rounded-full transition-all duration-1000"
                   style={{ width: `${totalBookings ? (dailyCount / totalBookings) * 100 : 0}%` }}
                 />
               </div>
             </div>
 
             <div>
-              <div className="flex justify-between text-xs font-bold text-gray-700 mb-1.5">
+              <div className="flex justify-between text-xs font-bold text-neutral-700 mb-1.5">
                 <span>Thuê Theo Giờ Linh Hoạt ({hourlyCount} đơn)</span>
                 <span>{totalBookings ? Math.round((hourlyCount / totalBookings) * 100) : 0}%</span>
               </div>
-              <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+              <div className="w-full h-2.5 bg-neutral-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-purple-600 to-pink-500 rounded-full transition-all duration-1000"
+                  className="h-full bg-indigo-600 rounded-full transition-all duration-1000"
                   style={{ width: `${totalBookings ? (hourlyCount / totalBookings) * 100 : 0}%` }}
                 />
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8 pt-6 border-t border-gray-100 text-center">
-            <div className="bg-hotel-sand/40 p-3 rounded-2xl">
-              <span className="text-[11px] text-gray-500 block">Đang Ở</span>
-              <span className="font-bold text-hotel-navy text-base">{bookings.filter(b => b.status === 'checked_in').length}</span>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8 pt-6 border-t border-neutral-100 text-center font-sans">
+            <div className="bg-[#FAF9F5] p-3 rounded-xl border border-neutral-200/60">
+              <span className="text-[11px] text-neutral-500 block">Đang Ở</span>
+              <span className="font-bold text-neutral-900 text-base">{bookings.filter(b => b.status === 'checked_in').length}</span>
             </div>
-            <div className="bg-hotel-sand/40 p-3 rounded-2xl">
-              <span className="text-[11px] text-gray-500 block">Đã Xác Nhận</span>
-              <span className="font-bold text-hotel-navy text-base">{bookings.filter(b => b.status === 'confirmed').length}</span>
+            <div className="bg-[#FAF9F5] p-3 rounded-xl border border-neutral-200/60">
+              <span className="text-[11px] text-neutral-500 block">Đã Xác Nhận</span>
+              <span className="font-bold text-neutral-900 text-base">{bookings.filter(b => b.status === 'confirmed').length}</span>
             </div>
-            <div className="bg-hotel-sand/40 p-3 rounded-2xl">
-              <span className="text-[11px] text-gray-500 block">Chờ Duyệt</span>
+            <div className="bg-[#FAF9F5] p-3 rounded-xl border border-neutral-200/60">
+              <span className="text-[11px] text-neutral-500 block">Chờ Duyệt</span>
               <span className="font-bold text-amber-600 text-base">{pendingCount}</span>
             </div>
-            <div className="bg-hotel-sand/40 p-3 rounded-2xl">
-              <span className="text-[11px] text-gray-500 block">Hoàn Tất</span>
-              <span className="font-bold text-green-600 text-base">{bookings.filter(b => b.status === 'completed').length}</span>
+            <div className="bg-[#FAF9F5] p-3 rounded-xl border border-neutral-200/60">
+              <span className="text-[11px] text-neutral-500 block">Hoàn Tất</span>
+              <span className="font-bold text-emerald-600 text-base">{bookings.filter(b => b.status === 'completed').length}</span>
             </div>
           </div>
         </div>
 
         {/* Quick Operations Panel */}
-        <div className="bg-gradient-to-br from-hotel-navy to-hotel-dark text-white p-6 sm:p-8 rounded-3xl shadow-luxury flex flex-col justify-between">
+        <div className="bg-neutral-900 text-white p-6 sm:p-8 rounded-2xl shadow-sm flex flex-col justify-between border border-neutral-800">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-hotel-gold bg-white/10 px-3 py-1 rounded-full inline-block mb-3">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#E8DCB9] bg-white/10 px-2.5 py-1 rounded inline-block mb-3">
               LỄ TÂN GALAXY
             </span>
-            <h3 className="font-serif font-bold text-xl mb-2 text-white">
+            <h3 className="font-sans font-bold text-xl mb-2 text-white tracking-tight">
               Thao Tác Nhanh
             </h3>
-            <p className="text-xs text-gray-300 leading-relaxed mb-6">
+            <p className="text-xs text-neutral-400 leading-relaxed mb-6 font-sans">
               Truy cập nhanh các nghiệp vụ lễ tân tiếp đón khách và quản lý phòng.
             </p>
 
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               <button
                 onClick={() => onNavigateToTab('bookings')}
-                className="btn-magnetic w-full py-3 px-4 rounded-xl bg-hotel-gold text-hotel-navy font-bold text-xs uppercase tracking-wider flex items-center justify-between"
+                className="w-full py-3 px-4 rounded-lg bg-white text-neutral-950 font-bold text-xs uppercase tracking-wider flex items-center justify-between hover:bg-neutral-100 transition-colors"
               >
                 <span>Quản Lý Đơn Đặt Phòng</span>
                 <span>→</span>
@@ -243,7 +243,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onNavigate
 
               <button
                 onClick={() => onNavigateToTab('rooms')}
-                className="btn-magnetic w-full py-3 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs uppercase tracking-wider flex items-center justify-between"
+                className="w-full py-3 px-4 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white font-semibold text-xs uppercase tracking-wider flex items-center justify-between transition-colors border border-neutral-700"
               >
                 <span>Cập Nhật Bảng Giá & Phòng</span>
                 <span>→</span>
@@ -251,7 +251,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onNavigate
 
               <button
                 onClick={() => onNavigateToTab('calendar')}
-                className="btn-magnetic w-full py-3 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs uppercase tracking-wider flex items-center justify-between"
+                className="w-full py-3 px-4 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white font-semibold text-xs uppercase tracking-wider flex items-center justify-between transition-colors border border-neutral-700"
               >
                 <span>Xem Sơ Đồ Lịch Phòng</span>
                 <span>→</span>
@@ -259,7 +259,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onNavigate
             </div>
           </div>
 
-          <div className="pt-6 border-t border-white/10 text-[11px] text-gray-400">
+          <div className="pt-6 border-t border-neutral-800 text-[11px] text-neutral-400 font-sans">
             Hotline khách sạn: <strong className="text-white">028 2248 7782</strong>
           </div>
         </div>
@@ -267,19 +267,19 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onNavigate
       </div>
 
       {/* Recent Bookings Table Preview */}
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-sm">
+      <div className="bg-white p-6 sm:p-8 rounded-2xl border border-neutral-200 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="font-serif font-bold text-xl text-hotel-navy">
+            <h3 className="font-sans font-bold text-xl text-neutral-900 tracking-tight">
               Đơn Đặt Phòng Gần Đây
             </h3>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-neutral-500">
               5 đơn đặt phòng mới nhất được ghi nhận vào hệ thống
             </p>
           </div>
           <button
             onClick={() => onNavigateToTab('bookings')}
-            className="btn-magnetic px-4 py-2 bg-hotel-sand hover:bg-hotel-sand/80 text-hotel-navy font-bold text-xs rounded-xl"
+            className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-900 font-semibold text-xs rounded-lg transition-colors"
           >
             Xem tất cả đơn →
           </button>
