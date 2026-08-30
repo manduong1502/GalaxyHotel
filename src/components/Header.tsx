@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { Phone, Calendar, Menu, X, Lock } from 'lucide-react';
+import { Phone, Calendar, Menu, X, Lock, MapPin } from 'lucide-react';
 
 interface HeaderProps {
   currentPage?: string;
@@ -34,12 +34,12 @@ export const Header: React.FC<HeaderProps> = ({
   }, []);
 
   const navLinks = [
-    { id: 'home', label: t('nav.home') },
-    { id: 'rooms', label: t('nav.rooms') },
-    { id: 'about', label: t('nav.about') },
-    { id: 'services', label: t('nav.dining') },
-    { id: 'gallery', label: t('nav.gallery') },
-    { id: 'contact', label: t('nav.contact') },
+    { id: 'home', label: lang === 'vi' ? 'Trang Chủ' : 'Home' },
+    { id: 'rooms', label: lang === 'vi' ? 'Phòng Nghỉ' : 'Rooms & Suites' },
+    { id: 'about', label: lang === 'vi' ? 'Giới Thiệu' : 'About Us' },
+    { id: 'services', label: lang === 'vi' ? 'Dịch Vụ' : 'Services' },
+    { id: 'gallery', label: lang === 'vi' ? 'Thư Viện Ảnh' : 'Gallery' },
+    { id: 'contact', label: lang === 'vi' ? 'Liên Hệ' : 'Contact' },
   ];
 
   const handleNavClick = (id: string) => {
@@ -55,38 +55,103 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="fixed top-0 left-0 right-0 z-50 w-full font-sans">
       
-      {/* Unified Single Flush Navbar */}
-      <nav className={`w-full transition-all duration-300 ${
+      {/* 1. Top Utility Micro-Bar */}
+      <div className={`w-full py-1.5 px-4 transition-all duration-300 hidden md:block text-[11px] ${
         isDarkNav 
-          ? 'bg-white shadow-sm border-b border-neutral-200/90 py-2.5 sm:py-3 text-neutral-900' 
-          : 'bg-gradient-to-b from-black/80 via-black/40 to-transparent py-3 sm:py-4 text-white'
+          ? 'bg-[#111622] text-neutral-300 border-b border-neutral-800' 
+          : 'bg-black/60 backdrop-blur-md text-neutral-200 border-b border-white/10'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           
-          {/* Single Official Logo Only (No duplicate text) */}
+          {/* Address */}
+          <div className="flex items-center gap-2">
+            <MapPin className="w-3 h-3 text-[#C29A64]" />
+            <span className="font-medium tracking-wide">269/19 Đề Thám, P. Bến Thành, Quận 1, TP. Hồ Chí Minh</span>
+          </div>
+
+          {/* Contact, Language & Admin */}
+          <div className="flex items-center space-x-5">
+            <a 
+              href="tel:02822487782" 
+              className="flex items-center gap-1.5 font-bold hover:text-white transition-colors"
+            >
+              <Phone className="w-3 h-3 text-[#C29A64]" />
+              <span>028 2248 7782</span>
+            </a>
+
+            <span className="opacity-40">|</span>
+
+            {/* Language Switcher */}
+            <div className="flex items-center space-x-1.5">
+              <button
+                onClick={() => setLang('vi')}
+                className={`font-bold transition-colors ${
+                  lang === 'vi' ? 'text-[#E8DCB9]' : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                VI
+              </button>
+              <span className="opacity-40">/</span>
+              <button
+                onClick={() => setLang('en')}
+                className={`font-bold transition-colors ${
+                  lang === 'en' ? 'text-[#E8DCB9]' : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                EN
+              </button>
+            </div>
+
+            {onOpenAdmin && (
+              <>
+                <span className="opacity-40">|</span>
+                <button
+                  onClick={onOpenAdmin}
+                  className="flex items-center gap-1 text-neutral-300 hover:text-white transition-colors"
+                  title="Trang quản trị khách sạn"
+                >
+                  <Lock className="w-3 h-3 text-[#C29A64]" />
+                  <span>Quản trị</span>
+                </button>
+              </>
+            )}
+          </div>
+
+        </div>
+      </div>
+
+      {/* 2. Main Spacious Navigation Bar */}
+      <nav className={`w-full transition-all duration-300 ${
+        isDarkNav 
+          ? 'bg-white shadow-sm border-b border-neutral-200/90 py-3 text-neutral-900' 
+          : 'bg-gradient-to-b from-black/80 via-black/40 to-transparent py-4 text-white'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+          
+          {/* Logo Area */}
           <button 
             onClick={() => handleNavClick('home')} 
-            className="flex items-center group transition-transform hover:scale-105"
+            className="flex items-center group transition-transform hover:scale-105 flex-shrink-0"
             aria-label="Galaxy Boutique Hotel"
           >
-            <div className="bg-neutral-900 px-3 py-1.5 rounded-xl border border-neutral-800 shadow-sm flex items-center justify-center">
+            <div className="bg-neutral-950 px-3.5 py-2 rounded-xl border border-neutral-800 shadow-sm flex items-center justify-center">
               <img 
                 src="/images/logo.png" 
                 alt="Hotel Galaxy Boutique" 
-                className="h-7 sm:h-8 w-auto object-contain"
+                className="h-8 sm:h-9 w-auto object-contain"
               />
             </div>
           </button>
 
-          {/* Desktop Navigation Links */}
-          <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
+          {/* Center Navigation Links - Spacious & Elegant */}
+          <div className="hidden lg:flex items-center space-x-7 xl:space-x-9">
             {navLinks.map((link) => {
               const isActive = currentPage === link.id;
               return (
                 <button
                   key={link.id}
                   onClick={() => handleNavClick(link.id)}
-                  className={`text-[13px] font-bold tracking-wide transition-colors py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-[2px] after:transition-all after:duration-300 ${
+                  className={`text-sm font-semibold tracking-wide transition-colors py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-[2px] after:transition-all after:duration-300 ${
                     isActive
                       ? (isDarkNav ? 'text-neutral-950 font-bold after:w-full after:bg-neutral-950' : 'text-white font-bold after:w-full after:bg-[#E8DCB9]')
                       : (isDarkNav ? 'text-neutral-600 hover:text-neutral-950 after:w-0 hover:after:w-full after:bg-neutral-900' : 'text-neutral-200 hover:text-white after:w-0 hover:after:w-full after:bg-[#E8DCB9]')
@@ -98,67 +163,11 @@ export const Header: React.FC<HeaderProps> = ({
             })}
           </div>
 
-          {/* Right Action Items */}
-          <div className="hidden md:flex items-center space-x-4">
-            
-            {/* Phone */}
-            <a 
-              href="tel:02822487782" 
-              className={`flex items-center gap-1.5 text-xs font-bold transition-colors ${
-                isDarkNav ? 'text-neutral-700 hover:text-neutral-950' : 'text-neutral-200 hover:text-white'
-              }`}
-            >
-              <Phone className="w-3.5 h-3.5 text-[#C29A64]" />
-              <span>028 2248 7782</span>
-            </a>
-
-            <span className={isDarkNav ? 'text-neutral-300' : 'text-white/30'}>|</span>
-
-            {/* Language Switcher */}
-            <div className="flex items-center space-x-1 text-xs">
-              <button
-                onClick={() => setLang('vi')}
-                className={`font-bold transition-colors ${
-                  lang === 'vi' 
-                    ? (isDarkNav ? 'text-neutral-950 font-bold' : 'text-[#E8DCB9] font-bold') 
-                    : (isDarkNav ? 'text-neutral-400 hover:text-neutral-700' : 'text-neutral-400 hover:text-white')
-                }`}
-              >
-                VI
-              </button>
-              <span className={isDarkNav ? 'text-neutral-300' : 'text-white/30'}>/</span>
-              <button
-                onClick={() => setLang('en')}
-                className={`font-bold transition-colors ${
-                  lang === 'en' 
-                    ? (isDarkNav ? 'text-neutral-950 font-bold' : 'text-[#E8DCB9] font-bold') 
-                    : (isDarkNav ? 'text-neutral-400 hover:text-neutral-700' : 'text-neutral-400 hover:text-white')
-                }`}
-              >
-                EN
-              </button>
-            </div>
-
-            {/* Admin shortcut */}
-            {onOpenAdmin && (
-              <button
-                onClick={onOpenAdmin}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                  isDarkNav 
-                    ? 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700' 
-                    : 'bg-white/10 hover:bg-white/20 text-neutral-200'
-                }`}
-                title="Trang quản trị khách sạn"
-              >
-                <Lock className="w-3 h-3 text-[#C29A64]" />
-                <span>Quản trị</span>
-              </button>
-            )}
-
-            {/* Booking CTA Button */}
+          {/* Right Action: Clean Booking CTA */}
+          <div className="hidden md:flex items-center space-x-3">
             <button
               onClick={onOpenBooking}
-              className={`font-bold px-5 py-2.5 rounded-xl text-xs tracking-wider uppercase transition-all duration-200 flex items-center gap-2 shadow-sm ${
+              className={`font-bold px-6 py-2.5 rounded-xl text-xs tracking-wider uppercase transition-all duration-200 flex items-center gap-2 shadow-sm ${
                 isDarkNav
                   ? 'bg-neutral-900 hover:bg-neutral-800 text-white'
                   : 'bg-white hover:bg-neutral-100 text-neutral-900'
