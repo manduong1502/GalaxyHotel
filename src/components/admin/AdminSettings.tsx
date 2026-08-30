@@ -20,6 +20,42 @@ export const AdminSettings: React.FC = () => {
   const [confirmPass, setConfirmPass] = useState('');
   const [passMessage, setPassMessage] = useState('');
 
+  // Email Notification State
+  const [notificationEmail, setNotificationEmail] = useState('galaxyboutiquehotel2022@gmail.com');
+  const [testingEmail, setTestingEmail] = useState(false);
+  const [emailTestResult, setEmailTestResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  const handleSendTestEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!notificationEmail.trim()) {
+      alert('Vui lòng nhập địa chỉ email nhận thông báo.');
+      return;
+    }
+    setTestingEmail(true);
+    setEmailTestResult(null);
+
+    try {
+      const res = await fetch('/api/send_test_email.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: notificationEmail.trim() })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setEmailTestResult({ type: 'success', message: data.message });
+      } else {
+        setEmailTestResult({ type: 'error', message: data.message });
+      }
+    } catch (err) {
+      setEmailTestResult({
+        type: 'error',
+        message: 'Lưu ý: Bạn đang test ở môi trường Local dev. Tính năng gửi email PHP tự động sẽ kích hoạt 100% khi upload lên hosting cPanel AZDIGI.'
+      });
+    } finally {
+      setTestingEmail(false);
+    }
+  };
+
   const handleSaveWebhook = (e: React.FormEvent) => {
     e.preventDefault();
     setGoogleSheetWebhookUrl(webhookInput.trim());
@@ -103,6 +139,73 @@ export const AdminSettings: React.FC = () => {
         <p className="text-xs text-neutral-500 mt-0.5">
           Cấu hình sao lưu song song Google Sheets, MySQL Database và bảo mật tài khoản
         </p>
+      </div>
+
+      {/* Email Notifications Automated Config */}
+      <div className="bg-white p-6 sm:p-8 rounded-2xl border border-neutral-200 shadow-sm space-y-6">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center flex-shrink-0">
+            <Mail className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-sans font-bold text-xl text-neutral-900 tracking-tight">
+                Tự Động Gửi Email Thông Báo Đặt Phòng
+              </h3>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                Đang Kích Hoạt
+              </span>
+            </div>
+            <p className="text-xs text-neutral-500 mt-1 leading-relaxed font-sans">
+              Khi khách đặt phòng thành công, hệ thống sẽ tự động gửi 2 luồng email:
+              <br />• <strong>Gửi cho Lễ tân / Chủ:</strong> Thông báo chi tiết đơn đặt phòng mới để kịp thời gọi xác nhận cho khách.
+              <br />• <strong>Gửi cho Khách hàng:</strong> Phiếu xác nhận đặt phòng kèm mã đơn, hướng dẫn nhận phòng và địa chỉ khách sạn.
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSendTestEmail} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-700 mb-1.5 font-sans">
+              Email Nhận Thông Báo Của Lễ Tân / Quản Lý
+            </label>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="email"
+                value={notificationEmail}
+                onChange={(e) => setNotificationEmail(e.target.value)}
+                placeholder="galaxyboutiquehotel2022@gmail.com"
+                className="flex-1 bg-[#FAF9F5] border border-neutral-200 rounded-lg px-3.5 py-2.5 text-xs text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+              />
+              <button
+                type="submit"
+                disabled={testingEmail}
+                className="px-4 py-2.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-xs tracking-wider uppercase disabled:opacity-50 flex items-center justify-center gap-2 transition-colors"
+              >
+                <Mail className="w-3.5 h-3.5 text-[#E8DCB9]" />
+                <span>{testingEmail ? 'Đang gửi test...' : 'Gửi Email Test'}</span>
+              </button>
+            </div>
+            <p className="text-[11px] text-neutral-400 mt-1">
+              Mẹo: Bấm nút "Gửi Email Test" để kiểm tra ngay hộp thư của bạn có nhận được mẫu đơn đặt phòng hay không.
+            </p>
+          </div>
+        </form>
+
+        {emailTestResult && (
+          <div className={`p-4 rounded-xl text-xs flex items-center gap-2 animate-fade-in font-sans ${
+            emailTestResult.type === 'success' 
+              ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' 
+              : 'bg-amber-50 border border-amber-200 text-amber-800'
+          }`}>
+            {emailTestResult.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+            ) : (
+              <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            )}
+            <span>{emailTestResult.message}</span>
+          </div>
+        )}
       </div>
 
       {/* Google Sheets Dual-Sync Config */}

@@ -5,6 +5,7 @@
 // =========================================================================
 
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/mailer.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -114,13 +115,38 @@ switch ($method) {
                 'status' => 'pending'
             ];
 
-            // Trigger Google Sheets Webhook for automatic parallel backup
+            // 1. Tự động gửi Email thông báo cho Lễ tân & Khách hàng
+            sendBookingEmails($bookingData);
+
+            // 2. Trigger Google Sheets Webhook for automatic parallel backup
             triggerGoogleSheetsWebhook($bookingData, $pdo);
+        } else {
+            // Trường hợp Local fallback không có DB PDO, vẫn cố gắng gửi email
+            $bookingData = [
+                'booking_code' => $bookingCode,
+                'booking_type' => $bookingType,
+                'room_name' => $roomName,
+                'guest_name' => $guestName,
+                'guest_phone' => $guestPhone,
+                'guest_email' => $guestEmail,
+                'check_in_date' => $checkInDate,
+                'check_in_time' => $checkInTime,
+                'check_out_date' => $checkOutDate,
+                'check_out_time' => $checkOutTime,
+                'hours_count' => $hoursCount,
+                'nights_count' => $nightsCount,
+                'adults' => $adults,
+                'children' => $children,
+                'total_price' => $totalPrice,
+                'special_requests' => $specialRequests,
+                'status' => 'pending'
+            ];
+            sendBookingEmails($bookingData);
         }
 
         echo json_encode([
             'success' => true,
-            'message' => 'Đặt phòng thành công!',
+            'message' => 'Đặt phòng thành công! Đã gửi thông báo đến bộ phận lễ tân.',
             'bookingCode' => $bookingCode
         ]);
         break;
