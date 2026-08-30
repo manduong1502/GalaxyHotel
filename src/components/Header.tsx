@@ -120,25 +120,25 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* 2. Main Spacious Navigation Bar */}
+      {/* 2. Main Spacious Navigation Bar - Zero Extra Padding & Large Logo */}
       <nav className={`w-full transition-all duration-300 ${
         isDarkNav 
-          ? 'bg-white shadow-sm border-b border-neutral-200/90 py-3 text-neutral-900' 
-          : 'bg-gradient-to-b from-black/80 via-black/40 to-transparent py-4 text-white'
+          ? 'bg-white shadow-sm border-b border-neutral-200/90 py-0.5 sm:py-1 text-neutral-900' 
+          : 'bg-gradient-to-b from-black/80 via-black/40 to-transparent py-1 sm:py-1.5 text-white'
       }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between min-h-[64px] sm:min-h-[72px]">
           
-          {/* Logo Area - Prominent & Crisp */}
+          {/* Logo Area - Large & Prominent */}
           <button 
             onClick={() => handleNavClick('home')} 
-            className="flex items-center group transition-transform hover:scale-105 flex-shrink-0"
+            className="flex items-center group transition-transform hover:scale-105 flex-shrink-0 py-0.5"
             aria-label="Galaxy Boutique Hotel"
           >
-            <div className="bg-neutral-950 px-4 py-2 rounded-2xl border border-neutral-800 shadow-md flex items-center justify-center">
+            <div className="bg-neutral-950 px-3.5 py-1.5 rounded-2xl border border-neutral-800 shadow-md flex items-center justify-center">
               <img 
                 src="/images/logo.png" 
                 alt="Hotel Galaxy Boutique" 
-                className="h-9 sm:h-11 md:h-12 w-auto object-contain transition-transform group-hover:scale-105"
+                className="h-12 sm:h-14 md:h-16 w-auto object-contain transition-transform group-hover:scale-105"
               />
             </div>
           </button>
