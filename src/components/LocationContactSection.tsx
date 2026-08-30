@@ -37,7 +37,7 @@ export const LocationContactSection: React.FC = () => {
             {lang === 'vi' ? 'VỊ TRÍ & LIÊN HỆ' : 'LOCATION & CONTACT'}
           </span>
 
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-neutral-900 tracking-tight">
+          <h2 className="font-sans text-3xl sm:text-4xl lg:text-5xl font-bold text-neutral-900 tracking-tight">
             {t('contact.title')}
           </h2>
         </div>
@@ -114,7 +114,7 @@ export const LocationContactSection: React.FC = () => {
 
           {/* Right: Clean Inquiry Form */}
           <div className="lg:col-span-5 bg-[#FAF9F5] p-7 sm:p-8 rounded-2xl border border-neutral-200/90 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]">
-            <h3 className="font-serif font-semibold text-2xl text-neutral-900 mb-1 tracking-tight">
+            <h3 className="font-sans font-bold text-2xl text-neutral-900 mb-1 tracking-tight">
               {t('contact.inquiry_title')}
             </h3>
             <p className="text-neutral-500 text-xs sm:text-sm mb-6 font-sans">

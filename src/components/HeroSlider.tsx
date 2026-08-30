@@ -79,10 +79,10 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ onOpenBooking }) => {
           GALAXY BOUTIQUE HOTEL • QUẬN 1
         </span>
 
-        {/* Dynamic Slide Title with Playfair Serif */}
+        {/* Dynamic Slide Title with Plus Jakarta Sans */}
         <h1 
           key={`title-${currentSlide}`}
-          className="font-serif text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight text-white mb-5 max-w-4xl animate-fade-in leading-[1.12]"
+          className="font-sans text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white mb-5 max-w-4xl animate-fade-in leading-[1.12]"
         >
           {slides[currentSlide].title}
         </h1>
