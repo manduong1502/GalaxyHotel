@@ -5,13 +5,100 @@
 // =========================================================================
 
 /**
- * Gửi email HTML chuẩn UTF-8
+ * Gửi email qua giao thức SMTP Socket (Google Gmail / cPanel Webmail)
+ */
+function sendSmtpEmail($to, $subject, $htmlContent, $smtpConfig) {
+    $host = $smtpConfig['host'] ?? 'smtp.gmail.com';
+    $port = intval($smtpConfig['port'] ?? 465);
+    $username = trim($smtpConfig['username'] ?? '');
+    $password = str_replace(' ', '', trim($smtpConfig['password'] ?? ''));
+    $fromName = $smtpConfig['from_name'] ?? 'Galaxy Boutique Hotel';
+
+    if (empty($username) || empty($password)) {
+        return false;
+    }
+
+    $socket = @fsockopen("ssl://{$host}", $port, $errno, $errstr, 15);
+    if (!$socket) {
+        return false;
+    }
+
+    // Đọc lời chào ban đầu từ SMTP server
+    $res = fgets($socket, 515);
+
+    // EHLO
+    fputs($socket, "EHLO " . ($_SERVER['HTTP_HOST'] ?? 'localhost') . "\r\n");
+    while ($line = fgets($socket, 515)) {
+        if (substr($line, 3, 1) === ' ') break;
+    }
+
+    // AUTH LOGIN
+    fputs($socket, "AUTH LOGIN\r\n");
+    fgets($socket, 515);
+
+    fputs($socket, base64_encode($username) . "\r\n");
+    fgets($socket, 515);
+
+    fputs($socket, base64_encode($password) . "\r\n");
+    $authRes = fgets($socket, 515);
+    if (substr($authRes, 0, 3) !== '235') {
+        fputs($socket, "QUIT\r\n");
+        fclose($socket);
+        return false;
+    }
+
+    // MAIL FROM
+    fputs($socket, "MAIL FROM: <{$username}>\r\n");
+    fgets($socket, 515);
+
+    // RCPT TO
+    fputs($socket, "RCPT TO: <{$to}>\r\n");
+    fgets($socket, 515);
+
+    // DATA
+    fputs($socket, "DATA\r\n");
+    fgets($socket, 515);
+
+    // MIME Headers
+    $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+    $encodedFromName = '=?UTF-8?B?' . base64_encode($fromName) . '?=';
+
+    $headers = "MIME-Version: 1.0\r\n";
+    $headers .= "Content-type: text/html; charset=UTF-8\r\n";
+    $headers .= "From: {$encodedFromName} <{$username}>\r\n";
+    $headers .= "To: <{$to}>\r\n";
+    $headers .= "Subject: {$encodedSubject}\r\n";
+    $headers .= "Date: " . date('r') . "\r\n";
+    $headers .= "X-Mailer: GalaxyHotelMailer/1.0\r\n\r\n";
+
+    fputs($socket, $headers . $htmlContent . "\r\n.\r\n");
+    $dataRes = fgets($socket, 515);
+
+    fputs($socket, "QUIT\r\n");
+    fclose($socket);
+
+    return (substr($dataRes, 0, 3) === '250');
+}
+
+/**
+ * Gửi email HTML (Ưu tiên SMTP Gmail nếu có cấu hình, nếu không dùng PHP mail)
  */
 function sendHtmlEmail($to, $subject, $htmlContent, $fromName = 'Galaxy Boutique Hotel', $fromEmail = null, $replyTo = 'galaxyboutiquehotel2022@gmail.com') {
-    // Tự động xác định email gửi đi theo tên miền server nếu không chỉ định
+    // 1. Kiểm tra cấu hình SMTP file
+    $configFile = __DIR__ . '/smtp_config.json';
+    if (file_exists($configFile)) {
+        $config = json_decode(file_get_contents($configFile), true);
+        if (!empty($config['username']) && !empty($config['password'])) {
+            $smtpResult = sendSmtpEmail($to, $subject, $htmlContent, $config);
+            if ($smtpResult) {
+                return true;
+            }
+        }
+    }
+
+    // 2. Fallback sang hàm mail() chuẩn
     if (!$fromEmail) {
         $serverHost = $_SERVER['HTTP_HOST'] ?? 'galaxyhotel269.com';
-        // Loại bỏ port nếu có
         $serverHost = explode(':', $serverHost)[0];
         $fromEmail = 'no-reply@' . $serverHost;
     }
