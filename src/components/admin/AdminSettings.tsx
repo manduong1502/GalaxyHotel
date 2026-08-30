@@ -21,7 +21,9 @@ export const AdminSettings: React.FC = () => {
   const [passMessage, setPassMessage] = useState('');
 
   // Email Notification State
-  const [notificationEmail, setNotificationEmail] = useState('galaxyboutiquehotel2022@gmail.com');
+  const [notificationEmail, setNotificationEmail] = useState(() => {
+    return localStorage.getItem('galaxy_hotel_admin_email') || 'minhmanuzu@gmail.com';
+  });
   const [testingEmail, setTestingEmail] = useState(false);
   const [emailTestResult, setEmailTestResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
@@ -31,6 +33,7 @@ export const AdminSettings: React.FC = () => {
       alert('Vui lòng nhập địa chỉ email nhận thông báo.');
       return;
     }
+    localStorage.setItem('galaxy_hotel_admin_email', notificationEmail.trim());
     setTestingEmail(true);
     setEmailTestResult(null);
 
