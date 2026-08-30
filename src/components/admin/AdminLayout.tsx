@@ -32,29 +32,29 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => 
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row text-hotel-charcoal font-sans">
+    <div className="min-h-screen bg-[#FAF9F5] flex flex-col md:flex-row text-neutral-900 font-sans">
       
-      {/* Sidebar (Desktop) */}
-      <aside className="hidden md:flex flex-col w-64 bg-hotel-navy text-white p-6 border-r border-hotel-gold/30 justify-between flex-shrink-0">
+      {/* Sidebar (Desktop) - Strictly Fixed & Sticky */}
+      <aside className="hidden md:flex flex-col w-64 bg-neutral-950 text-white p-6 border-r border-neutral-800 justify-between flex-shrink-0 h-screen sticky top-0 overflow-y-auto">
         
         {/* Brand Header */}
         <div>
           <div className="flex items-center space-x-3 mb-8">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-hotel-gold via-hotel-goldDark to-hotel-navy flex items-center justify-center text-white font-brand font-bold text-xl shadow-gold-glow">
+            <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-neutral-700 flex items-center justify-center text-[#E8DCB9] font-bold text-lg">
               G
             </div>
             <div>
-              <span className="font-brand tracking-[0.2em] font-bold text-lg uppercase text-white block">
+              <span className="tracking-[0.15em] font-bold text-base uppercase text-white block">
                 GALAXY
               </span>
-              <span className="text-[9px] tracking-[0.28em] uppercase text-hotel-gold font-medium block -mt-1">
+              <span className="text-[9px] tracking-[0.25em] uppercase text-[#C29A64] font-semibold block -mt-0.5">
                 ADMIN PANEL
               </span>
             </div>
           </div>
 
           {/* Navigation Links */}
-          <nav className="space-y-1.5">
+          <nav className="space-y-1.5 font-sans">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -62,10 +62,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => 
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id as any)}
-                  className={`btn-magnetic w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
                     isActive
-                      ? 'bg-hotel-gold text-hotel-navy shadow-md'
-                      : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                      ? 'bg-[#C29A64] text-neutral-950 shadow-sm font-bold'
+                      : 'text-neutral-400 hover:bg-neutral-900 hover:text-white'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -74,7 +74,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => 
                   </div>
 
                   {item.badge !== undefined && (
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${isActive ? 'bg-hotel-navy text-hotel-gold' : 'bg-amber-500 text-white animate-pulse'}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${isActive ? 'bg-neutral-950 text-[#E8DCB9]' : 'bg-amber-500 text-white animate-pulse'}`}>
                       {item.badge}
                     </span>
                   )}
@@ -85,26 +85,26 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => 
         </div>
 
         {/* Bottom Actions & User Profile */}
-        <div className="space-y-3 pt-6 border-t border-white/10">
+        <div className="space-y-3 pt-6 border-t border-neutral-800">
           
           {/* Back to Client Website button */}
           <button
             onClick={onBackToWebsite}
-            className="btn-magnetic w-full py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-gray-200 hover:text-white text-xs font-semibold flex items-center gap-2 transition-colors"
+            className="w-full py-2.5 px-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white text-xs font-medium flex items-center gap-2 transition-colors border border-neutral-800"
           >
-            <Globe className="w-4 h-4 text-hotel-gold" />
+            <Globe className="w-4 h-4 text-[#C29A64]" />
             <span>Xem Website Khách</span>
           </button>
 
           {/* Logged in User */}
-          <div className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between">
+          <div className="p-3 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-hotel-gold text-hotel-navy font-bold flex items-center justify-center text-xs">
+              <div className="w-8 h-8 rounded-lg bg-[#C29A64] text-neutral-950 font-bold flex items-center justify-center text-xs">
                 {user?.name?.[0] || 'A'}
               </div>
               <div className="text-left">
                 <div className="text-xs font-bold text-white truncate max-w-[100px]">{user?.name}</div>
-                <div className="text-[10px] text-hotel-gold uppercase tracking-wider">{user?.role === 'admin' ? 'Quản trị' : 'Lễ tân'}</div>
+                <div className="text-[10px] text-[#C29A64] uppercase tracking-wider font-semibold">{user?.role === 'admin' ? 'Quản trị' : 'Lễ tân'}</div>
               </div>
             </div>
 

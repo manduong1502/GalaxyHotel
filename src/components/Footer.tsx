@@ -30,7 +30,14 @@ export const Footer: React.FC = () => {
             <div className="space-y-2 pt-2 text-xs text-neutral-400 font-sans">
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-[#B89369] flex-shrink-0" />
-                <span>269/19 Đề Thám, P. Bến Thành, Quận 1, TP. HCM</span>
+                <a 
+                  href="https://maps.app.goo.gl/nRiJu2PQHPtAZEt16" 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="hover:underline hover:text-white transition-colors"
+                >
+                  269/19 Đề Thám, P. Bến Thành, Quận 1, TP. HCM
+                </a>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-[#B89369] flex-shrink-0" />

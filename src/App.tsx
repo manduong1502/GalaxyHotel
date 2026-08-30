@@ -14,6 +14,7 @@ import { TestimonialsSection } from './components/TestimonialsSection';
 import { LocationContactSection } from './components/LocationContactSection';
 import { Footer } from './components/Footer';
 import { MobileBottomNav } from './components/MobileBottomNav';
+import { FloatingContactWidget } from './components/FloatingContactWidget';
 import { RoomDetailModal } from './components/RoomDetailModal';
 import { BookingModal } from './components/BookingModal';
 import { AdminLayout } from './components/admin/AdminLayout';
@@ -106,6 +107,9 @@ const MainApp: React.FC = () => {
 
       {/* Mobile Fixed Bottom Action Bar */}
       <MobileBottomNav onOpenBooking={handleOpenGeneralBooking} />
+
+      {/* Floating Speed Dial Contact & Maps Widget */}
+      <FloatingContactWidget />
 
       {/* Modals */}
       <RoomDetailModal
