@@ -154,46 +154,103 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => 
         </div>
       </header>
 
-      {/* Mobile Menu Drawer */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-neutral-950 text-white p-4 space-y-2 border-b border-neutral-800">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id as AdminTab);
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-semibold uppercase ${
-                  isActive ? 'bg-[#C29A64] text-neutral-950 font-bold' : 'text-neutral-400 hover:bg-neutral-900'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon className="w-4 h-4" />
-                  <span>{item.label}</span>
+      {/* Mobile Slide-Over Drawer from Left */}
+      <div 
+        className={`fixed inset-0 z-50 md:hidden transition-all duration-300 ${
+          mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        {/* Backdrop Overlay */}
+        <div 
+          onClick={() => setMobileMenuOpen(false)}
+          className="absolute inset-0 bg-black/75 backdrop-blur-sm transition-opacity"
+        />
+
+        {/* Drawer Panel Sliding from Left */}
+        <div 
+          className={`absolute top-0 left-0 bottom-0 w-[280px] max-w-[85vw] bg-neutral-950 text-white p-6 flex flex-col justify-between shadow-2xl border-r border-neutral-800 transition-transform duration-300 ease-out z-10 ${
+            mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          {/* Brand & Close */}
+          <div>
+            <div className="flex items-center justify-between pb-5 border-b border-neutral-800 mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-neutral-800 p-1 flex items-center justify-center">
+                  <img src="/images/logo.png" alt="Logo" className="w-full h-full object-contain" />
                 </div>
-                {item.badge && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white">
-                    {item.badge}
-                  </span>
-                )}
+                <div>
+                  <span className="tracking-[0.15em] font-bold text-sm uppercase text-white block">GALAXY</span>
+                  <span className="text-[9px] tracking-[0.2em] uppercase text-[#C29A64] font-semibold block -mt-0.5">ADMIN</span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-9 h-9 rounded-xl bg-neutral-900 text-neutral-400 hover:text-white flex items-center justify-center"
+              >
+                <X className="w-5 h-5" />
               </button>
-            );
-          })}
-          <div className="pt-3 border-t border-neutral-800">
+            </div>
+
+            {/* Navigation Links */}
+            <nav className="space-y-1.5 font-sans">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveTab(item.id as AdminTab);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
+                      isActive
+                        ? 'bg-[#C29A64] text-neutral-950 font-bold shadow-sm'
+                        : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon className="w-4 h-4" />
+                      <span>{item.label}</span>
+                    </div>
+                    {item.badge && (
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        isActive ? 'bg-neutral-950 text-[#E8DCB9]' : 'bg-amber-500 text-white'
+                      }`}>
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+
+          {/* Bottom Actions */}
+          <div className="space-y-3 pt-5 border-t border-neutral-800">
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onBackToWebsite();
+              }}
+              className="w-full py-2.5 px-3 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white text-xs font-medium flex items-center justify-center gap-2 transition-colors border border-neutral-800"
+            >
+              <Globe className="w-4 h-4 text-[#C29A64]" />
+              <span>Xem Website Khách</span>
+            </button>
+
             <button
               onClick={logout}
-              className="w-full py-2.5 rounded-xl bg-red-950/40 text-red-400 text-xs font-bold flex items-center justify-center gap-2"
+              className="w-full py-2.5 rounded-xl bg-red-950/40 hover:bg-red-900/50 text-red-400 text-xs font-bold flex items-center justify-center gap-2 transition-colors border border-red-900/40"
             >
               <LogOut className="w-4 h-4" />
               <span>Đăng Xuất</span>
             </button>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Main Dashboard Content Area */}
       <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto max-w-7xl">
