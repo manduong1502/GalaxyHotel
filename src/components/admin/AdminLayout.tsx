@@ -5,20 +5,24 @@ import { DashboardOverview } from './DashboardOverview';
 import { BookingsManager } from './BookingsManager';
 import { RoomsManager } from './RoomsManager';
 import { RoomCalendarView } from './RoomCalendarView';
+import { GalleryManager } from './GalleryManager';
+import { ServicesManager } from './ServicesManager';
 import { AdminSettings } from './AdminSettings';
 import { 
   LayoutDashboard, CalendarCheck, BedDouble, Calendar, 
-  Settings, LogOut, ArrowLeft, Globe, Bell, User, Sparkles, Menu, X 
+  Settings, LogOut, ArrowLeft, Globe, Heart, Compass, Menu, X 
 } from 'lucide-react';
 
 interface AdminLayoutProps {
   onBackToWebsite: () => void;
 }
 
+export type AdminTab = 'dashboard' | 'bookings' | 'rooms' | 'gallery' | 'services' | 'calendar' | 'settings';
+
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => {
   const { user, logout } = useAuth();
   const { bookings } = useBookings();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'bookings' | 'rooms' | 'calendar' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const pendingCount = bookings.filter(b => b.status === 'pending').length;
@@ -26,9 +30,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => 
   const navItems = [
     { id: 'dashboard', label: 'Tổng Quan', icon: LayoutDashboard },
     { id: 'bookings', label: 'Đơn Đặt Phòng', icon: CalendarCheck, badge: pendingCount > 0 ? pendingCount : undefined },
-    { id: 'rooms', label: 'Hạng Phòng & Giá', icon: BedDouble },
+    { id: 'rooms', label: 'Phòng, Giá & Ảnh', icon: BedDouble },
+    { id: 'gallery', label: 'Góc Nhỏ Yêu Thương', icon: Heart },
+    { id: 'services', label: 'Dịch Vụ & Tour', icon: Compass },
     { id: 'calendar', label: 'Sơ Đồ Lịch Phòng', icon: Calendar },
-    { id: 'settings', label: 'Cài Đặt & Webhook', icon: Settings },
+    { id: 'settings', label: 'Cài Đặt & SMTP Mail', icon: Settings },
   ];
 
   return (
@@ -65,7 +71,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => 
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id as any)}
+                  onClick={() => setActiveTab(item.id as AdminTab)}
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all duration-200 ${
                     isActive
                       ? 'bg-[#C29A64] text-neutral-950 shadow-sm font-bold'
@@ -122,104 +128,82 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => 
           </div>
 
         </div>
-
       </aside>
 
       {/* Mobile Top Header */}
-      <header className="md:hidden bg-hotel-navy text-white p-4 flex items-center justify-between border-b border-hotel-gold/30 sticky top-0 z-30">
-        <div className="flex items-center space-x-2.5">
-          <div className="w-8 h-8 rounded-xl bg-hotel-gold text-hotel-navy font-brand font-bold text-base flex items-center justify-center">
-            G
-          </div>
-          <span className="font-brand tracking-widest font-bold text-sm text-white">GALAXY ADMIN</span>
+      <header className="md:hidden bg-neutral-950 text-white p-4 flex items-center justify-between border-b border-neutral-800 sticky top-0 z-40">
+        <div className="flex items-center space-x-3">
+          <img src="/images/logo.png" alt="Logo" className="h-8 w-auto object-contain" />
+          <span className="font-bold text-sm tracking-wider uppercase">Galaxy Admin</span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center space-x-2">
           <button
             onClick={onBackToWebsite}
-            className="px-2.5 py-1 rounded-lg bg-white/10 text-xs font-bold text-hotel-gold"
+            className="p-2 rounded-lg bg-neutral-900 text-neutral-300 hover:text-white text-xs"
+            title="Xem website"
           >
-            Web
+            <Globe className="w-4 h-4" />
           </button>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-xl bg-white/10 text-white"
+            className="p-2 rounded-lg bg-neutral-900 text-neutral-300 hover:text-white"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </header>
 
-      {/* Mobile Dropdown Menu */}
+      {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-hotel-navy text-white p-4 space-y-2 border-b border-white/10 animate-fade-in">
-          {navItems.map((item) => (
+        <div className="md:hidden bg-neutral-950 text-white p-4 space-y-2 border-b border-neutral-800">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveTab(item.id as AdminTab);
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-semibold uppercase ${
+                  isActive ? 'bg-[#C29A64] text-neutral-950 font-bold' : 'text-neutral-400 hover:bg-neutral-900'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Icon className="w-4 h-4" />
+                  <span>{item.label}</span>
+                </div>
+                {item.badge && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white">
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+          <div className="pt-3 border-t border-neutral-800">
             <button
-              key={item.id}
-              onClick={() => {
-                setActiveTab(item.id as any);
-                setMobileMenuOpen(false);
-              }}
-              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider ${
-                activeTab === item.id ? 'bg-hotel-gold text-hotel-navy' : 'text-gray-300'
-              }`}
+              onClick={logout}
+              className="w-full py-2.5 rounded-xl bg-red-950/40 text-red-400 text-xs font-bold flex items-center justify-center gap-2"
             >
-              <span>{item.label}</span>
-              {item.badge && <span className="bg-amber-500 text-white px-2 py-0.5 rounded-full text-[10px]">{item.badge}</span>}
+              <LogOut className="w-4 h-4" />
+              <span>Đăng Xuất</span>
             </button>
-          ))}
-          <button
-            onClick={logout}
-            className="w-full py-2.5 text-center text-red-400 font-bold text-xs uppercase"
-          >
-            Đăng xuất
-          </button>
+          </div>
         </div>
       )}
 
-      {/* Main Content Viewport */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        
-        {/* Top Navbar */}
-        <div className="bg-white px-6 py-4 border-b border-gray-200 hidden md:flex items-center justify-between sticky top-0 z-20 shadow-sm">
-          <div>
-            <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider block">
-              GALAXY BOUTIQUE HOTEL • 269/19 ĐỀ THÁM, Q1
-            </span>
-            <h1 className="font-sans font-bold text-xl text-neutral-900 tracking-tight">
-              {activeTab === 'dashboard' && 'Bảng Điều Khiển Tổng Quan'}
-              {activeTab === 'bookings' && 'Quản Lý Đơn Đặt Phòng'}
-              {activeTab === 'rooms' && 'Danh Mục Phòng & Bảng Giá'}
-              {activeTab === 'calendar' && 'Sơ Đồ Lịch Phòng Trực Quan'}
-              {activeTab === 'settings' && 'Cài Đặt & Kết Nối Dữ Liệu'}
-            </h1>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onBackToWebsite}
-              className="btn-magnetic px-4 py-2 rounded-xl bg-hotel-sand/80 hover:bg-hotel-sand text-hotel-navy font-bold text-xs flex items-center gap-2 border border-hotel-gold/30"
-            >
-              <Globe className="w-3.5 h-3.5 text-hotel-goldDark" />
-              <span>Xem Website Khách Hàng</span>
-            </button>
-
-            <div className="text-right text-xs text-gray-500 pl-3 border-l border-gray-200">
-              <div className="font-bold text-gray-800">{new Date().toLocaleDateString('vi-VN')}</div>
-              <div className="text-[10px] text-green-600 font-semibold">● Hệ thống sẵn sàng</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Dynamic Tab Body */}
-        <div className="p-4 sm:p-8 flex-1">
-          {activeTab === 'dashboard' && <DashboardOverview onNavigateToTab={(t: any) => setActiveTab(t)} />}
-          {activeTab === 'bookings' && <BookingsManager />}
-          {activeTab === 'rooms' && <RoomsManager />}
-          {activeTab === 'calendar' && <RoomCalendarView />}
-          {activeTab === 'settings' && <AdminSettings />}
-        </div>
-
+      {/* Main Dashboard Content Area */}
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto max-w-7xl">
+        {activeTab === 'dashboard' && <DashboardOverview onNavigateToTab={(tab: string) => setActiveTab(tab as AdminTab)} />}
+        {activeTab === 'bookings' && <BookingsManager />}
+        {activeTab === 'rooms' && <RoomsManager />}
+        {activeTab === 'gallery' && <GalleryManager />}
+        {activeTab === 'services' && <ServicesManager />}
+        {activeTab === 'calendar' && <RoomCalendarView />}
+        {activeTab === 'settings' && <AdminSettings />}
       </main>
 
     </div>

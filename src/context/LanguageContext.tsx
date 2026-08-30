@@ -109,23 +109,23 @@ const translations: Record<Language, Record<string, string>> = {
     'dining.daily_served': 'Phục vụ liên tục',
     'dining.book_table': 'Liên hệ lễ tân →',
 
-    // Gym & Facilities
-    'facilities.eyebrow': 'TIỆN ÍCH KHÁCH SẠN',
-    'facilities.title': 'Nghỉ Ngơi Thoải Mái Ngay Tâm Điểm Quận 1',
+    // Gym & Facilities (Dịch Vụ Hỗ Trợ Trong Suốt Kỳ Nghỉ)
+    'facilities.eyebrow': 'TIỆN ÍCH ĐI KÈM',
+    'facilities.title': 'Dịch Vụ Hỗ Trợ Trong Suốt Kỳ Nghỉ',
     'facilities.sub': 'Tận hưởng kỳ nghỉ ấm cúng, riêng tư với mức giá vô cùng hợp lý tại Galaxy Boutique Hotel.',
-    'facilities.gym_title': 'Phòng Ốc Tiện Nghi & Hiện Đại',
-    'facilities.gym_desc': 'Đầy đủ Smart TV kết nối Youtube, máy lạnh Inverter mát sâu, tủ lạnh minibar và máy sấy tóc.',
-    'facilities.gym_tag': '30 PHÒNG • TIỆN NGHI',
-    'facilities.gym_hl1': 'Nước nóng năng lượng & điện 24/24',
-    'facilities.gym_hl2': 'Khăn tắm 100% Cotton & Đồ vệ sinh miễn phí',
-    'facilities.gym_hl3': 'Wifi cáp quang tốc độ cao cho từng phòng',
+    'facilities.gym_title': 'Tour Trải Nghiệm',
+    'facilities.gym_desc': 'Hỗ trợ đặt tour chất lượng cao khám phá vẻ đẹp Nam Bộ và lịch sử Sài Gòn hào hùng.',
+    'facilities.gym_tag': 'TOUR DU LỊCH ĐẶC SẮC',
+    'facilities.gym_hl1': 'Hành Trình Miền Tây (Mekong delta)',
+    'facilities.gym_hl2': 'Khám phá Địa đạo Củ Chi (Cu Chi Tunnels)',
+    'facilities.gym_hl3': 'Một vòng Sài Gòn (City Tour)',
     
-    'facilities.spa_title': 'Lễ Tân & An Ninh 24/7',
-    'facilities.spa_desc': 'Bảo vệ và lễ tân túc trực 24/24, đảm bảo an ninh tuyệt đối và hỗ trợ quý khách mọi lúc.',
-    'facilities.spa_tag': '24/7 • AN NINH TUYỆT ĐỐI',
-    'facilities.spa_hl1': 'Hệ thống camera giám sát an ninh 24/24',
-    'facilities.spa_hl2': 'Hỗ trợ gọi taxi, xe đưa đón sân bay Tân Sơn Nhất',
-    'facilities.spa_hl3': 'Tư vấn tour tham quan Sài Gòn & địa điểm ăn uống',
+    'facilities.spa_title': 'Dịch Vụ Giặt Sấy',
+    'facilities.spa_desc': 'Dịch vụ giặt sấy thơm tho sạch sẽ trong ngày, giao nhận tận phòng nhanh chóng và chu đáo.',
+    'facilities.spa_tag': 'GIẶT ỦI LẤY NHANH',
+    'facilities.spa_hl1': 'Giặt sấy khô thơm tho lấy ngay trong ngày',
+    'facilities.spa_hl2': 'Ủi và chăm sóc trang phục theo yêu cầu',
+    'facilities.spa_hl3': 'Giá cả bình dân, hỗ trợ giao nhận tại phòng',
 
     'facilities.pool_title': 'Vị Trí Vàng Trung Tâm Sài Gòn',
     'facilities.pool_desc': 'Nằm trong hẻm 269 Đề Thám yên tĩnh nhưng chỉ cách phố đi bộ Bùi Viện và chợ Bến Thành vài bước chân.',
@@ -135,12 +135,11 @@ const translations: Record<Language, Record<string, string>> = {
     'facilities.pool_hl3': 'Gần Dinh Độc Lập, Nhà thờ Đức Bà & Bến Bạch Đằng',
     'facilities.contact_btn': 'Đặt phòng ngay',
 
-    // Gallery
-    'gallery.eyebrow': 'BỘ SƯU TẬP ẢNH THỰC TẾ',
-    'gallery.title': 'Hình Ảnh Khách Sạn & Phòng Nghỉ',
+    // Gallery (Góc nhỏ yêu thương)
+    'gallery.eyebrow': 'GÓC NHỎ YÊU THƯƠNG',
+    'gallery.title': 'Góc Nhỏ Yêu Thương • Khoảnh Khắc Check-in',
     'gallery.tab_all': 'Tất cả ảnh',
-    'gallery.tab_rooms': 'Phòng thực tế',
-    'gallery.tab_dining': 'Dịch vụ',
+    'gallery.tab_checkin': 'Ảnh khách check-in',
     'gallery.tab_facilities': 'Không gian chung',
 
     // Testimonials
@@ -308,23 +307,23 @@ const translations: Record<Language, Record<string, string>> = {
     'dining.daily_served': 'Available 24/7',
     'dining.book_table': 'Contact Front Desk →',
 
-    // Gym & Facilities
-    'facilities.eyebrow': 'HOTEL AMENITIES',
-    'facilities.title': 'Comfortable Stay in Central District 1',
-    'facilities.sub': 'Enjoy a warm, private, and budget-smart stay in Ho Chi Minh City.',
-    'facilities.gym_title': 'Full Room Amenities',
-    'facilities.gym_desc': 'Equipped with Smart TV (Youtube/Netflix), cooling Inverter AC, minibar fridge, and hair dryer.',
-    'facilities.gym_tag': '30 ROOMS • COMPLETE AMENITIES',
-    'facilities.gym_hl1': '24/7 Hot shower water system',
-    'facilities.gym_hl2': '100% Cotton towels & free toiletries',
-    'facilities.gym_hl3': 'Dedicated high-speed fiber Wi-Fi for each room',
+    // Gym & Facilities (Support Services During Stay)
+    'facilities.eyebrow': 'INCLUDED AMENITIES',
+    'facilities.title': 'Support Services During Your Stay',
+    'facilities.sub': 'Enjoy a warm, private, and budget-smart stay in Galaxy Boutique Hotel.',
+    'facilities.gym_title': 'Experience Tours',
+    'facilities.gym_desc': 'High-quality guided tours exploring Southern Vietnam beauty and Saigon history.',
+    'facilities.gym_tag': 'FEATURED TOURS',
+    'facilities.gym_hl1': 'Mekong Delta River Journey',
+    'facilities.gym_hl2': 'Cu Chi Tunnels Historical Discovery',
+    'facilities.gym_hl3': 'Saigon City Highlights Tour',
     
-    'facilities.spa_title': '24/7 Security & Hospitality',
-    'facilities.spa_desc': 'Round-the-clock security and reception ensuring complete safety and support at any time.',
-    'facilities.spa_tag': '24/7 • TOTAL SECURITY',
-    'facilities.spa_hl1': '24/7 CCTV surveillance monitoring',
-    'facilities.spa_hl2': 'Airport transfer & taxi booking assistance',
-    'facilities.spa_hl3': 'Local street food & city tour recommendations',
+    'facilities.spa_title': 'Laundry & Dry Cleaning',
+    'facilities.spa_desc': 'Same-day fast laundry and ironing service, fresh fragrance with room delivery.',
+    'facilities.spa_tag': 'EXPRESS LAUNDRY',
+    'facilities.spa_hl1': 'Same-day fresh laundry & drying',
+    'facilities.spa_hl2': 'Garment ironing & care on request',
+    'facilities.spa_hl3': 'Affordable rates with room pickup/delivery',
 
     'facilities.pool_title': 'Prime Heart of Saigon',
     'facilities.pool_desc': 'Situated in quiet alley 269 De Tham, just a few minutes walk to Bui Vien Walking Street & Ben Thanh Market.',
@@ -334,12 +333,11 @@ const translations: Record<Language, Record<string, string>> = {
     'facilities.pool_hl3': 'Close to Independence Palace & Notre-Dame Cathedral',
     'facilities.contact_btn': 'Book A Room',
 
-    // Gallery
-    'gallery.eyebrow': 'PHOTO GALLERY',
-    'gallery.title': 'Actual Hotel & Room Photos',
+    // Gallery (Love & Memories Corner)
+    'gallery.eyebrow': 'LOVE & MEMORIES CORNER',
+    'gallery.title': 'Love & Memories Corner • Guest Check-in Moments',
     'gallery.tab_all': 'All Photos',
-    'gallery.tab_rooms': 'Real Rooms',
-    'gallery.tab_dining': 'Services',
+    'gallery.tab_checkin': 'Guest Check-in Photos',
     'gallery.tab_facilities': 'Common Spaces',
 
     // Testimonials

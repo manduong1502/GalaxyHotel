@@ -1,73 +1,115 @@
 import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useScrollReveal } from '../hooks/useScrollReveal';
-import { Dumbbell, Waves, HeartHandshake, Clock, Check } from 'lucide-react';
+import { Compass, Shirt, MapPin, Clock, Check, Sparkles } from 'lucide-react';
 
 export const GymFacilitySection: React.FC = () => {
   const { t, lang } = useLanguage();
   const { ref: sectionRef, isVisible } = useScrollReveal<HTMLElement>(0.1);
 
-  const facilities = [
+  // Load custom admin edited boxes if any
+  const customBoxes = React.useMemo(() => {
+    try {
+      const saved = localStorage.getItem('galaxy_hotel_services_boxes');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error(e);
+    }
+    return null;
+  }, []);
+
+  const defaultServices = [
     {
-      icon: Dumbbell,
+      icon: Compass,
       title: t('facilities.gym_title'),
       desc: t('facilities.gym_desc'),
-      image: '/images/rooms/phong-d.jpg',
+      image: '/images/hero-1.jpg',
       tag: t('facilities.gym_tag'),
-      hours: '24/7',
+      hours: '24/7 Hỗ trợ',
       highlights: [t('facilities.gym_hl1'), t('facilities.gym_hl2'), t('facilities.gym_hl3')]
     },
     {
-      icon: HeartHandshake,
+      icon: Shirt,
       title: t('facilities.spa_title'),
       desc: t('facilities.spa_desc'),
-      image: '/images/facility-1.jpg',
+      image: '/images/towels.png',
       tag: t('facilities.spa_tag'),
-      hours: '24/7',
+      hours: 'Lấy trong ngày',
       highlights: [t('facilities.spa_hl1'), t('facilities.spa_hl2'), t('facilities.spa_hl3')]
     },
     {
-      icon: Waves,
+      icon: MapPin,
       title: t('facilities.pool_title'),
       desc: t('facilities.pool_desc'),
-      image: '/images/hero-1.jpg',
+      image: '/images/facility-1.jpg',
       tag: t('facilities.pool_tag'),
-      hours: '24/7',
+      hours: 'Vị trí đắc địa',
       highlights: [t('facilities.pool_hl1'), t('facilities.pool_hl2'), t('facilities.pool_hl3')]
     }
   ];
+
+  const services = customBoxes ? [
+    {
+      icon: Compass,
+      title: customBoxes[0]?.title || t('facilities.gym_title'),
+      desc: customBoxes[0]?.desc || t('facilities.gym_desc'),
+      image: '/images/hero-1.jpg',
+      tag: customBoxes[0]?.tag || t('facilities.gym_tag'),
+      hours: '24/7 Hỗ trợ',
+      highlights: customBoxes[0]?.items || [t('facilities.gym_hl1'), t('facilities.gym_hl2'), t('facilities.gym_hl3')]
+    },
+    {
+      icon: Shirt,
+      title: customBoxes[1]?.title || t('facilities.spa_title'),
+      desc: customBoxes[1]?.desc || t('facilities.spa_desc'),
+      image: '/images/towels.png',
+      tag: customBoxes[1]?.tag || t('facilities.spa_tag'),
+      hours: 'Lấy trong ngày',
+      highlights: customBoxes[1]?.items || [t('facilities.spa_hl1'), t('facilities.spa_hl2'), t('facilities.spa_hl3')]
+    },
+    {
+      icon: MapPin,
+      title: customBoxes[2]?.title || t('facilities.pool_title'),
+      desc: customBoxes[2]?.desc || t('facilities.pool_desc'),
+      image: '/images/facility-1.jpg',
+      tag: customBoxes[2]?.tag || t('facilities.pool_tag'),
+      hours: 'Vị trí đắc địa',
+      highlights: customBoxes[2]?.items || [t('facilities.pool_hl1'), t('facilities.pool_hl2'), t('facilities.pool_hl3')]
+    }
+  ] : defaultServices;
 
   return (
     <section 
       id="facilities" 
       ref={sectionRef} 
-      className={`py-24 bg-[#F5F2EB] relative reveal-fade-up ${isVisible ? 'is-revealed' : ''}`}
+      className={`py-24 bg-[#F5F2EB] relative reveal-fade-up ${isVisible ? 'is-revealed' : ''} font-sans`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-14">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8A6943] block mb-2">
-            {lang === 'vi' ? 'TIỆN NGHI CAO CẤP' : 'HOTEL FACILITIES'}
-          </span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EAE3D2] text-[#8A6943] text-[11px] font-bold tracking-widest uppercase mb-3">
+            <Sparkles className="w-3.5 h-3.5 text-[#8A6943]" />
+            <span>{t('facilities.eyebrow')}</span>
+          </div>
 
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-neutral-900 mb-4 tracking-tight">
+          <h2 className="font-sans text-3xl sm:text-4xl lg:text-5xl font-bold text-neutral-900 mb-4 tracking-tight">
             {t('facilities.title')}
           </h2>
 
-          <p className="text-neutral-600 text-sm sm:text-base font-sans">
+          <p className="text-neutral-600 text-xs sm:text-sm font-sans max-w-2xl mx-auto leading-relaxed">
             {t('facilities.sub')}
           </p>
         </div>
 
         {/* Facility Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-          {facilities.map((fac, index) => {
+          {services.map((fac, index) => {
             const Icon = fac.icon;
             return (
               <div
                 key={index}
-                className="bg-white rounded-2xl overflow-hidden border border-neutral-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md hover:border-neutral-400/80 transition-all duration-300 flex flex-col justify-between group"
+                className="bg-white rounded-3xl overflow-hidden border border-neutral-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-xl hover:border-neutral-400/80 transition-all duration-300 flex flex-col justify-between group"
               >
                 <div>
                   <div className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-100">
@@ -78,30 +120,35 @@ export const GymFacilitySection: React.FC = () => {
                       loading="lazy"
                     />
                     <div className="absolute top-3 left-3">
-                      <span className="text-[10px] font-bold tracking-wider text-white bg-neutral-900/80 backdrop-blur-md px-2.5 py-1 rounded uppercase">
+                      <span className="text-[10px] font-bold tracking-wider text-white bg-neutral-950/85 backdrop-blur-md px-3 py-1 rounded-lg uppercase shadow">
                         {fac.tag}
                       </span>
                     </div>
 
-                    <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-xs text-white bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded font-medium">
+                    <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-xs text-white bg-black/70 backdrop-blur-sm px-2.5 py-1 rounded-lg font-medium">
                       <Clock className="w-3.5 h-3.5 text-[#E8DCB9]" />
                       <span>{fac.hours}</span>
                     </div>
                   </div>
 
                   <div className="p-6">
-                    <h3 className="font-serif font-bold text-xl text-neutral-900 mb-2 group-hover:text-[#8A6943] transition-colors">
-                      {fac.title}
-                    </h3>
+                    <div className="flex items-center gap-2.5 mb-2">
+                      <div className="w-8 h-8 rounded-xl bg-[#FAF9F5] border border-neutral-200 flex items-center justify-center text-[#8A6943] flex-shrink-0">
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <h3 className="font-sans font-bold text-lg text-neutral-900 group-hover:text-[#8A6943] transition-colors leading-tight">
+                        {fac.title}
+                      </h3>
+                    </div>
 
-                    <p className="text-neutral-600 text-xs sm:text-sm leading-relaxed mb-4">
+                    <p className="text-neutral-600 text-xs leading-relaxed mb-4">
                       {fac.desc}
                     </p>
 
-                    <div className="space-y-1.5 pt-3 border-t border-neutral-100">
-                      {fac.highlights.map((hl, i) => (
-                        <div key={i} className="flex items-center gap-2 text-xs text-neutral-700">
-                          <Check className="w-3.5 h-3.5 text-[#8A6943] flex-shrink-0" />
+                    <div className="space-y-2 pt-3 border-t border-neutral-100">
+                      {fac.highlights.map((hl: string, i: number) => (
+                        <div key={i} className="flex items-start gap-2 text-xs text-neutral-700 font-medium">
+                          <Check className="w-3.5 h-3.5 text-[#8A6943] flex-shrink-0 mt-0.5" />
                           <span>{hl}</span>
                         </div>
                       ))}
@@ -112,7 +159,7 @@ export const GymFacilitySection: React.FC = () => {
                 <div className="p-6 pt-0">
                   <a
                     href="#contact"
-                    className="btn-magnetic block w-full py-2.5 rounded-lg border border-neutral-300 hover:border-neutral-900 hover:bg-neutral-50 text-neutral-800 text-center font-semibold text-xs transition-colors"
+                    className="block w-full py-2.5 rounded-xl border border-neutral-300 hover:border-neutral-900 hover:bg-neutral-900 hover:text-white text-neutral-800 text-center font-bold text-xs transition-all shadow-sm"
                   >
                     {t('facilities.contact_btn')}
                   </a>
