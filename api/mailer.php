@@ -123,7 +123,10 @@ function sendHtmlEmail($to, $subject, $htmlContent, $fromName = 'Galaxy Boutique
 /**
  * Gửi email thông báo cho Lễ tân & Chủ khách sạn
  */
-function sendReceptionNotificationEmail($booking, $recipientEmail = 'galaxyboutiquehotel2022@gmail.com') {
+function sendReceptionNotificationEmail($booking, $recipientEmail = null) {
+    if (!$recipientEmail) {
+        $recipientEmail = getReceptionEmail();
+    }
     $code = htmlspecialchars($booking['booking_code'] ?? 'GBH-0000');
     $guestName = htmlspecialchars($booking['guest_name'] ?? 'Khách hàng');
     $guestPhone = htmlspecialchars($booking['guest_phone'] ?? '');
@@ -423,9 +426,26 @@ HTML;
 }
 
 /**
+ * Lấy email nhận thông báo của Lễ tân / Chủ từ cấu hình SMTP
+ */
+function getReceptionEmail() {
+    $configFile = __DIR__ . '/smtp_config.json';
+    if (file_exists($configFile)) {
+        $config = json_decode(file_get_contents($configFile), true);
+        if (!empty($config['username'])) {
+            return $config['username'];
+        }
+    }
+    return 'minhmanuzu@gmail.com';
+}
+
+/**
  * Gửi cả 2 email (cho Lễ tân và Khách hàng)
  */
-function sendBookingEmails($booking, $receptionEmail = 'galaxyboutiquehotel2022@gmail.com') {
+function sendBookingEmails($booking, $receptionEmail = null) {
+    if (!$receptionEmail) {
+        $receptionEmail = getReceptionEmail();
+    }
     $resReception = sendReceptionNotificationEmail($booking, $receptionEmail);
     $resCustomer = sendCustomerConfirmationEmail($booking);
 
