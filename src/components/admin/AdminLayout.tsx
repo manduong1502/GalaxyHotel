@@ -40,8 +40,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => 
         {/* Brand Header */}
         <div>
           <div className="flex items-center space-x-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-neutral-900 border border-neutral-700 flex items-center justify-center text-[#E8DCB9] font-bold text-lg">
-              G
+            <div className="w-11 h-11 rounded-xl bg-neutral-900 border border-neutral-800 p-1 flex items-center justify-center shadow-sm">
+              <img
+                src="/images/logo.png"
+                alt="Galaxy Hotel Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <span className="tracking-[0.15em] font-bold text-base uppercase text-white block">

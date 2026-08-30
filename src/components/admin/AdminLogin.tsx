@@ -43,6 +43,13 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onBackToWebsite }) => {
       <div className="max-w-md w-full bg-white/95 backdrop-blur-xl rounded-3xl p-8 sm:p-10 shadow-2xl border border-hotel-gold/40 relative z-10 animate-fade-in">
         {/* Brand Logo Header */}
         <div className="text-center mb-8">
+          <div className="w-20 h-20 mx-auto mb-3 rounded-2xl bg-neutral-950 p-2.5 flex items-center justify-center shadow-md border border-neutral-800">
+            <img 
+              src="/images/logo.png" 
+              alt="Hotel Galaxy Boutique" 
+              className="w-full h-full object-contain"
+            />
+          </div>
           <h2 className="font-sans font-bold text-2xl text-neutral-900 tracking-tight">
             GALAXY ADMIN
           </h2>

@@ -3,14 +3,23 @@ import { useLanguage } from '../context/LanguageContext';
 import { Phone, Calendar, Menu, X, Globe, Lock, MapPin } from 'lucide-react';
 
 interface HeaderProps {
+  currentPage?: string;
+  onNavigate?: (page: string) => void;
   onOpenBooking: () => void;
   onOpenAdmin?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenBooking, onOpenAdmin }) => {
+export const Header: React.FC<HeaderProps> = ({ 
+  currentPage = 'home',
+  onNavigate,
+  onOpenBooking, 
+  onOpenAdmin 
+}) => {
   const { lang, setLang, t } = useLanguage();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const isSubPage = currentPage !== 'home';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,14 +34,23 @@ export const Header: React.FC<HeaderProps> = ({ onOpenBooking, onOpenAdmin }) =>
   }, []);
 
   const navLinks = [
-    { href: '#home', label: t('nav.home') },
-    { href: '#about', label: t('nav.about') },
-    { href: '#rooms', label: t('nav.rooms') },
-    { href: '#dining', label: t('nav.dining') },
-    { href: '#facilities', label: t('nav.facilities') },
-    { href: '#gallery', label: t('nav.gallery') },
-    { href: '#contact', label: t('nav.contact') },
+    { id: 'home', label: t('nav.home') },
+    { id: 'rooms', label: t('nav.rooms') },
+    { id: 'about', label: t('nav.about') },
+    { id: 'services', label: t('nav.dining') },
+    { id: 'gallery', label: t('nav.gallery') },
+    { id: 'contact', label: t('nav.contact') },
   ];
+
+  const handleNavClick = (id: string) => {
+    setMobileMenuOpen(false);
+    if (onNavigate) {
+      onNavigate(id);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const isDarkNav = scrolled || isSubPage;
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
@@ -91,42 +109,55 @@ export const Header: React.FC<HeaderProps> = ({ onOpenBooking, onOpenAdmin }) =>
       </div>
 
       {/* Main Navbar */}
-      <nav className={`transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-3.5 border-b border-neutral-200/80 text-neutral-900' : 'bg-gradient-to-b from-black/80 via-black/40 to-transparent py-4 text-white'}`}>
+      <nav className={`transition-all duration-300 ${isDarkNav ? 'bg-white/95 backdrop-blur-md shadow-sm py-2.5 sm:py-3 border-b border-neutral-200/80 text-neutral-900' : 'bg-gradient-to-b from-black/80 via-black/40 to-transparent py-3 sm:py-4 text-white'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           
-          {/* Logo */}
-          <a href="#home" className="flex items-center space-x-3 group">
+          {/* Logo with real image */}
+          <button 
+            onClick={() => handleNavClick('home')} 
+            className="flex items-center gap-3 group text-left"
+          >
+            <div className={`p-1 rounded-xl transition-colors ${isDarkNav ? 'bg-neutral-900' : 'bg-white/10 backdrop-blur-sm border border-white/20'}`}>
+              <img 
+                src="/images/logo.png" 
+                alt="Hotel Galaxy Boutique Logo" 
+                className="h-8 sm:h-9 w-auto object-contain transition-transform group-hover:scale-105"
+              />
+            </div>
             <div className="flex flex-col">
-              <span className={`font-serif tracking-[0.18em] font-bold text-xl sm:text-2xl transition-colors ${scrolled ? 'text-neutral-900' : 'text-white'}`}>
+              <span className={`font-serif tracking-[0.15em] font-bold text-lg sm:text-xl transition-colors ${isDarkNav ? 'text-neutral-900' : 'text-white'}`}>
                 GALAXY
               </span>
-              <span className={`text-[9px] tracking-[0.25em] uppercase font-medium -mt-0.5 transition-colors ${scrolled ? 'text-[#8A6943]' : 'text-neutral-300'}`}>
+              <span className={`text-[8px] sm:text-[9px] tracking-[0.25em] uppercase font-semibold -mt-1 transition-colors ${isDarkNav ? 'text-[#8A6943]' : 'text-neutral-300'}`}>
                 Boutique Hotel Saigon
               </span>
             </div>
-          </a>
+          </button>
 
           {/* Desktop Navigation Links */}
           <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className={`text-[13px] font-medium tracking-wide transition-colors py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:transition-all after:duration-300 hover:after:w-full ${
-                  scrolled 
-                    ? 'text-neutral-700 hover:text-neutral-900 after:bg-neutral-900' 
-                    : 'text-neutral-200 hover:text-white after:bg-[#B89369]'
-                }`}
-              >
-                {link.label}
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = currentPage === link.id;
+              return (
+                <button
+                  key={link.id}
+                  onClick={() => handleNavClick(link.id)}
+                  className={`text-[13px] font-medium tracking-wide transition-colors py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-[2px] after:transition-all after:duration-300 ${
+                    isActive
+                      ? (isDarkNav ? 'text-neutral-950 font-bold after:w-full after:bg-neutral-950' : 'text-white font-bold after:w-full after:bg-[#E8DCB9]')
+                      : (isDarkNav ? 'text-neutral-600 hover:text-neutral-950 after:w-0 hover:after:w-full after:bg-neutral-900' : 'text-neutral-200 hover:text-white after:w-0 hover:after:w-full after:bg-[#E8DCB9]')
+                  }`}
+                >
+                  {link.label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Action CTAs */}
           <div className="hidden md:flex items-center space-x-3">
             {/* Language toggle for scrolled state */}
-            {scrolled && (
+            {isDarkNav && (
               <div className="flex items-center space-x-1 px-2 py-1 text-xs text-neutral-600 mr-2">
                 <button
                   onClick={() => setLang('vi')}
@@ -147,7 +178,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenBooking, onOpenAdmin }) =>
             <button
               onClick={onOpenBooking}
               className={`btn-magnetic font-semibold px-5 py-2.5 rounded-lg text-xs tracking-wider uppercase transition-all duration-200 flex items-center gap-2 shadow-sm ${
-                scrolled
+                isDarkNav
                   ? 'bg-neutral-900 hover:bg-neutral-800 text-white'
                   : 'bg-white hover:bg-neutral-100 text-neutral-900'
               }`}
@@ -161,14 +192,14 @@ export const Header: React.FC<HeaderProps> = ({ onOpenBooking, onOpenAdmin }) =>
           <div className="flex items-center space-x-2 lg:hidden">
             <button
               onClick={() => setLang(lang === 'vi' ? 'en' : 'vi')}
-              className={`text-xs font-semibold px-2 py-1 rounded border ${scrolled ? 'border-neutral-300 text-neutral-900' : 'border-white/30 text-white'}`}
+              className={`text-xs font-semibold px-2 py-1 rounded border ${isDarkNav ? 'border-neutral-300 text-neutral-900' : 'border-white/30 text-white'}`}
             >
               {lang.toUpperCase()}
             </button>
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`p-2 rounded-lg transition-colors ${scrolled ? 'text-neutral-900' : 'text-white'}`}
+              className={`p-2 rounded-lg transition-colors ${isDarkNav ? 'text-neutral-900' : 'text-white'}`}
               aria-label="Toggle Menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -178,21 +209,25 @@ export const Header: React.FC<HeaderProps> = ({ onOpenBooking, onOpenAdmin }) =>
 
         {/* Mobile Drawer Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-[#0F172A] text-white px-5 pt-4 pb-6 space-y-3 border-t border-neutral-800 shadow-2xl animate-fade-in">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block py-2 text-sm font-medium text-neutral-200 hover:text-white"
-              >
-                {link.label}
-              </a>
-            ))}
+          <div className="lg:hidden bg-neutral-950 text-white px-5 pt-4 pb-6 space-y-2 border-t border-neutral-800 shadow-2xl animate-fade-in font-sans">
+            {navLinks.map((link) => {
+              const isActive = currentPage === link.id;
+              return (
+                <button
+                  key={link.id}
+                  onClick={() => handleNavClick(link.id)}
+                  className={`block w-full text-left py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg px-3 transition-colors ${
+                    isActive ? 'bg-[#C29A64] text-neutral-950' : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                  }`}
+                >
+                  {link.label}
+                </button>
+              );
+            })}
             <div className="pt-3 border-t border-neutral-800 flex flex-col gap-2.5">
               <a
                 href="tel:02822487782"
-                className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-neutral-800 text-neutral-200 text-xs font-semibold"
+                className="flex items-center justify-center gap-2 py-2.5 rounded-lg bg-neutral-900 text-neutral-200 text-xs font-semibold"
               >
                 <Phone className="w-3.5 h-3.5 text-[#B89369]" />
                 <span>028 2248 7782 (Hotline)</span>

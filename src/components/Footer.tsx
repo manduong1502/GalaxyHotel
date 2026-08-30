@@ -2,8 +2,19 @@ import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { Phone, Mail, MapPin, Send, Facebook, Youtube } from 'lucide-react';
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  onNavigate?: (page: string) => void;
+}
+
+export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   const { t, lang } = useLanguage();
+
+  const handleNav = (page: string) => {
+    if (onNavigate) {
+      onNavigate(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   return (
     <footer className="bg-[#0B0F19] text-white pt-16 pb-12 border-t border-neutral-800 relative">
@@ -14,14 +25,23 @@ export const Footer: React.FC = () => {
           
           {/* Col 1: Brand Info */}
           <div className="lg:col-span-4 space-y-4">
-            <div className="flex flex-col">
-              <span className="font-serif tracking-[0.2em] font-bold text-2xl uppercase text-white">
-                GALAXY
-              </span>
-              <span className="text-[9px] tracking-[0.28em] uppercase text-[#E8DCB9] font-medium -mt-0.5">
-                BOUTIQUE HOTEL SAIGON
-              </span>
-            </div>
+            <button onClick={() => handleNav('home')} className="flex items-center gap-3 text-left group">
+              <div className="p-1 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20">
+                <img 
+                  src="/images/logo.png" 
+                  alt="Hotel Galaxy Boutique" 
+                  className="h-10 w-auto object-contain transition-transform group-hover:scale-105"
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-serif tracking-[0.18em] font-bold text-xl uppercase text-white">
+                  GALAXY
+                </span>
+                <span className="text-[8px] tracking-[0.28em] uppercase text-[#E8DCB9] font-medium -mt-0.5">
+                  BOUTIQUE HOTEL SAIGON
+                </span>
+              </div>
+            </button>
 
             <p className="text-neutral-400 text-xs sm:text-sm leading-relaxed font-sans">
               {t('footer.about_text')}
@@ -69,13 +89,12 @@ export const Footer: React.FC = () => {
               {t('footer.quick_links')}
             </h4>
             <ul className="space-y-2 text-xs sm:text-sm text-neutral-400 font-sans">
-              <li><a href="#home" className="hover:text-white transition-colors">{t('nav.home')}</a></li>
-              <li><a href="#about" className="hover:text-white transition-colors">{t('nav.about')}</a></li>
-              <li><a href="#rooms" className="hover:text-white transition-colors">{t('nav.rooms')}</a></li>
-              <li><a href="#dining" className="hover:text-white transition-colors">{t('nav.dining')}</a></li>
-              <li><a href="#facilities" className="hover:text-white transition-colors">{t('nav.facilities')}</a></li>
-              <li><a href="#gallery" className="hover:text-white transition-colors">{t('nav.gallery')}</a></li>
-              <li><a href="#contact" className="hover:text-white transition-colors">{t('nav.contact')}</a></li>
+              <li><button onClick={() => handleNav('home')} className="hover:text-white transition-colors">{t('nav.home')}</button></li>
+              <li><button onClick={() => handleNav('rooms')} className="hover:text-white transition-colors">{t('nav.rooms')}</button></li>
+              <li><button onClick={() => handleNav('about')} className="hover:text-white transition-colors">{t('nav.about')}</button></li>
+              <li><button onClick={() => handleNav('services')} className="hover:text-white transition-colors">{t('nav.dining')}</button></li>
+              <li><button onClick={() => handleNav('gallery')} className="hover:text-white transition-colors">{t('nav.gallery')}</button></li>
+              <li><button onClick={() => handleNav('contact')} className="hover:text-white transition-colors">{t('nav.contact')}</button></li>
             </ul>
           </div>
 
