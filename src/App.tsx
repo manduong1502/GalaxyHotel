@@ -25,7 +25,15 @@ const MainApp: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const { rooms } = useBookings();
   
-  const [currentView, setCurrentView] = useState<'client' | 'admin'>('client');
+  const [currentView, setCurrentView] = useState<'client' | 'admin'>(() => {
+    const path = window.location.pathname.toLowerCase();
+    const params = new URLSearchParams(window.location.search);
+    if (path === '/admin' || path.startsWith('/admin') || params.get('admin') === 'true' || window.location.hash === '#admin') {
+      return 'admin';
+    }
+    return 'client';
+  });
+
   const [currentPage, setCurrentPage] = useState<AppPage>(() => {
     const params = new URLSearchParams(window.location.search);
     const pageParam = params.get('page');
@@ -48,10 +56,16 @@ const MainApp: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Handle browser back/forward buttons
+  // Handle browser back/forward buttons and /admin route
   useEffect(() => {
     const handlePopState = () => {
+      const path = window.location.pathname.toLowerCase();
       const params = new URLSearchParams(window.location.search);
+      if (path === '/admin' || path.startsWith('/admin') || params.get('admin') === 'true' || window.location.hash === '#admin') {
+        setCurrentView('admin');
+        return;
+      }
+      setCurrentView('client');
       const pageParam = params.get('page');
       if (pageParam && ['home', 'rooms', 'about', 'services', 'gallery', 'contact'].includes(pageParam)) {
         setCurrentPage(pageParam as AppPage);
@@ -62,6 +76,12 @@ const MainApp: React.FC = () => {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
+
+  const handleBackToWebsite = () => {
+    setCurrentView('client');
+    window.history.pushState({}, '', '/');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleOpenGeneralBooking = () => {
     setSelectedRoomForBooking(rooms[0] || null);
@@ -85,12 +105,12 @@ const MainApp: React.FC = () => {
     setIsBookingModalOpen(true);
   };
 
-  // If user navigated to Admin View
+  // If user navigated to Admin View (/admin)
   if (currentView === 'admin') {
     if (!isAuthenticated) {
-      return <AdminLogin onBackToWebsite={() => setCurrentView('client')} />;
+      return <AdminLogin onBackToWebsite={handleBackToWebsite} />;
     }
-    return <AdminLayout onBackToWebsite={() => setCurrentView('client')} />;
+    return <AdminLayout onBackToWebsite={handleBackToWebsite} />;
   }
 
   // Customer Multi-Page Website View
@@ -101,7 +121,6 @@ const MainApp: React.FC = () => {
         currentPage={currentPage}
         onNavigate={handleNavigate}
         onOpenBooking={handleOpenGeneralBooking}
-        onOpenAdmin={() => setCurrentView('admin')}
       />
 
       {/* Main Content Multi-Page Views */}

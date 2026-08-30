@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { Phone, Calendar, Menu, X, Lock, MapPin } from 'lucide-react';
+import { Phone, Calendar, Menu, X, MapPin } from 'lucide-react';
 
 interface HeaderProps {
   currentPage?: string;
   onNavigate?: (page: string) => void;
   onOpenBooking: () => void;
-  onOpenAdmin?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ 
   currentPage = 'home',
   onNavigate,
   onOpenBooking, 
-  onOpenAdmin 
 }) => {
   const { lang, setLang, t } = useLanguage();
   const [scrolled, setScrolled] = useState(false);
@@ -58,7 +56,7 @@ export const Header: React.FC<HeaderProps> = ({
       {/* 1. Top Utility Micro-Bar */}
       <div className={`w-full py-1.5 px-4 transition-all duration-300 hidden md:block text-[11px] ${
         isDarkNav 
-          ? 'bg-[#111622] text-neutral-300 border-b border-neutral-800' 
+          ? 'bg-[#0B0F19]/95 backdrop-blur-md text-neutral-300 border-b border-white/10 shadow-sm' 
           : 'bg-black/60 backdrop-blur-md text-neutral-200 border-b border-white/10'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
@@ -69,7 +67,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="font-medium tracking-wide">269/19 Đề Thám, P. Bến Thành, Quận 1, TP. Hồ Chí Minh</span>
           </div>
 
-          {/* Contact, Language & Admin */}
+          {/* Contact & Language */}
           <div className="flex items-center space-x-5">
             <a 
               href="tel:02822487782" 
@@ -101,37 +99,23 @@ export const Header: React.FC<HeaderProps> = ({
                 EN
               </button>
             </div>
-
-            {onOpenAdmin && (
-              <>
-                <span className="opacity-40">|</span>
-                <button
-                  onClick={onOpenAdmin}
-                  className="flex items-center gap-1 text-neutral-300 hover:text-white transition-colors"
-                  title="Trang quản trị khách sạn"
-                >
-                  <Lock className="w-3 h-3 text-[#C29A64]" />
-                  <span>Quản trị</span>
-                </button>
-              </>
-            )}
           </div>
 
         </div>
       </div>
 
-      {/* 2. Main Spacious Navigation Bar - Grouped & Balanced */}
-      <nav className={`w-full transition-all duration-300 ${
+      {/* 2. Main Luxury Dark Navigation Bar */}
+      <nav className={`w-full transition-all duration-300 text-white ${
         isDarkNav 
-          ? 'bg-white shadow-sm border-b border-neutral-200/90 py-0.5 sm:py-1 text-neutral-900' 
-          : 'bg-gradient-to-b from-black/80 via-black/40 to-transparent py-1 sm:py-1.5 text-white'
+          ? 'bg-neutral-950/90 backdrop-blur-md border-b border-white/10 py-1 sm:py-1.5 shadow-2xl' 
+          : 'bg-gradient-to-b from-black/85 via-black/45 to-transparent py-1 sm:py-2'
       }`}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between min-h-[64px] sm:min-h-[70px]">
           
           {/* Left Group: Logo + Navigation Tabs Close Together */}
           <div className="flex items-center gap-6 lg:gap-8">
             
-            {/* Logo Area - Clean Transparent No Black Box */}
+            {/* Logo Area - Clean Transparent on Dark Background */}
             <button 
               onClick={() => handleNavClick('home')} 
               className="flex items-center flex-shrink-0"
@@ -145,7 +129,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             {/* Navigation Links */}
-            <div className="hidden lg:flex items-center space-x-5 xl:space-x-6">
+            <div className="hidden lg:flex items-center space-x-5 xl:space-x-7">
               {navLinks.map((link) => {
                 const isActive = currentPage === link.id;
                 return (
@@ -154,8 +138,8 @@ export const Header: React.FC<HeaderProps> = ({
                     onClick={() => handleNavClick(link.id)}
                     className={`text-[13px] font-bold tracking-wide transition-colors py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-[2px] after:transition-all after:duration-300 ${
                       isActive
-                        ? (isDarkNav ? 'text-neutral-950 font-bold after:w-full after:bg-neutral-950' : 'text-white font-bold after:w-full after:bg-[#E8DCB9]')
-                        : (isDarkNav ? 'text-neutral-600 hover:text-neutral-950 after:w-0 hover:after:w-full after:bg-neutral-900' : 'text-neutral-200 hover:text-white after:w-0 hover:after:w-full after:bg-[#E8DCB9]')
+                        ? 'text-white font-bold after:w-full after:bg-[#E8DCB9]'
+                        : 'text-neutral-300 hover:text-white after:w-0 hover:after:w-full after:bg-[#E8DCB9]'
                     }`}
                   >
                     {link.label}
@@ -169,13 +153,9 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="hidden md:flex items-center space-x-3">
             <button
               onClick={onOpenBooking}
-              className={`font-bold px-5 py-2.5 rounded-xl text-xs tracking-wider uppercase transition-all duration-200 flex items-center gap-2 shadow-sm ${
-                isDarkNav
-                  ? 'bg-neutral-900 hover:bg-neutral-800 text-white'
-                  : 'bg-white hover:bg-neutral-100 text-neutral-900'
-              }`}
+              className="bg-white hover:bg-[#E8DCB9] text-neutral-950 font-bold px-5 py-2.5 rounded-xl text-xs tracking-wider uppercase transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg active:scale-95"
             >
-              <Calendar className="w-3.5 h-3.5 text-[#C29A64]" />
+              <Calendar className="w-3.5 h-3.5 text-[#8A6943]" />
               <span>{t('nav.book_now')}</span>
             </button>
           </div>
@@ -184,18 +164,14 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center space-x-2 lg:hidden">
             <button
               onClick={() => setLang(lang === 'vi' ? 'en' : 'vi')}
-              className={`text-xs font-bold px-2 py-1 rounded border ${
-                isDarkNav ? 'border-neutral-300 text-neutral-900' : 'border-white/30 text-white'
-              }`}
+              className="text-xs font-bold px-2 py-1 rounded border border-white/30 text-white"
             >
               {lang.toUpperCase()}
             </button>
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`p-2 rounded-lg transition-colors ${
-                isDarkNav ? 'text-neutral-900' : 'text-white'
-              }`}
+              className="p-2 rounded-lg text-white"
               aria-label="Toggle Menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -229,18 +205,6 @@ export const Header: React.FC<HeaderProps> = ({
                 <Phone className="w-3.5 h-3.5 text-[#C29A64]" />
                 <span>028 2248 7782 (Hotline)</span>
               </a>
-              {onOpenAdmin && (
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenAdmin();
-                  }}
-                  className="w-full py-2.5 rounded-lg bg-neutral-800 text-neutral-300 text-xs font-semibold flex items-center justify-center gap-2"
-                >
-                  <Lock className="w-3.5 h-3.5 text-[#C29A64]" />
-                  <span>Trang Quản Trị Khách Sạn</span>
-                </button>
-              )}
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
