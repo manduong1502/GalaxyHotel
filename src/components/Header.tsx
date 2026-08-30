@@ -128,17 +128,17 @@ export const Header: React.FC<HeaderProps> = ({
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           
-          {/* Logo Area */}
+          {/* Logo Area - Prominent & Crisp */}
           <button 
             onClick={() => handleNavClick('home')} 
             className="flex items-center group transition-transform hover:scale-105 flex-shrink-0"
             aria-label="Galaxy Boutique Hotel"
           >
-            <div className="bg-neutral-950 px-3.5 py-2 rounded-xl border border-neutral-800 shadow-sm flex items-center justify-center">
+            <div className="bg-neutral-950 px-4 py-2 rounded-2xl border border-neutral-800 shadow-md flex items-center justify-center">
               <img 
                 src="/images/logo.png" 
                 alt="Hotel Galaxy Boutique" 
-                className="h-8 sm:h-9 w-auto object-contain"
+                className="h-9 sm:h-11 md:h-12 w-auto object-contain transition-transform group-hover:scale-105"
               />
             </div>
           </button>
