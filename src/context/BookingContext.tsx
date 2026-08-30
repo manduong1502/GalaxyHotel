@@ -247,7 +247,36 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     setBookings(prev => [newRecord, ...prev]);
 
-    // Asynchronously try syncing to Google Sheets if configured
+    // 1. Gửi dữ liệu tới PHP REST API (Lưu MySQL và tự động gửi Email qua Gmail SMTP)
+    try {
+      fetch('/api/bookings.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingCode: newCode,
+          bookingType: formData.bookingType,
+          roomId: formData.roomId,
+          roomName: selectedRoom.name.vi,
+          guestName: formData.guestName,
+          guestPhone: formData.guestPhone,
+          guestEmail: formData.guestEmail || '',
+          checkInDate: formData.checkInDate,
+          checkInTime: formData.checkInTime || '14:00',
+          checkOutDate: formData.checkOutDate,
+          checkOutTime: formData.checkOutTime || '12:00',
+          hoursCount: formData.bookingType === 'hourly' ? formData.hoursCount : null,
+          nightsCount: formData.bookingType === 'daily' ? nights : 1,
+          adults: formData.adults,
+          children: formData.children,
+          totalPrice: totalPrice,
+          specialRequests: formData.specialRequests || '',
+        })
+      }).catch(() => {});
+    } catch (e) {
+      // Local fallback
+    }
+
+    // 2. Đồng bộ song song sang Google Sheets nếu đã cài đặt Webhook
     syncBookingToGoogleSheets(newRecord);
 
     return newRecord;
