@@ -25,14 +25,12 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           
           {/* Col 1: Brand Info */}
           <div className="lg:col-span-4 space-y-4">
-            <button onClick={() => handleNav('home')} className="flex items-center text-left group">
-              <div className="bg-neutral-900 px-4 py-2.5 rounded-2xl border border-neutral-800 shadow-sm flex items-center justify-center transition-transform group-hover:scale-105">
-                <img 
-                  src="/images/logo.png" 
-                  alt="Hotel Galaxy Boutique" 
-                  className="h-11 sm:h-12 w-auto object-contain"
-                />
-              </div>
+            <button onClick={() => handleNav('home')} className="flex items-center text-left">
+              <img 
+                src="/images/logo.png" 
+                alt="Hotel Galaxy Boutique" 
+                className="h-10 sm:h-12 w-auto object-contain"
+              />
             </button>
 
             <p className="text-neutral-400 text-xs sm:text-sm leading-relaxed font-sans">

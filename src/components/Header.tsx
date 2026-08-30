@@ -131,19 +131,17 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Left Group: Logo + Navigation Tabs Close Together */}
           <div className="flex items-center gap-6 lg:gap-8">
             
-            {/* Logo Area */}
+            {/* Logo Area - Clean Transparent No Black Box */}
             <button 
               onClick={() => handleNavClick('home')} 
-              className="flex items-center group transition-transform hover:scale-105 flex-shrink-0 py-0.5"
+              className="flex items-center flex-shrink-0"
               aria-label="Galaxy Boutique Hotel"
             >
-              <div className="bg-neutral-950 px-3.5 py-1.5 rounded-2xl border border-neutral-800 shadow-md flex items-center justify-center">
-                <img 
-                  src="/images/logo.png" 
-                  alt="Hotel Galaxy Boutique" 
-                  className="h-11 sm:h-13 md:h-14 w-auto object-contain transition-transform group-hover:scale-105"
-                />
-              </div>
+              <img 
+                src="/images/logo.png" 
+                alt="Hotel Galaxy Boutique" 
+                className="h-10 sm:h-12 md:h-13 w-auto object-contain"
+              />
             </button>
 
             {/* Navigation Links */}
