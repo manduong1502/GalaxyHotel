@@ -120,54 +120,58 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* 2. Main Spacious Navigation Bar - Zero Extra Padding & Large Logo */}
+      {/* 2. Main Spacious Navigation Bar - Grouped & Balanced */}
       <nav className={`w-full transition-all duration-300 ${
         isDarkNav 
           ? 'bg-white shadow-sm border-b border-neutral-200/90 py-0.5 sm:py-1 text-neutral-900' 
           : 'bg-gradient-to-b from-black/80 via-black/40 to-transparent py-1 sm:py-1.5 text-white'
       }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between min-h-[64px] sm:min-h-[72px]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between min-h-[64px] sm:min-h-[70px]">
           
-          {/* Logo Area - Large & Prominent */}
-          <button 
-            onClick={() => handleNavClick('home')} 
-            className="flex items-center group transition-transform hover:scale-105 flex-shrink-0 py-0.5"
-            aria-label="Galaxy Boutique Hotel"
-          >
-            <div className="bg-neutral-950 px-3.5 py-1.5 rounded-2xl border border-neutral-800 shadow-md flex items-center justify-center">
-              <img 
-                src="/images/logo.png" 
-                alt="Hotel Galaxy Boutique" 
-                className="h-12 sm:h-14 md:h-16 w-auto object-contain transition-transform group-hover:scale-105"
-              />
-            </div>
-          </button>
+          {/* Left Group: Logo + Navigation Tabs Close Together */}
+          <div className="flex items-center gap-6 lg:gap-8">
+            
+            {/* Logo Area */}
+            <button 
+              onClick={() => handleNavClick('home')} 
+              className="flex items-center group transition-transform hover:scale-105 flex-shrink-0 py-0.5"
+              aria-label="Galaxy Boutique Hotel"
+            >
+              <div className="bg-neutral-950 px-3.5 py-1.5 rounded-2xl border border-neutral-800 shadow-md flex items-center justify-center">
+                <img 
+                  src="/images/logo.png" 
+                  alt="Hotel Galaxy Boutique" 
+                  className="h-11 sm:h-13 md:h-14 w-auto object-contain transition-transform group-hover:scale-105"
+                />
+              </div>
+            </button>
 
-          {/* Center Navigation Links - Spacious & Elegant */}
-          <div className="hidden lg:flex items-center space-x-7 xl:space-x-9">
-            {navLinks.map((link) => {
-              const isActive = currentPage === link.id;
-              return (
-                <button
-                  key={link.id}
-                  onClick={() => handleNavClick(link.id)}
-                  className={`text-sm font-semibold tracking-wide transition-colors py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-[2px] after:transition-all after:duration-300 ${
-                    isActive
-                      ? (isDarkNav ? 'text-neutral-950 font-bold after:w-full after:bg-neutral-950' : 'text-white font-bold after:w-full after:bg-[#E8DCB9]')
-                      : (isDarkNav ? 'text-neutral-600 hover:text-neutral-950 after:w-0 hover:after:w-full after:bg-neutral-900' : 'text-neutral-200 hover:text-white after:w-0 hover:after:w-full after:bg-[#E8DCB9]')
-                  }`}
-                >
-                  {link.label}
-                </button>
-              );
-            })}
+            {/* Navigation Links */}
+            <div className="hidden lg:flex items-center space-x-5 xl:space-x-6">
+              {navLinks.map((link) => {
+                const isActive = currentPage === link.id;
+                return (
+                  <button
+                    key={link.id}
+                    onClick={() => handleNavClick(link.id)}
+                    className={`text-[13px] font-bold tracking-wide transition-colors py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-[2px] after:transition-all after:duration-300 ${
+                      isActive
+                        ? (isDarkNav ? 'text-neutral-950 font-bold after:w-full after:bg-neutral-950' : 'text-white font-bold after:w-full after:bg-[#E8DCB9]')
+                        : (isDarkNav ? 'text-neutral-600 hover:text-neutral-950 after:w-0 hover:after:w-full after:bg-neutral-900' : 'text-neutral-200 hover:text-white after:w-0 hover:after:w-full after:bg-[#E8DCB9]')
+                    }`}
+                  >
+                    {link.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Right Action: Clean Booking CTA */}
           <div className="hidden md:flex items-center space-x-3">
             <button
               onClick={onOpenBooking}
-              className={`font-bold px-6 py-2.5 rounded-xl text-xs tracking-wider uppercase transition-all duration-200 flex items-center gap-2 shadow-sm ${
+              className={`font-bold px-5 py-2.5 rounded-xl text-xs tracking-wider uppercase transition-all duration-200 flex items-center gap-2 shadow-sm ${
                 isDarkNav
                   ? 'bg-neutral-900 hover:bg-neutral-800 text-white'
                   : 'bg-white hover:bg-neutral-100 text-neutral-900'
