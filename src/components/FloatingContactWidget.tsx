@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { Phone, MapPin, MessageCircle, X, MessageSquare, Sparkles } from 'lucide-react';
+import { Phone, MapPin, MessageCircle, X, MessageSquare } from 'lucide-react';
 
 export const FloatingContactWidget: React.FC = () => {
   const { lang } = useLanguage();
@@ -13,56 +13,48 @@ export const FloatingContactWidget: React.FC = () => {
       name: 'Zalo: 079 329 5664',
       subtitle: lang === 'vi' ? 'Nhắn Zalo tư vấn ngay' : 'Zalo Chat Support',
       icon: (
-        <span className="w-9 h-9 rounded-full bg-[#0068FF] text-white font-bold text-xs flex items-center justify-center shadow-sm">
+        <span className="w-10 h-10 rounded-2xl bg-[#0068FF] text-white font-bold text-xs flex items-center justify-center shadow-sm">
           Zalo
         </span>
       ),
       url: 'https://zalo.me/0793295664',
       bgHover: 'hover:bg-blue-50',
-      badge: lang === 'vi' ? 'Trực tuyến' : 'Online',
-      badgeColor: 'bg-emerald-100 text-emerald-800',
     },
     {
       id: 'whatsapp',
       name: 'WhatsApp Chat',
       subtitle: lang === 'vi' ? 'Khách quốc tế 24/7' : 'English & International',
       icon: (
-        <span className="w-9 h-9 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-sm">
-          <MessageSquare className="w-4 h-4" />
+        <span className="w-10 h-10 rounded-2xl bg-[#25D366] text-white flex items-center justify-center shadow-sm">
+          <MessageSquare className="w-5 h-5" />
         </span>
       ),
       url: 'https://wa.me/84793295664',
       bgHover: 'hover:bg-emerald-50',
-      badge: '24/7',
-      badgeColor: 'bg-emerald-100 text-emerald-800',
     },
     {
       id: 'hotline',
       name: '028 2248 7782',
       subtitle: lang === 'vi' ? 'Bấm để gọi lễ tân' : 'Call Reception Hotline',
       icon: (
-        <span className="w-9 h-9 rounded-full bg-neutral-900 text-[#E8DCB9] flex items-center justify-center shadow-sm">
-          <Phone className="w-4 h-4" />
+        <span className="w-10 h-10 rounded-2xl bg-neutral-900 text-[#E8DCB9] flex items-center justify-center shadow-sm">
+          <Phone className="w-5 h-5" />
         </span>
       ),
       url: 'tel:02822487782',
       bgHover: 'hover:bg-neutral-50',
-      badge: lang === 'vi' ? 'Lễ tân' : 'Front desk',
-      badgeColor: 'bg-amber-100 text-amber-800',
     },
     {
       id: 'maps',
       name: 'Google Maps',
       subtitle: '269/19 Đề Thám, Q.1',
       icon: (
-        <span className="w-9 h-9 rounded-full bg-[#EA4335] text-white flex items-center justify-center shadow-sm">
-          <MapPin className="w-4 h-4" />
+        <span className="w-10 h-10 rounded-2xl bg-[#EA4335] text-white flex items-center justify-center shadow-sm">
+          <MapPin className="w-5 h-5" />
         </span>
       ),
       url: 'https://maps.app.goo.gl/nRiJu2PQHPtAZEt16',
       bgHover: 'hover:bg-red-50',
-      badge: lang === 'vi' ? 'Chỉ đường' : 'Directions',
-      badgeColor: 'bg-red-100 text-red-800',
     },
   ];
 
@@ -85,7 +77,7 @@ export const FloatingContactWidget: React.FC = () => {
       
       {/* Animated Speed Dial Menu Card */}
       <div 
-        className={`mb-3 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-3xl shadow-2xl border border-neutral-200 overflow-hidden divide-y divide-neutral-100 origin-bottom-right transition-all duration-300 ease-out pointer-events-auto transform ${
+        className={`mb-3 w-72 sm:w-80 max-w-[calc(100vw-2rem)] bg-white rounded-3xl shadow-2xl border border-neutral-200 overflow-hidden origin-bottom-right transition-all duration-300 ease-out pointer-events-auto transform ${
           isOpen 
             ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' 
             : 'opacity-0 scale-90 translate-y-4 pointer-events-none'
@@ -110,8 +102,8 @@ export const FloatingContactWidget: React.FC = () => {
           </button>
         </div>
 
-        {/* Contact Items */}
-        <div className="p-2.5 space-y-1">
+        {/* Contact Items (Cleaned up badges) */}
+        <div className="p-3 space-y-1.5">
           {contactLinks.map((item) => (
             <a
               key={item.id}
@@ -125,27 +117,15 @@ export const FloatingContactWidget: React.FC = () => {
                 {item.icon}
               </div>
               <div className="flex-1 min-w-0 text-left">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-neutral-900 group-hover:text-[#8A6943] transition-colors">
-                    {item.name}
-                  </span>
-                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md ${item.badgeColor}`}>
-                    {item.badge}
-                  </span>
-                </div>
+                <span className="text-xs font-bold text-neutral-900 group-hover:text-[#8A6943] transition-colors block">
+                  {item.name}
+                </span>
                 <span className="text-[11px] text-neutral-500 block truncate mt-0.5">
                   {item.subtitle}
                 </span>
               </div>
             </a>
           ))}
-        </div>
-
-        {/* Footer Note */}
-        <div className="p-3 bg-[#FAF9F5] text-center text-[10px] text-neutral-500 font-medium">
-          {lang === 'vi' 
-            ? 'Lễ tân phục vụ 24/7 • Phản hồi trong 1-2 phút'
-            : 'Front desk active 24/7 • Response in 1-2 mins'}
         </div>
 
       </div>
