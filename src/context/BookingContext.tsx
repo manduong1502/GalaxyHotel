@@ -158,7 +158,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   });
 
   const [googleSheetWebhookUrl, setGoogleSheetWebhookUrlState] = useState<string>(() => {
-    return localStorage.getItem(WEBHOOK_STORAGE_KEY) || '';
+    return localStorage.getItem(WEBHOOK_STORAGE_KEY) || 'https://script.google.com/macros/s/AKfycbzUUx2Msg5NCm6W2Ngm79XnJy8KPeDfaVyC5XAO2MQl2DBjE9xdJwZfVk5PkAKXhYwWyA/exec';
   });
 
   useEffect(() => {
