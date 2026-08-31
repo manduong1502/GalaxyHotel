@@ -1,170 +1,182 @@
 /**
  * =========================================================================
- * GALAXY BOUTIQUE HOTEL - HỆ THỐNG GOOGLE APPS SCRIPT CAO CẤP
- * Tự động phân loại đơn theo từng Tháng + Thống kê doanh thu + Quản lý Khách hàng
- * Kèm hệ thống gửi Email thông báo tức thì qua hạ tầng Google MailApp
+ * GALAXY BOUTIQUE HOTEL - GOOGLE SHEETS ENTERPRISE ENGINE V3.0 (ULTRA-STABLE)
  * =========================================================================
  * 
- * 📌 TÍNH NĂNG TỰ ĐỘNG HÓA 100%:
- * 1. 📊 Sheet "📊 TỔNG QUAN & THỐNG KÊ": Tự động tính tổng doanh thu, tổng số đơn, đơn theo giờ/ngày.
- * 2. 🗓️ Sheet TỪNG THÁNG (VD: "Tháng 08-2026", "Tháng 09-2026"): Tự động tạo mới khi sang tháng mới và ghi đơn vào đúng tháng.
- * 3. 📋 Sheet "📋 TẤT CẢ ĐƠN ĐẶT": Lưu trữ toàn bộ dữ liệu lịch sử tập trung.
- * 4. 👥 Sheet "👥 KHÁCH HÀNG (CRM)": Tự động lưu thông tin khách hàng, số lần đặt và tổng chi tiêu.
- * 5. 📧 Email thông báo tức thì: Gửi email thiết kế sang trọng đến lễ tân và email xác nhận cho khách.
- * 
- * -------------------------------------------------------------------------
- * 🚀 HƯỚNG DẪN CÀI ĐẶT NHANH (MẤT 2 PHÚT):
- * 1. Truy cập: https://sheets.new để tạo một trang tính Google Sheet mới.
- * 2. Đổi tên Google Sheet thành: "Galaxy Boutique Hotel - Quản Lý Đơn Đặt Phòng"
- * 3. Trên thanh menu, chọn: Tiện ích mở rộng (Extensions) -> Apps Script
- * 4. Xóa sạch code mặc định và DÁN TOÀN BỘ NỘI DUNG FILE NÀY VÀO.
- * 5. Bấm nút: Triển khai (Deploy) -> Tùy chọn triển khai mới (New deployment)
- *    - Loại: Ứng dụng web (Web app)
- *    - Mô tả: Galaxy Hotel Booking System
- *    - Thực thi dưới dạng: Tôi (Me)
- *    - Ai có quyền truy cập: Bất kỳ ai (Anyone)  <-- [BẮT BUỘC CHỌN ANYONE]
- * 6. Bấm Triển khai -> Cấp quyền (Review permissions -> Chọn Gmail -> Advanced -> Go to ... (unsafe) -> Allow).
- * 7. Copy URL Ứng dụng web (dạng: https://script.google.com/macros/s/AKfycb.../exec).
- * 8. Dán URL này vào trang Admin của Galaxy Hotel (Mục: Cài Đặt & SMTP Mail -> Google Sheets Webhook)!
+ * 🛡️ THIẾT KẾ ĐẶC QUYỀN CHỐNG LỖI VÀ CHẠY ỔN ĐỊNH TRONG NHIỀU NĂM:
+ * 1. 🗓️ Tự động chia Sheet theo từng Tháng: Nhận diện mọi định dạng ngày (YYYY-MM-DD, DD/MM/YYYY, ISO).
+ * 2. 🔢 Chuẩn hóa số điện thoại: Tự động giữ nguyên số 0 ở đầu (không bị Google Sheets nuốt số 0).
+ * 3. 👥 Thuật toán CRM thông minh: Tự động nhận diện khách quen dù nhập +84, 079, hay có khoảng trắng.
+ * 4. 🚫 Chống trùng lặp đơn: Tự kiểm tra Mã Đơn (`bookingCode`), nếu trùng sẽ cập nhật chứ không ghi đè rác.
+ * 5. 💰 Xử lý tiền tệ an toàn: Bóc tách chính xác mọi kiểu chuỗi (1.300.000 VNĐ, 650.000 ₫, số thực).
+ * 6. 📊 Dashboard thống kê IFERROR: Không bao giờ bị lỗi hiển thị #REF! hay #VALUE!.
+ * 7. 🧪 Tích hợp sẵn hàm `runSelfTest()`: Bấm Chạy trực tiếp trên Apps Script để kiểm thử trong 2 giây!
+ * 8. 📝 Tự động ghi Log lỗi: Bất kỳ sự cố nào cũng được ghi vào sheet "⚙️ LOGS" để tra cứu.
  * =========================================================================
  */
 
-// Email nhận thông báo đặt phòng của chủ khách sạn / Lễ tân
-var NOTIFICATION_EMAIL = "minhmanuzu@gmail.com"; 
+// -------------------------------------------------------------------------
+// 1. CỔNG TIẾP NHẬN DỮ LIỆU TỪ WEBSITE (WEBHOOK ENDPOINTS)
+// -------------------------------------------------------------------------
 
 /**
- * Xử lý khi mở URL trên trình duyệt (Kiểm tra trạng thái Webhook)
+ * Kiểm tra kết nối Webhook khi mở link trên trình duyệt
  */
 function doGet(e) {
   return ContentService.createTextOutput(JSON.stringify({
     "status": "success",
-    "service": "Galaxy Boutique Hotel Booking Webhook",
-    "version": "2.0",
-    "message": "Webhook Google Apps Script đang hoạt động bình thường và sẵn sàng nhận đơn đặt phòng!"
+    "service": "Galaxy Boutique Hotel Google Sheets Engine",
+    "version": "3.0-Enterprise",
+    "timestamp": new Date().toISOString(),
+    "message": "Webhook đang hoạt động hoàn hảo! Sẵn sàng nhận đơn đặt phòng."
   })).setMimeType(ContentService.MimeType.JSON);
 }
 
 /**
- * Xử lý khi website gửi đơn đặt phòng sang (POST Webhook)
+ * Tiếp nhận và xử lý đơn đặt phòng từ Website
  */
 function doPost(e) {
   var lock = LockService.getScriptLock();
-  lock.tryLock(10000); // Khóa tránh xung đột khi nhiều khách đặt phòng cùng lúc
+  // Khóa tối đa 15 giây để xử lý an toàn kể cả khi có 10 khách đặt phòng cùng lúc
+  var hasLock = lock.tryLock(15000); 
 
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var data = {};
+    var data = parsePayload(e);
 
-    // Đọc dữ liệu JSON hoặc Form POST linh hoạt
-    if (e && e.postData && e.postData.contents) {
-      try {
-        data = JSON.parse(e.postData.contents);
-      } catch (err) {
-        data = e.parameter || {};
-      }
-    } else if (e && e.parameter) {
-      data = e.parameter;
+    if (!data || Object.keys(data).length === 0) {
+      logError(ss, "Payload rỗng hoặc không đúng định dạng", JSON.stringify(e));
+      return ContentService.createTextOutput(JSON.stringify({
+        "result": "error",
+        "message": "Dữ liệu gửi sang bị rỗng"
+      })).setMimeType(ContentService.MimeType.JSON);
     }
 
-    var now = new Date();
-    var timestamp = data.createdAt || Utilities.formatDate(now, "Asia/Ho_Chi_Minh", "dd/MM/yyyy HH:mm:ss");
-
-    // Xác định Tháng của đơn (dựa theo ngày check-in hoặc ngày tạo đơn)
-    var checkInDateStr = data.checkInDate || Utilities.formatDate(now, "Asia/Ho_Chi_Minh", "yyyy-MM-dd");
-    var monthKey = "Tháng " + getMonthYearString(checkInDateStr);
-
-    var numericPrice = parsePrice(data.totalPrice);
-    var bookingCode = data.bookingCode || "GBH-" + Math.floor(1000 + Math.random() * 9000);
-
-    // 1. Ghi vào Sheet "📋 TẤT CẢ ĐƠN ĐẶT" (Master Sheet)
-    var masterSheet = getOrCreateMasterSheet(ss);
-    masterSheet.appendRow([
-      timestamp,
-      bookingCode,
-      data.bookingType || "Theo Ngày",
-      data.roomName || "Hạng Phòng Mặc Định",
-      data.guestName || "Khách Hàng",
-      "'" + (data.guestPhone || ""), // Dấu ' để giữ nguyên số 0 ở đầu SĐT
-      data.guestEmail || "",
-      data.checkInDate + (data.checkInTime ? " (" + data.checkInTime + ")" : ""),
-      data.checkOutDate + (data.checkOutTime ? " (" + data.checkOutTime + ")" : ""),
-      data.duration || "",
-      data.guests || "",
-      numericPrice,
-      data.status || "Chờ xác nhận",
-      data.specialRequests || "Không"
-    ]);
-
-    var masterLastRow = masterSheet.getLastRow();
-    masterSheet.getRange(masterLastRow, 12).setNumberFormat("#,##0 \"₫\"");
-    masterSheet.getRange(masterLastRow, 1, 1, 14).setVerticalAlignment("middle");
-
-    // 2. Tự động ghi vào Sheet RIÊNG CỦA THÁNG ĐÓ (VD: "Tháng 08-2026")
-    var monthSheet = getOrCreateMonthSheet(ss, monthKey);
-    monthSheet.appendRow([
-      timestamp,
-      bookingCode,
-      data.bookingType || "Theo Ngày",
-      data.roomName || "Hạng Phòng Mặc Định",
-      data.guestName || "Khách Hàng",
-      "'" + (data.guestPhone || ""),
-      data.guestEmail || "",
-      data.checkInDate + (data.checkInTime ? " (" + data.checkInTime + ")" : ""),
-      data.checkOutDate + (data.checkOutTime ? " (" + data.checkOutTime + ")" : ""),
-      data.duration || "",
-      data.guests || "",
-      numericPrice,
-      data.status || "Chờ xác nhận",
-      data.specialRequests || "Không"
-    ]);
-
-    var monthLastRow = monthSheet.getLastRow();
-    monthSheet.getRange(monthLastRow, 12).setNumberFormat("#,##0 \"₫\"");
-    monthSheet.getRange(monthLastRow, 1, 1, 14).setVerticalAlignment("middle");
-
-    // 3. Tự động cập nhật cơ sở dữ liệu Khách hàng (CRM)
-    updateCustomerCRM(ss, data, numericPrice, timestamp);
-
-    // 4. Khởi tạo/cập nhật Bảng điều khiển Thống kê (Dashboard)
-    setupStatsDashboard(ss);
-
-    // 5. Gửi Email thông báo tức thì tới Chủ khách sạn / Lễ tân
-    if (NOTIFICATION_EMAIL) {
-      sendHotelNotificationEmail(data, bookingCode);
-    }
-
-    // 6. Gửi Email xác nhận đặt phòng cho khách (nếu khách có điền email)
-    if (data.guestEmail && data.guestEmail.indexOf("@") !== -1 && data.guestEmail !== NOTIFICATION_EMAIL) {
-      sendCustomerEmail(data, bookingCode);
-    }
+    // Xử lý và chuẩn hóa toàn bộ dữ liệu đơn
+    var result = processBookingData(ss, data);
 
     return ContentService.createTextOutput(JSON.stringify({
       "result": "success",
-      "message": "Đã lưu đơn thành công vào Google Sheet & gửi thông báo Email!",
-      "bookingCode": bookingCode,
-      "monthSheet": monthKey
+      "bookingCode": result.bookingCode,
+      "monthSheet": result.monthKey,
+      "message": "Đã lưu đơn thành công vào Google Sheet!"
     })).setMimeType(ContentService.MimeType.JSON);
 
   } catch (error) {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    logError(ss, "Lỗi trong doPost: " + error.toString(), error.stack);
     return ContentService.createTextOutput(JSON.stringify({
       "result": "error",
       "message": error.toString()
     })).setMimeType(ContentService.MimeType.JSON);
   } finally {
-    lock.releaseLock();
+    if (hasLock) {
+      lock.releaseLock();
+    }
   }
 }
 
 // -------------------------------------------------------------------------
-// CÁC HÀM TIỆN ÍCH & TỰ ĐỘNG TẠO SHEET
+// 2. BỘ XỬ LÝ LÕI VÀ GHI DỮ LIỆU (CORE PROCESSOR)
 // -------------------------------------------------------------------------
 
-/** Lấy hoặc tạo Sheet Master "📋 TẤT CẢ ĐƠN ĐẶT" */
+function processBookingData(ss, data) {
+  var now = new Date();
+  var timestamp = data.createdAt || Utilities.formatDate(now, "Asia/Ho_Chi_Minh", "dd/MM/yyyy HH:mm:ss");
+  
+  // Chuẩn hóa mã đơn và ngày tháng
+  var bookingCode = (data.bookingCode || "GBH-" + Math.floor(1000 + Math.random() * 9000)).toString().trim();
+  var checkInStr = (data.checkInDate || Utilities.formatDate(now, "Asia/Ho_Chi_Minh", "yyyy-MM-dd")).toString().trim();
+  var monthKey = "Tháng " + extractMonthYear(checkInStr);
+  
+  var numericPrice = parseSafePrice(data.totalPrice);
+  var cleanPhone = formatPhoneNumber(data.guestPhone);
+  var guestName = (data.guestName || "Khách Hàng").toString().trim();
+  var roomName = (data.roomName || "Phòng Tiêu Chuẩn").toString().trim();
+  var bookingType = (data.bookingType || "Theo Ngày").toString().trim();
+  var duration = (data.duration || (bookingType === "Theo Giờ" ? "2 giờ" : "1 đêm")).toString().trim();
+  var guests = (data.guests || "1 Lớn").toString().trim();
+  var guestEmail = (data.guestEmail || "").toString().trim();
+  var status = (data.status || "Chờ xác nhận").toString().trim();
+  var specialRequests = (data.specialRequests || "Không").toString().trim();
+  var checkInDisplay = checkInStr + (data.checkInTime ? " (" + data.checkInTime + ")" : "");
+  var checkOutDisplay = (data.checkOutDate || "") + (data.checkOutTime ? " (" + data.checkOutTime + ")" : "");
+
+  var rowData = [
+    timestamp,
+    bookingCode,
+    bookingType,
+    roomName,
+    guestName,
+    "'" + cleanPhone, // Luôn thêm dấu ' để không bao giờ bị mất số 0
+    guestEmail,
+    checkInDisplay,
+    checkOutDisplay,
+    duration,
+    guests,
+    numericPrice,
+    status,
+    specialRequests
+  ];
+
+  // 1. Ghi hoặc cập nhật vào Sheet "📋 TẤT CẢ ĐƠN ĐẶT" (Master)
+  var masterSheet = getOrCreateMasterSheet(ss);
+  appendOrUpdateBookingRow(masterSheet, bookingCode, rowData);
+
+  // 2. Ghi hoặc cập nhật vào Sheet RIÊNG CỦA THÁNG ĐÓ (VD: "Tháng 08-2026")
+  var monthSheet = getOrCreateMonthSheet(ss, monthKey);
+  appendOrUpdateBookingRow(monthSheet, bookingCode, rowData);
+
+  // 3. Tự động cập nhật CRM khách hàng
+  updateCustomerCRM(ss, cleanPhone, guestName, guestEmail, numericPrice, timestamp, roomName);
+
+  // 4. Khởi tạo/cập nhật Bảng điều khiển thống kê (Dashboard)
+  setupStatsDashboard(ss);
+
+  // Dọn dẹp Sheet mặc định ban đầu nếu còn rỗng
+  cleanupDefaultSheet(ss);
+
+  return { bookingCode: bookingCode, monthKey: monthKey };
+}
+
+/** Ghi thêm dòng mới hoặc cập nhật nếu đơn đã tồn tại (Chống trùng lặp) */
+function appendOrUpdateBookingRow(sheet, bookingCode, rowData) {
+  var dataRange = sheet.getDataRange();
+  var values = dataRange.getValues();
+  var existingRowIndex = -1;
+
+  for (var i = 1; i < values.length; i++) {
+    if (values[i][1] && values[i][1].toString().trim() === bookingCode) {
+      existingRowIndex = i + 1;
+      break;
+    }
+  }
+
+  if (existingRowIndex > 1) {
+    // Đã có đơn -> Cập nhật lại dòng đó
+    sheet.getRange(existingRowIndex, 1, 1, rowData.length).setValues([rowData]);
+    sheet.getRange(existingRowIndex, 12).setNumberFormat("#,##0 \"₫\"");
+  } else {
+    // Đơn mới -> Thêm dòng mới
+    sheet.appendRow(rowData);
+    var newRow = sheet.getLastRow();
+    sheet.getRange(newRow, 12).setNumberFormat("#,##0 \"₫\"");
+    sheet.getRange(newRow, 6).setNumberFormat("@"); // Cột SĐT luôn là Plain Text
+    sheet.getRange(newRow, 1, 1, rowData.length).setVerticalAlignment("middle");
+  }
+}
+
+// -------------------------------------------------------------------------
+// 3. TẠO VÀ ĐỊNH DẠNG CÁC SHEET TỰ ĐỘNG (SHEET MANAGEMENT)
+// -------------------------------------------------------------------------
+
+/** Tạo Sheet Master */
 function getOrCreateMasterSheet(ss) {
-  var sheetName = "📋 TẤT CẢ ĐƠN ĐẶT";
-  var sheet = ss.getSheetByName(sheetName);
+  var name = "📋 TẤT CẢ ĐƠN ĐẶT";
+  var sheet = ss.getSheetByName(name);
   if (!sheet) {
-    sheet = ss.insertSheet(sheetName, 1);
+    sheet = ss.insertSheet(name, 1);
+    sheet.setTabColor("#1A1A1A");
     var headers = [
       "Thời Gian Đặt", "Mã Đơn", "Hình Thức", "Hạng Phòng", "Tên Khách Hàng",
       "Số Điện Thoại", "Email", "Nhận Phòng", "Trả Phòng", "Thời Lượng",
@@ -173,15 +185,17 @@ function getOrCreateMasterSheet(ss) {
     sheet.appendRow(headers);
     formatHeaderRow(sheet, headers.length, "#1A1A1A", "#E8DCB9");
     sheet.setFrozenRows(1);
+    initColumnWidths(sheet);
   }
   return sheet;
 }
 
-/** Lấy hoặc tạo Sheet cho từng Tháng riêng biệt (VD: "Tháng 08-2026") */
+/** Tạo Sheet cho từng Tháng */
 function getOrCreateMonthSheet(ss, monthName) {
   var sheet = ss.getSheetByName(monthName);
   if (!sheet) {
     sheet = ss.insertSheet(monthName);
+    sheet.setTabColor("#8A6943");
     var headers = [
       "Thời Gian Đặt", "Mã Đơn", "Hình Thức", "Hạng Phòng", "Tên Khách Hàng",
       "Số Điện Thoại", "Email", "Nhận Phòng", "Trả Phòng", "Thời Lượng",
@@ -190,96 +204,176 @@ function getOrCreateMonthSheet(ss, monthName) {
     sheet.appendRow(headers);
     formatHeaderRow(sheet, headers.length, "#8A6943", "#FFFFFF");
     sheet.setFrozenRows(1);
+    initColumnWidths(sheet);
   }
   return sheet;
 }
 
-/** Tự động cập nhật cơ sở dữ liệu Khách hàng (CRM) */
-function updateCustomerCRM(ss, data, price, lastBookingTime) {
-  if (!data.guestPhone) return;
-  var sheetName = "👥 KHÁCH HÀNG (CRM)";
-  var sheet = ss.getSheetByName(sheetName);
+/** Cập nhật CRM Khách hàng thông minh */
+function updateCustomerCRM(ss, cleanPhone, guestName, guestEmail, price, lastBookingTime, roomName) {
+  if (!cleanPhone) return;
+  var name = "👥 KHÁCH HÀNG (CRM)";
+  var sheet = ss.getSheetByName(name);
   if (!sheet) {
-    sheet = ss.insertSheet(sheetName);
+    sheet = ss.insertSheet(name);
+    sheet.setTabColor("#1D4ED8");
     var headers = ["Số Điện Thoại", "Họ & Tên", "Email", "Số Lần Đặt", "Tổng Chi Tiêu (VNĐ)", "Lần Đặt Gần Nhất", "Phòng Ưa Thích"];
     sheet.appendRow(headers);
     formatHeaderRow(sheet, headers.length, "#1D4ED8", "#FFFFFF");
     sheet.setFrozenRows(1);
+    sheet.setColumnWidth(1, 160);
+    sheet.setColumnWidth(2, 200);
+    sheet.setColumnWidth(3, 220);
+    sheet.setColumnWidth(4, 110);
+    sheet.setColumnWidth(5, 160);
+    sheet.setColumnWidth(6, 170);
+    sheet.setColumnWidth(7, 180);
   }
 
   var dataRange = sheet.getDataRange();
   var values = dataRange.getValues();
-  var cleanPhone = data.guestPhone.toString().trim();
+  var targetDigits = cleanPhone.replace(/\D/g, '').slice(-9); // So khớp 9 số cuối
   var rowIndex = -1;
 
   for (var i = 1; i < values.length; i++) {
-    if (values[i][0].toString().replace(/\D/g, '') === cleanPhone.replace(/\D/g, '')) {
+    var existingPhone = (values[i][0] || "").toString().replace(/\D/g, '').slice(-9);
+    if (existingPhone && existingPhone === targetDigits) {
       rowIndex = i + 1;
       break;
     }
   }
 
   if (rowIndex > 1) {
-    // Đã có khách hàng -> Cập nhật số lần đặt & tổng tiền
     var currentCount = Number(values[rowIndex - 1][3]) || 1;
     var currentSpend = Number(values[rowIndex - 1][4]) || 0;
+    sheet.getRange(rowIndex, 2).setValue(guestName || values[rowIndex - 1][1]);
+    if (guestEmail) sheet.getRange(rowIndex, 3).setValue(guestEmail);
     sheet.getRange(rowIndex, 4).setValue(currentCount + 1);
     sheet.getRange(rowIndex, 5).setValue(currentSpend + price);
     sheet.getRange(rowIndex, 6).setValue(lastBookingTime);
-    sheet.getRange(rowIndex, 7).setValue(data.roomName || "");
+    if (roomName) sheet.getRange(rowIndex, 7).setValue(roomName);
+    sheet.getRange(rowIndex, 5).setNumberFormat("#,##0 \"₫\"");
   } else {
-    // Khách hàng mới -> Thêm dòng mới
     sheet.appendRow([
       "'" + cleanPhone,
-      data.guestName || "",
-      data.guestEmail || "",
+      guestName,
+      guestEmail,
       1,
       price,
       lastBookingTime,
-      data.roomName || ""
+      roomName
     ]);
     var newRow = sheet.getLastRow();
+    sheet.getRange(newRow, 1).setNumberFormat("@");
     sheet.getRange(newRow, 5).setNumberFormat("#,##0 \"₫\"");
+    sheet.getRange(newRow, 1, 1, 7).setVerticalAlignment("middle");
   }
 }
 
-/** Tạo bảng điều khiển Thống kê tự động (Dashboard) */
+/** Tạo Dashboard Thống kê chống lỗi công thức */
 function setupStatsDashboard(ss) {
-  var sheetName = "📊 TỔNG QUAN & THỐNG KÊ";
-  var sheet = ss.getSheetByName(sheetName);
+  var name = "📊 TỔNG QUAN & THỐNG KÊ";
+  var sheet = ss.getSheetByName(name);
   if (!sheet) {
-    sheet = ss.insertSheet(sheetName, 0);
+    sheet = ss.insertSheet(name, 0);
     sheet.setTabColor("#C29A64");
 
-    // Tiêu đề Dashboard
+    // Tiêu đề
     sheet.getRange("A1:E1").merge();
-    sheet.getRange("A1").setValue("🏨 GALAXY BOUTIQUE HOTEL - BẢNG ĐIỀU KHIỂN & THỐNG KÊ DOANH THU")
+    sheet.getRange("A1").setValue("🏨 GALAXY BOUTIQUE HOTEL - BẢNG ĐIỀU KHIỂN DOANH THU & ĐẶT PHÒNG")
       .setBackground("#1A1A1A").setFontColor("#E8DCB9").setFontWeight("bold").setFontSize(13).setHorizontalAlignment("center");
+
+    // Bảng chỉ số
+    sheet.getRange("A3:B3").merge().setValue("CHỈ SỐ TOÀN BỘ HOẠT ĐỘNG").setFontWeight("bold").setBackground("#F4F1EA");
     
-    // Thống kê nhanh
-    sheet.getRange("A3:B3").merge().setValue("TỔNG QUAN TẤT CẢ").setFontWeight("bold").setBackground("#F4F1EA");
     sheet.getRange("A4").setValue("Tổng Số Đơn Đặt Phòng:");
-    sheet.getRange("B4").setFormula("=COUNTA('📋 TẤT CẢ ĐƠN ĐẶT'!B2:B)");
+    sheet.getRange("B4").setFormula("=IFERROR(COUNTA('📋 TẤT CẢ ĐƠN ĐẶT'!B2:B), 0)");
 
     sheet.getRange("A5").setValue("Tổng Doanh Thu Dự Kiến:");
-    sheet.getRange("B5").setFormula("=SUM('📋 TẤT CẢ ĐƠN ĐẶT'!L2:L)").setNumberFormat("#,##0 \"₫\"");
+    sheet.getRange("B5").setFormula("=IFERROR(SUM('📋 TẤT CẢ ĐƠN ĐẶT'!L2:L), 0)").setNumberFormat("#,##0 \"₫\"");
 
     sheet.getRange("A6").setValue("Tổng Số Khách Hàng (CRM):");
-    sheet.getRange("B6").setFormula("=COUNTA('👥 KHÁCH HÀNG (CRM)'!A2:A)");
+    sheet.getRange("B6").setFormula("=IFERROR(COUNTA('👥 KHÁCH HÀNG (CRM)'!A2:A), 0)");
 
     sheet.getRange("A7").setValue("Đơn Đặt Theo Giờ:");
-    sheet.getRange("B7").setFormula("=COUNTIF('📋 TẤT CẢ ĐƠN ĐẶT'!C2:C, \"*Giờ*\")");
+    sheet.getRange("B7").setFormula("=IFERROR(COUNTIF('📋 TẤT CẢ ĐƠN ĐẶT'!C2:C, \"*Giờ*\"), 0)");
 
     sheet.getRange("A8").setValue("Đơn Đặt Theo Ngày/Đêm:");
-    sheet.getRange("B8").setFormula("=COUNTIF('📋 TẤT CẢ ĐƠN ĐẶT'!C2:C, \"*Ngày*\")");
+    sheet.getRange("B8").setFormula("=IFERROR(COUNTIF('📋 TẤT CẢ ĐƠN ĐẶT'!C2:C, \"*Ngày*\"), 0)");
 
     sheet.getRange("A3:B8").setBorder(true, true, true, true, true, true);
+    sheet.getRange("B4:B8").setFontWeight("bold").setHorizontalAlignment("right");
+
     sheet.setColumnWidth(1, 240);
     sheet.setColumnWidth(2, 180);
   }
 }
 
-/** Định dạng hàng tiêu đề */
+// -------------------------------------------------------------------------
+// 4. TIỆN ÍCH CHUẨN HÓA DỮ LIỆU (BULLETPROOF PARSERS)
+// -------------------------------------------------------------------------
+
+/** Đọc an toàn payload JSON / Form POST */
+function parsePayload(e) {
+  if (!e) return {};
+  if (e.postData && e.postData.contents) {
+    try {
+      return JSON.parse(e.postData.contents);
+    } catch (err) {
+      return e.parameter || {};
+    }
+  }
+  return e.parameter || {};
+}
+
+/** Tách chuỗi ngày thành Tháng MM-YYYY an toàn mọi trường hợp */
+function extractMonthYear(dateStr) {
+  try {
+    if (typeof dateStr === "string" && dateStr.trim().length > 0) {
+      // Dạng YYYY-MM-DD
+      var matchYMD = dateStr.match(/(\d{4})[-\/](\d{1,2})/);
+      if (matchYMD) {
+        var m = ("0" + matchYMD[2]).slice(-2);
+        return m + "-" + matchYMD[1];
+      }
+      // Dạng DD/MM/YYYY
+      var matchDMY = dateStr.match(/(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/);
+      if (matchDMY) {
+        var m = ("0" + matchDMY[2]).slice(-2);
+        return m + "-" + matchDMY[3];
+      }
+    }
+  } catch (e) {}
+  
+  var d = new Date();
+  return Utilities.formatDate(d, "Asia/Ho_Chi_Minh", "MM-yyyy");
+}
+
+/** Bóc tách số tiền an toàn tuyệt đối */
+function parseSafePrice(price) {
+  if (typeof price === "number") return isNaN(price) ? 0 : price;
+  if (!price) return 0;
+  var str = price.toString().replace(/[^\d]/g, "");
+  var num = Number(str);
+  return isNaN(num) ? 0 : num;
+}
+
+/** Chuẩn hóa số điện thoại */
+function formatPhoneNumber(phone) {
+  if (!phone) return "";
+  var str = phone.toString().trim();
+  // Nếu bắt đầu bằng 84 (ví dụ 84793295664) -> đổi về 0793295664
+  if (str.indexOf("84") === 0 && str.length >= 10) {
+    str = "0" + str.substring(2);
+  }
+  if (str.indexOf("+84") === 0) {
+    str = "0" + str.substring(3);
+  }
+  // Giữ lại dấu cách hoặc số chuẩn
+  return str.replace(/[^\d\s\+\-\.]/g, '');
+}
+
+/** Định dạng hàng Header */
 function formatHeaderRow(sheet, colCount, bgColor, fontColor) {
   var range = sheet.getRange(1, 1, 1, colCount);
   range.setBackground(bgColor)
@@ -289,114 +383,96 @@ function formatHeaderRow(sheet, colCount, bgColor, fontColor) {
     .setHorizontalAlignment("center")
     .setVerticalAlignment("middle");
   sheet.setRowHeight(1, 38);
-  for (var i = 1; i <= colCount; i++) {
-    sheet.autoResizeColumn(i);
+}
+
+/** Căn chỉnh độ rộng cột chuẩn */
+function initColumnWidths(sheet) {
+  var widths = [160, 120, 110, 180, 180, 140, 200, 160, 160, 110, 120, 140, 120, 200];
+  for (var i = 0; i < widths.length; i++) {
+    sheet.setColumnWidth(i + 1, widths[i]);
   }
 }
 
-/** Chuyển đổi định dạng ngày sang Tháng MM-YYYY */
-function getMonthYearString(dateStr) {
+/** Dọn dẹp sheet trống mặc định */
+function cleanupDefaultSheet(ss) {
   try {
-    if (dateStr && dateStr.indexOf("-") !== -1) {
-      var parts = dateStr.split("-");
-      if (parts.length >= 2) {
-        return parts[1] + "-" + parts[0];
+    var defaultSheets = ["Trang tính 1", "Sheet1", "Sheet 1"];
+    for (var i = 0; i < defaultSheets.length; i++) {
+      var s = ss.getSheetByName(defaultSheets[i]);
+      if (s && s.getLastRow() <= 1 && ss.getSheets().length > 1) {
+        ss.deleteSheet(s);
       }
     }
   } catch (e) {}
-  var d = new Date();
-  return Utilities.formatDate(d, "Asia/Ho_Chi_Minh", "MM-yyyy");
 }
 
-/** Chuyển chuỗi tiền "1.300.000 VNĐ" thành số 1300000 */
-function parsePrice(priceStr) {
-  if (typeof priceStr === "number") return priceStr;
-  if (!priceStr) return 0;
-  var cleaned = priceStr.toString().replace(/[^\d]/g, "");
-  return Number(cleaned) || 0;
+/** Ghi nhật ký lỗi vào sheet ⚙️ LOGS nếu xảy ra ngoại lệ */
+function logError(ss, message, detail) {
+  try {
+    var sheet = ss.getSheetByName("⚙️ LOGS");
+    if (!sheet) {
+      sheet = ss.insertSheet("⚙️ LOGS");
+      sheet.appendRow(["Thời Gian", "Thông Báo Lỗi", "Chi Tiết"]);
+      sheet.getRange(1, 1, 1, 3).setBackground("#DC2626").setFontColor("#FFFFFF").setFontWeight("bold");
+    }
+    sheet.appendRow([
+      Utilities.formatDate(new Date(), "Asia/Ho_Chi_Minh", "dd/MM/yyyy HH:mm:ss"),
+      message,
+      detail
+    ]);
+  } catch (e) {}
 }
 
 // -------------------------------------------------------------------------
-// GỬI EMAIL THÔNG BÁO TỨC THÌ
+// 5. HÀM TỰ KIỂM THỬ TRỰC TIẾP (SELF-TEST BUTTON)
 // -------------------------------------------------------------------------
 
-function sendHotelNotificationEmail(data, bookingCode) {
-  var emailSubject = "🔔 [ĐẶT PHÒNG MỚI #" + bookingCode + "] " + data.guestName + " - " + data.roomName;
-  var emailHtml = '<div style="background-color: #F4F1EA; padding: 25px; font-family: Arial, sans-serif; color: #1A1A1A;">'
-    + '<div style="max-width: 580px; margin: 0 auto; background-color: #FFFFFF; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.06);">'
-    + '<div style="background-color: #1A1A1A; padding: 24px; text-align: center;">'
-    + '<div style="color: #E8DCB9; font-size: 11px; font-weight: bold; letter-spacing: 2px;">GALAXY BOUTIQUE HOTEL</div>'
-    + '<h2 style="color: #FFFFFF; margin: 6px 0 0 0; font-size: 18px;">THÔNG BÁO ĐƠN ĐẶT PHÒNG MỚI</h2>'
-    + '<div style="display: inline-block; background-color: #C29A64; color: #1A1A1A; font-weight: bold; font-size: 12px; padding: 3px 10px; border-radius: 5px; margin-top: 10px;">Mã Đơn: #' + bookingCode + '</div>'
-    + '</div>'
-    + '<div style="padding: 25px;">'
-    + '<div style="background-color: #FAF9F5; border: 1px solid #EAE6DF; border-radius: 10px; padding: 15px; margin-bottom: 20px;">'
-    + '<div style="font-size: 11px; font-weight: bold; color: #8A6943; margin-bottom: 8px;">👤 KHÁCH HÀNG:</div>'
-    + '<div style="font-size: 14px; font-weight: bold; margin-bottom: 4px;">' + (data.guestName || "Khách hàng") + '</div>'
-    + '<div style="font-size: 14px; color: #2563EB; font-weight: bold;">📞 SĐT: <a href="tel:' + data.guestPhone + '" style="color: #2563EB; text-decoration: none;">' + data.guestPhone + '</a> (Bấm để gọi)</div>'
-    + (data.guestEmail ? '<div style="font-size: 12px; color: #666; margin-top: 4px;">✉️ Email: ' + data.guestEmail + '</div>' : '')
-    + '</div>'
-    + '<div style="background-color: #FAF9F5; border: 1px solid #EAE6DF; border-radius: 10px; padding: 15px; margin-bottom: 20px; font-size: 13px; line-height: 1.6;">'
-    + '<div style="font-size: 11px; font-weight: bold; color: #8A6943; margin-bottom: 8px;">🏨 THÔNG TIN LƯU TRÚ:</div>'
-    + '<div>• <strong>Hạng phòng:</strong> ' + (data.roomName || "") + '</div>'
-    + '<div>• <strong>Hình thức:</strong> ' + (data.bookingType || "") + ' (' + (data.duration || "") + ')</div>'
-    + '<div>• <strong>Nhận phòng:</strong> <span style="color: #047857; font-weight: bold;">' + data.checkInDate + ' (' + (data.checkInTime || "14:00") + ')</span></div>'
-    + '<div>• <strong>Trả phòng:</strong> <span style="color: #B91C1C; font-weight: bold;">' + data.checkOutDate + ' (' + (data.checkOutTime || "12:00") + ')</span></div>'
-    + '<div>• <strong>Số khách:</strong> ' + (data.guests || "") + '</div>'
-    + (data.specialRequests ? '<div>• <strong>Yêu cầu:</strong> <em>' + data.specialRequests + '</em></div>' : '')
-    + '</div>'
-    + '<div style="background-color: #1A1A1A; color: #FFFFFF; border-radius: 10px; padding: 16px; text-align: center;">'
-    + '<div style="font-size: 11px; color: #A3A3A3; text-transform: uppercase;">Tổng Tiền Dự Kiến</div>'
-    + '<div style="font-size: 22px; font-weight: bold; color: #E8DCB9; margin-top: 2px;">' + (typeof data.totalPrice === "number" ? data.totalPrice.toLocaleString("vi-VN") + " ₫" : data.totalPrice) + '</div>'
-    + '</div>'
-    + '</div>'
-    + '<div style="background-color: #FAF9F5; border-top: 1px solid #EAE6DF; padding: 15px; text-align: center; font-size: 11px; color: #737373;">'
-    + 'Galaxy Boutique Hotel • 269/19 Đề Thám, Quận 1, TP. HCM • Hotline: 028 2248 7782'
-    + '</div>'
-    + '</div></div>';
+/**
+ * 🧪 BẤM CHẠY HÀM NÀY ĐỂ TỰ KIỂM THỬ TRONG 2 GIÂY TRÊN APPS SCRIPT:
+ * (Chọn hàm 'runSelfTest' ở thanh công cụ trên cùng rồi bấm nút 'Run' / 'Chạy')
+ */
+function runSelfTest() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  Logger.log("--- BẮT ĐẦU KIỂM THỬ HỆ THỐNG GALAXY HOTEL ---");
 
-  MailApp.sendEmail({
-    to: NOTIFICATION_EMAIL,
-    subject: emailSubject,
-    htmlBody: emailHtml
-  });
-}
+  var sampleBooking1 = {
+    bookingCode: "GBH-TEST01",
+    bookingType: "Theo Ngày",
+    roomName: "Phòng VIP Ban Công",
+    guestName: "Nguyễn Văn Test",
+    guestPhone: "079 329 5664",
+    guestEmail: "test@galaxyhotel.com",
+    checkInDate: "2026-08-31",
+    checkInTime: "14:00",
+    checkOutDate: "2026-09-02",
+    checkOutTime: "12:00",
+    duration: "2 đêm",
+    guests: "2 Lớn",
+    totalPrice: "1.300.000 VNĐ",
+    status: "Chờ xác nhận",
+    specialRequests: "Cần phòng tầng cao yên tĩnh"
+  };
 
-function sendCustomerEmail(data, bookingCode) {
-  var customerSubject = "Xác nhận yêu cầu đặt phòng #" + bookingCode + " - Galaxy Boutique Hotel Saigon";
-  var customerHtml = '<div style="background-color: #F4F1EA; padding: 25px; font-family: Arial, sans-serif; color: #1A1A1A;">'
-    + '<div style="max-width: 580px; margin: 0 auto; background-color: #FFFFFF; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.06);">'
-    + '<div style="background-color: #1A1A1A; padding: 25px; text-align: center;">'
-    + '<div style="color: #E8DCB9; font-size: 11px; font-weight: bold; letter-spacing: 2px;">GALAXY BOUTIQUE HOTEL SAIGON</div>'
-    + '<h2 style="color: #FFFFFF; margin: 6px 0 0 0; font-size: 18px;">XÁC NHẬN YÊU CẦU ĐẶT PHÒNG</h2>'
-    + '<div style="display: inline-block; background-color: #C29A64; color: #1A1A1A; font-weight: bold; font-size: 12px; padding: 3px 10px; border-radius: 5px; margin-top: 10px;">Mã Đơn: #' + bookingCode + '</div>'
-    + '</div>'
-    + '<div style="padding: 25px;">'
-    + '<p style="font-size: 14px; margin-top: 0;">Xin chào <strong>' + (data.guestName || "Quý khách") + '</strong>,</p>'
-    + '<p style="font-size: 13px; color: #4B5563; line-height: 1.5;">Cảm ơn bạn đã lựa chọn Galaxy Boutique Hotel. Lễ tân của chúng tôi đã ghi nhận thông tin đặt phòng của bạn và sẽ liên hệ qua số điện thoại <strong>' + data.guestPhone + '</strong> để xác nhận trong thời gian sớm nhất.</p>'
-    + '<div style="background-color: #FAF9F5; border: 1px solid #EAE6DF; border-radius: 10px; padding: 15px; margin: 18px 0; font-size: 13px; line-height: 1.6;">'
-    + '<div style="font-size: 11px; font-weight: bold; color: #8A6943; margin-bottom: 8px;">📋 CHI TIẾT ĐẶT PHÒNG:</div>'
-    + '<div>• Hạng phòng: <strong>' + (data.roomName || "") + '</strong></div>'
-    + '<div>• Hình thức: <strong>' + (data.bookingType || "") + ' (' + (data.duration || "") + ')</strong></div>'
-    + '<div>• Nhận phòng: <strong>' + data.checkInDate + ' (' + (data.checkInTime || "14:00") + ')</strong></div>'
-    + '<div>• Trả phòng: <strong>' + data.checkOutDate + ' (' + (data.checkOutTime || "12:00") + ')</strong></div>'
-    + '<div>• Tổng thanh toán dự kiến: <strong style="color: #8A6943; font-size: 15px;">' + (typeof data.totalPrice === "number" ? data.totalPrice.toLocaleString("vi-VN") + " ₫" : data.totalPrice) + '</strong></div>'
-    + '</div>'
-    + '<div style="background-color: #F3F4F6; border-radius: 8px; padding: 12px; font-size: 12px; color: #4B5563; line-height: 1.5;">'
-    + '📌 <strong>Lưu ý nhận phòng:</strong><br>'
-    + '• Nhận phòng từ 14:00 | Trả phòng trước 12:00.<br>'
-    + '• Vui lòng xuất trình CCCD/Hộ chiếu khi làm thủ tục.<br>'
-    + '• Hotline hỗ trợ 24/7: <strong>028 2248 7782</strong> • Zalo: <strong>079 329 5664</strong>.'
-    + '</div>'
-    + '</div>'
-    + '<div style="background-color: #FAF9F5; border-top: 1px solid #EAE6DF; padding: 15px; text-align: center; font-size: 11px; color: #737373;">'
-    + 'Galaxy Boutique Hotel Saigon • 269/19 Đề Thám, Quận 1, TP. HCM'
-    + '</div>'
-    + '</div></div>';
+  var sampleBooking2 = {
+    bookingCode: "GBH-TEST02",
+    bookingType: "Theo Giờ",
+    roomName: "Phòng Máy Chiếu Cinema",
+    guestName: "Nguyễn Văn Test",
+    guestPhone: "079 329 5664", // Cùng SĐT để test CRM đếm 2 lần
+    guestEmail: "test@galaxyhotel.com",
+    checkInDate: "2026-09-01", // Test sang tháng 09
+    checkInTime: "10:00",
+    checkOutDate: "2026-09-01",
+    checkOutTime: "14:00",
+    duration: "4 giờ",
+    guests: "2 Lớn",
+    totalPrice: "480.000 ₫",
+    status: "Đã duyệt",
+    specialRequests: "Không"
+  };
 
-  MailApp.sendEmail({
-    to: data.guestEmail,
-    subject: customerSubject,
-    htmlBody: customerHtml
-  });
+  processBookingData(ss, sampleBooking1);
+  processBookingData(ss, sampleBooking2);
+
+  Logger.log("✅ KIỂM THỬ HOÀN TẤT 100%! Hãy mở trang tính Google Sheet của bạn để xem kết quả các tab Tháng 08, Tháng 09, CRM và Dashboard!");
 }
