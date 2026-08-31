@@ -10,14 +10,14 @@ export const FloatingContactWidget: React.FC = () => {
   const contactLinks = [
     {
       id: 'zalo',
-      name: 'Zalo Chat',
-      subtitle: lang === 'vi' ? 'Hỗ trợ khách Việt' : 'Local Chat Support',
+      name: 'Zalo: 079 329 5664',
+      subtitle: lang === 'vi' ? 'Nhắn Zalo tư vấn ngay' : 'Zalo Chat Support',
       icon: (
         <span className="w-8 h-8 rounded-full bg-[#0068FF] text-white font-bold text-xs flex items-center justify-center shadow-sm">
           Zalo
         </span>
       ),
-      url: 'https://zalo.me/02822487782',
+      url: 'https://zalo.me/0793295664',
       bgHover: 'hover:bg-blue-50',
       badge: lang === 'vi' ? 'Trực tuyến' : 'Online',
       badgeColor: 'bg-emerald-100 text-emerald-800',
@@ -31,7 +31,7 @@ export const FloatingContactWidget: React.FC = () => {
           <MessageSquare className="w-4 h-4" />
         </span>
       ),
-      url: 'https://wa.me/842822487782',
+      url: 'https://wa.me/84793295664',
       bgHover: 'hover:bg-emerald-50',
       badge: '24/7',
       badgeColor: 'bg-emerald-100 text-emerald-800',

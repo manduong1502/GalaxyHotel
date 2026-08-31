@@ -64,7 +64,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <a href="https://www.facebook.com/hotelquan1giare" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-neutral-900 hover:bg-[#B89369] hover:text-neutral-950 text-neutral-300 flex items-center justify-center transition-colors border border-neutral-800" title="Facebook">
                 <Facebook className="w-4 h-4" />
               </a>
-              <a href="https://zalo.me/84793295664" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-neutral-900 hover:bg-[#B89369] hover:text-neutral-950 text-neutral-300 flex items-center justify-center transition-colors font-bold text-xs border border-neutral-800" title="Zalo">
+              <a href="https://zalo.me/0793295664" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-neutral-900 hover:bg-[#B89369] hover:text-neutral-950 text-neutral-300 flex items-center justify-center transition-colors font-bold text-xs border border-neutral-800" title="Zalo 079 329 5664">
                 Z
               </a>
               <a href="https://www.tiktok.com/@galaxy.boutique269" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg bg-neutral-900 hover:bg-[#B89369] hover:text-neutral-950 text-neutral-300 flex items-center justify-center transition-colors border border-neutral-800" title="TikTok">

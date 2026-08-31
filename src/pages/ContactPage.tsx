@@ -101,7 +101,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
                 </h4>
                 <div className="text-xs text-neutral-700 font-semibold space-y-1">
                   <div>Hotline: <a href="tel:02822487782" className="text-neutral-900 font-bold hover:underline">028 2248 7782</a></div>
-                  <div>Zalo 24/7: <a href="https://zalo.me/02822487782" target="_blank" rel="noreferrer" className="text-blue-600 font-bold hover:underline">028 2248 7782</a></div>
+                  <div>Zalo 24/7: <a href="https://zalo.me/0793295664" target="_blank" rel="noreferrer" className="text-blue-600 font-bold hover:underline">079 329 5664</a></div>
                 </div>
               </div>
 
