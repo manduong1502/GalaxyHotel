@@ -15,19 +15,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 $db_host = 'localhost';
-$db_name = 'galaxy_hotel';      // Thay bằng tên database trên cPanel AZDIGI
-$db_user = 'galaxy_user';      // Thay bằng username database trên cPanel
-$db_pass = 'GalaxyHotel@2026';  // Thay bằng password database
+$db_name = 'maacriz_galaxy';     // Tên database chính xác trên hosting cPanel AZDIGI
+$db_user = 'maacriz_galaxy';     // Tên user database cPanel
+$db_pass = 'GalaxyHotel@2026';   // Mật khẩu database
 
-try {
-    $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES => false,
-    ]);
-} catch (PDOException $e) {
-    // Return graceful JSON error if DB connection fails
-    // http_response_code(500);
-    // echo json_encode(['success' => false, 'message' => 'Database connection failed: ' . $e->getMessage()]);
-    // exit();
+// Load custom config if exists (không bị ghi đè khi update code)
+$customConfigFile = __DIR__ . '/db_config.php';
+if (file_exists($customConfigFile)) {
+    include_once $customConfigFile;
+}
+
+$pdo = null;
+
+// Thử kết nối với thông tin cấu hình
+$credentialsToTry = [
+    ['host' => $db_host, 'name' => $db_name, 'user' => $db_user, 'pass' => $db_pass],
+    ['host' => 'localhost', 'name' => 'maacriz_galaxy', 'user' => 'maacriz_galaxy', 'pass' => 'GalaxyHotel@2026'],
+    ['host' => 'localhost', 'name' => 'maacriz_galaxy', 'user' => 'maacriz_galaxy', 'pass' => 'galaxy2026'],
+    ['host' => 'localhost', 'name' => 'maacriz_galaxy', 'user' => 'maacriz_user', 'pass' => 'GalaxyHotel@2026'],
+    ['host' => 'localhost', 'name' => 'galaxy_hotel', 'user' => 'galaxy_user', 'pass' => 'GalaxyHotel@2026'],
+    ['host' => 'localhost', 'name' => 'galaxy_hotel', 'user' => 'root', 'pass' => '']
+];
+
+foreach ($credentialsToTry as $cred) {
+    try {
+        $pdo = new PDO("mysql:host={$cred['host']};dbname={$cred['name']};charset=utf8mb4", $cred['user'], $cred['pass'], [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ]);
+        if ($pdo) {
+            break;
+        }
+    } catch (PDOException $e) {
+        // Continue trying next combination
+    }
 }
