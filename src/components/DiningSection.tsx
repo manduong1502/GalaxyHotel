@@ -11,19 +11,19 @@ export const DiningSection: React.FC = () => {
     {
       title: t('dining.dish1_title'),
       desc: t('dining.dish1_desc'),
-      image: '/images/hero-1.jpg',
+      image: '/images/service-reception.png',
       tag: lang === 'vi' ? 'Check-in Nhanh' : 'Express Check-in',
     },
     {
       title: t('dining.dish2_title'),
       desc: t('dining.dish2_desc'),
-      image: '/images/welcome-1.jpg',
+      image: '/images/service-luggage.png',
       tag: lang === 'vi' ? 'Miễn Phí' : 'Complimentary',
     },
     {
       title: t('dining.dish3_title'),
       desc: t('dining.dish3_desc'),
-      image: '/images/welcome-2.jpg',
+      image: '/images/service-cleaning.png',
       tag: lang === 'vi' ? 'Khử Khuẩn Chuẩn' : 'Daily Cleaned',
     }
   ];

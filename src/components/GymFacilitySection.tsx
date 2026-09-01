@@ -23,7 +23,7 @@ export const GymFacilitySection: React.FC = () => {
       icon: Compass,
       title: t('facilities.gym_title'),
       desc: t('facilities.gym_desc'),
-      image: '/images/hero-1.jpg',
+      image: '/images/tour-mekong.jpg',
       tag: t('facilities.gym_tag'),
       hours: '24/7 Hỗ trợ',
       highlights: [t('facilities.gym_hl1'), t('facilities.gym_hl2'), t('facilities.gym_hl3')]
@@ -41,7 +41,7 @@ export const GymFacilitySection: React.FC = () => {
       icon: MapPin,
       title: t('facilities.pool_title'),
       desc: t('facilities.pool_desc'),
-      image: '/images/facility-1.jpg',
+      image: '/images/bui-vien-night.jpg',
       tag: t('facilities.pool_tag'),
       hours: 'Vị trí đắc địa',
       highlights: [t('facilities.pool_hl1'), t('facilities.pool_hl2'), t('facilities.pool_hl3')]
@@ -53,7 +53,7 @@ export const GymFacilitySection: React.FC = () => {
       icon: Compass,
       title: customBoxes[0]?.title || t('facilities.gym_title'),
       desc: customBoxes[0]?.desc || t('facilities.gym_desc'),
-      image: '/images/hero-1.jpg',
+      image: '/images/tour-mekong.jpg',
       tag: customBoxes[0]?.tag || t('facilities.gym_tag'),
       hours: '24/7 Hỗ trợ',
       highlights: customBoxes[0]?.items || [t('facilities.gym_hl1'), t('facilities.gym_hl2'), t('facilities.gym_hl3')]
@@ -71,7 +71,7 @@ export const GymFacilitySection: React.FC = () => {
       icon: MapPin,
       title: customBoxes[2]?.title || t('facilities.pool_title'),
       desc: customBoxes[2]?.desc || t('facilities.pool_desc'),
-      image: '/images/facility-1.jpg',
+      image: '/images/bui-vien-night.jpg',
       tag: customBoxes[2]?.tag || t('facilities.pool_tag'),
       hours: 'Vị trí đắc địa',
       highlights: customBoxes[2]?.items || [t('facilities.pool_hl1'), t('facilities.pool_hl2'), t('facilities.pool_hl3')]
