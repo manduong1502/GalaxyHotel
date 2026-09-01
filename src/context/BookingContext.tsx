@@ -127,6 +127,28 @@ const initialSeedBookings: BookingRecord[] = [
     staffNotes: 'Đã thanh toán đủ, check-out đúng giờ',
     status: 'completed',
     createdAt: '2026-08-21T16:00:00Z',
+  },
+  {
+    id: 'bk-1005',
+    bookingCode: 'GBH-8899',
+    bookingType: 'daily',
+    roomId: 'phong-vip',
+    roomName: 'Phòng Hạng Sang Ban Công VIP',
+    guestName: 'Dương Minh Mẫn',
+    guestPhone: '079 329 5664',
+    guestEmail: 'manduong1502@gmail.com',
+    checkInDate: '2026-08-31',
+    checkInTime: '14:00',
+    checkOutDate: '2026-09-02',
+    checkOutTime: '12:00',
+    nightsCount: 2,
+    adults: 2,
+    children: 0,
+    totalPrice: 1300000,
+    specialRequests: 'Phòng view đẹp, nhận phòng sớm',
+    staffNotes: 'Khách VIP, đã đồng bộ Google Sheets',
+    status: 'confirmed',
+    createdAt: '2026-08-31T23:22:00Z',
   }
 ];
 
@@ -143,6 +165,22 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
     return initialSeedBookings;
   });
+
+  // Auto fetch live bookings from server API
+  useEffect(() => {
+    fetch('/api/bookings.php')
+      .then(res => res.json())
+      .then(res => {
+        if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+          setBookings(prev => {
+            const existingCodes = new Set(prev.map(b => b.bookingCode));
+            const newItems = res.data.filter((b: BookingRecord) => !existingCodes.has(b.bookingCode));
+            return [...newItems, ...prev];
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const [rooms, setRooms] = useState<Room[]>(() => {
     const saved = localStorage.getItem(ROOMS_STORAGE_KEY);

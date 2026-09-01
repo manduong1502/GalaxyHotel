@@ -38,9 +38,29 @@ export const GalleryManager: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [successMsg, setSuccessMsg] = useState('');
 
-  const savePhotos = (updated: GalleryPhoto[]) => {
+  // Fetch photos from server on mount
+  useEffect(() => {
+    fetch('/api/gallery.php')
+      .then(res => res.json())
+      .then(res => {
+        if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+          setPhotos(res.data);
+          localStorage.setItem('galaxy_hotel_gallery_photos', JSON.stringify(res.data));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const savePhotos = async (updated: GalleryPhoto[]) => {
     setPhotos(updated);
     localStorage.setItem('galaxy_hotel_gallery_photos', JSON.stringify(updated));
+    try {
+      await fetch('/api/gallery.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'save_all', photos: updated })
+      });
+    } catch (e) {}
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,6 +72,15 @@ export const GalleryManager: React.FC = () => {
     }
   };
 
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
+
   const handleUploadNewPhoto = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!previewUrl && !selectedFile) {
@@ -60,7 +89,7 @@ export const GalleryManager: React.FC = () => {
     }
 
     setIsUploading(true);
-    let finalUrl = previewUrl;
+    let finalUrl = '';
 
     // Upload to server if real file
     if (selectedFile) {
@@ -72,12 +101,35 @@ export const GalleryManager: React.FC = () => {
           body: formData
         });
         const data = await res.json();
-        if (data.success && data.url) {
+        if (data && data.success && data.url) {
           finalUrl = data.url;
+        } else {
+          // Fallback to base64 upload
+          const base64 = await fileToBase64(selectedFile);
+          const b64Res = await fetch('/api/upload_image.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ base64 })
+          });
+          const b64Data = await b64Res.json();
+          if (b64Data && b64Data.success && b64Data.url) {
+            finalUrl = b64Data.url;
+          } else {
+            finalUrl = base64; // Direct base64 image string as persistent fallback
+          }
         }
       } catch (err) {
-        console.warn('Could not upload to server, using local object preview', err);
+        try {
+          const base64 = await fileToBase64(selectedFile);
+          finalUrl = base64;
+        } catch (e) {
+          alert('Không thể tải ảnh lên máy chủ. Vui lòng kiểm tra dung lượng ảnh.');
+          setIsUploading(false);
+          return;
+        }
       }
+    } else {
+      finalUrl = previewUrl;
     }
 
     const newPhoto: GalleryPhoto = {
@@ -89,20 +141,24 @@ export const GalleryManager: React.FC = () => {
     };
 
     const updated = [newPhoto, ...photos];
-    savePhotos(updated);
+    await savePhotos(updated);
 
     setSelectedFile(null);
     setPreviewUrl('');
     setNewTitle('');
     setIsUploading(false);
-    setSuccessMsg('Đã đăng ảnh check-in mới lên "Góc nhỏ yêu thương" thành công!');
+    setSuccessMsg('Đã đăng ảnh check-in mới lên "Góc nhỏ yêu thương" thành công và đồng bộ cho tất cả khách!');
     setTimeout(() => setSuccessMsg(''), 4000);
   };
 
-  const handleDeletePhoto = (id: string) => {
+  const handleDeletePhoto = async (id: string) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa ảnh này khỏi Góc nhỏ yêu thương?')) {
       const updated = photos.filter(p => p.id !== id);
-      savePhotos(updated);
+      setPhotos(updated);
+      localStorage.setItem('galaxy_hotel_gallery_photos', JSON.stringify(updated));
+      try {
+        await fetch(`/api/gallery.php?id=${id}`, { method: 'DELETE' });
+      } catch (e) {}
     }
   };
 

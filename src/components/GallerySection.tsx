@@ -25,8 +25,7 @@ export const GallerySection: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'all' | 'checkin' | 'facilities'>('all');
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
-  // Load any admin uploaded check-in photos from localStorage
-  const customPhotos = React.useMemo(() => {
+  const [photos, setPhotos] = useState<GalleryItem[]>(() => {
     try {
       const saved = localStorage.getItem('galaxy_hotel_gallery_photos');
       if (saved) {
@@ -36,9 +35,22 @@ export const GallerySection: React.FC = () => {
       console.error(e);
     }
     return initialGallery;
+  });
+
+  // Fetch live photos from server
+  React.useEffect(() => {
+    fetch('/api/gallery.php')
+      .then(res => res.json())
+      .then(res => {
+        if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+          setPhotos(res.data);
+          localStorage.setItem('galaxy_hotel_gallery_photos', JSON.stringify(res.data));
+        }
+      })
+      .catch(() => {});
   }, []);
 
-  const filteredImages = customPhotos.filter((img) => {
+  const filteredImages = photos.filter((img) => {
     if (activeTab === 'all') return true;
     return img.category === activeTab;
   });
