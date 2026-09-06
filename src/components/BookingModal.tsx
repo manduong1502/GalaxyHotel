@@ -223,7 +223,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, selectedRoom
                 onChange={(e) => setCurrentRoomId(e.target.value)}
                 className="w-full bg-[#FAF9F5] border border-neutral-200 rounded-lg px-3.5 py-2.5 text-xs font-semibold text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
               >
-                {roomsData.map((room) => (
+                {(rooms && rooms.length > 0 ? rooms : roomsData).map((room) => (
                   <option key={room.id} value={room.id}>
                     {room.name[lang]} — {formatCurrency(room.pricePerNight)}/đêm ({formatCurrency(room.priceHourlyFirst2h)}/2h)
                   </option>

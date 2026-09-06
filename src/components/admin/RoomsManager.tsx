@@ -3,7 +3,8 @@ import { useBookings } from '../../context/BookingContext';
 import { Room, RoomStatus } from '../../types';
 import { 
   BedDouble, DollarSign, Clock, Users, Maximize2, 
-  Edit, Check, X, AlertCircle, Plus, Trash2, Upload, Image as ImageIcon, Sparkles
+  Edit, Check, X, AlertCircle, Plus, Trash2, Upload, Image as ImageIcon, Sparkles,
+  Star, ChevronLeft, ChevronRight, CheckCircle2, ArrowLeft, ArrowRight
 } from 'lucide-react';
 
 export const RoomsManager: React.FC = () => {
@@ -81,20 +82,42 @@ export const RoomsManager: React.FC = () => {
       });
       const data = await res.json();
       if (data.success && data.url) {
-        setEditImages(prev => [data.url, ...prev]);
-        alert('Tải ảnh phòng lên thành công!');
+        // Append to list so existing cover photo at index 0 remains preserved unless changed by user
+        setEditImages(prev => [...prev, data.url]);
       } else {
         // Fallback preview
         const localUrl = URL.createObjectURL(file);
-        setEditImages(prev => [localUrl, ...prev]);
+        setEditImages(prev => [...prev, localUrl]);
       }
     } catch (err) {
       console.warn('Upload API error, using local url preview', err);
       const localUrl = URL.createObjectURL(file);
-      setEditImages(prev => [localUrl, ...prev]);
+      setEditImages(prev => [...prev, localUrl]);
     } finally {
       setIsUploadingImage(false);
+      if (e.target) e.target.value = '';
     }
+  };
+
+  const handleSetAsMain = (index: number) => {
+    if (index === 0) return;
+    setEditImages(prev => {
+      const target = prev[index];
+      const rest = prev.filter((_, i) => i !== index);
+      return [target, ...rest];
+    });
+  };
+
+  const handleMoveImage = (index: number, direction: 'left' | 'right') => {
+    setEditImages(prev => {
+      const newImages = [...prev];
+      const targetIndex = direction === 'left' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= newImages.length) return prev;
+      const temp = newImages[index];
+      newImages[index] = newImages[targetIndex];
+      newImages[targetIndex] = temp;
+      return newImages;
+    });
   };
 
   const handleRemoveImage = (indexToRemove: number) => {
@@ -335,17 +358,22 @@ export const RoomsManager: React.FC = () => {
             <form onSubmit={handleSave} className="space-y-5">
               
               {/* Photo Upload Section */}
-              <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200 space-y-3">
-                <div className="flex justify-between items-center">
-                  <label className="text-xs font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-1.5">
-                    <ImageIcon className="w-4 h-4 text-[#8A6943]" />
-                    <span>Hình Ảnh Thực Tế Của Phòng ({editImages.length})</span>
-                  </label>
+              <div className="p-4 sm:p-5 rounded-2xl bg-neutral-50 border border-neutral-200 space-y-3.5">
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                  <div>
+                    <label className="text-xs font-bold text-neutral-800 uppercase tracking-wider flex items-center gap-1.5">
+                      <ImageIcon className="w-4 h-4 text-[#8A6943]" />
+                      <span>Hình Ảnh Thực Tế Của Phòng ({editImages.length})</span>
+                    </label>
+                    <p className="text-[11px] text-neutral-500 mt-0.5">
+                      Ảnh ở vị trí đầu tiên (⭐ Ảnh chính) sẽ là ảnh bìa đại diện trên trang chủ và danh sách phòng.
+                    </p>
+                  </div>
                   
                   {/* File Upload Button */}
-                  <label className="cursor-pointer px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all">
+                  <label className="cursor-pointer px-3.5 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all flex-shrink-0 active:scale-95">
                     <Upload className="w-3.5 h-3.5 text-[#E8DCB9]" />
-                    <span>{isUploadingImage ? 'Đang tải...' : 'Tải Ảnh Từ Máy'}</span>
+                    <span>{isUploadingImage ? 'Đang tải lên...' : 'Tải Thêm Ảnh Từ Máy'}</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -356,26 +384,84 @@ export const RoomsManager: React.FC = () => {
                   </label>
                 </div>
 
-                {/* Thumbnails list */}
-                <div className="flex items-center gap-3 overflow-x-auto py-2">
-                  {editImages.map((imgUrl, i) => (
-                    <div key={i} className="relative w-24 h-20 rounded-xl overflow-hidden border-2 border-neutral-300 flex-shrink-0 group">
-                      <img src={imgUrl} alt="Thumbnail" className="w-full h-full object-cover" />
-                      {i === 0 && (
-                        <span className="absolute top-1 left-1 bg-neutral-900 text-white text-[8px] font-bold px-1.5 py-0.5 rounded">
-                          Ảnh chính
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(i)}
-                        className="absolute bottom-1 right-1 w-6 h-6 rounded-md bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Xóa ảnh này"
+                {/* Thumbnails list with Cover Photo Selection and Reordering */}
+                <div className="flex items-center gap-3.5 overflow-x-auto py-2.5 px-1">
+                  {editImages.map((imgUrl, i) => {
+                    const isMain = i === 0;
+                    return (
+                      <div
+                        key={i}
+                        className={`relative w-28 h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden border-2 flex-shrink-0 flex flex-col justify-between transition-all group ${
+                          isMain 
+                            ? 'border-amber-500 ring-4 ring-amber-400/20 shadow-md scale-100' 
+                            : 'border-neutral-200 hover:border-neutral-400 bg-neutral-100'
+                        }`}
                       >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
+                        <img 
+                          src={imgUrl} 
+                          alt={`Room Photo ${i + 1}`} 
+                          className="absolute inset-0 w-full h-full object-cover" 
+                        />
+
+                        {/* Top Overlay Badge / Actions */}
+                        <div className="relative z-10 p-1.5 flex justify-between items-start">
+                          {isMain ? (
+                            <span className="bg-amber-500 text-neutral-950 text-[9px] font-black uppercase px-2 py-0.5 rounded-md shadow flex items-center gap-1">
+                              <Star className="w-2.5 h-2.5 fill-current" />
+                              <span>Ảnh chính</span>
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleSetAsMain(i)}
+                              className="bg-neutral-900/90 hover:bg-amber-500 text-white hover:text-neutral-950 text-[9px] font-bold px-2 py-0.5 rounded-md shadow backdrop-blur-sm transition-all flex items-center gap-1"
+                              title="Đặt ảnh này làm ảnh bìa đại diện"
+                            >
+                              <Star className="w-2.5 h-2.5" />
+                              <span>Làm ảnh chính</span>
+                            </button>
+                          )}
+
+                          {/* Delete Photo Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(i)}
+                            className="w-6 h-6 rounded-lg bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow-sm transition-opacity"
+                            title="Xóa ảnh này"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+
+                        {/* Bottom Reorder Controls */}
+                        <div className="relative z-10 p-1.5 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex justify-between items-center text-white">
+                          <span className="text-[10px] font-bold">#{i + 1}</span>
+                          <div className="flex items-center gap-1">
+                            {i > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => handleMoveImage(i, 'left')}
+                                className="w-5 h-5 rounded bg-white/30 hover:bg-white text-neutral-900 flex items-center justify-center transition-colors"
+                                title="Di chuyển sang trái"
+                              >
+                                <ChevronLeft className="w-3 h-3" />
+                              </button>
+                            )}
+                            {i < editImages.length - 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleMoveImage(i, 'right')}
+                                className="w-5 h-5 rounded bg-white/30 hover:bg-white text-neutral-900 flex items-center justify-center transition-colors"
+                                title="Di chuyển sang phải"
+                              >
+                                <ChevronRight className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 

@@ -166,7 +166,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return initialSeedBookings;
   });
 
-  // Auto fetch live bookings from server API
+  // Auto fetch live bookings and rooms from server API
   useEffect(() => {
     fetch('/api/bookings.php')
       .then(res => res.json())
@@ -177,6 +177,15 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             const newItems = res.data.filter((b: BookingRecord) => !existingCodes.has(b.bookingCode));
             return [...newItems, ...prev];
           });
+        }
+      })
+      .catch(() => {});
+
+    fetch('/api/rooms.php')
+      .then(res => res.json())
+      .then(res => {
+        if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+          setRooms(res.data);
         }
       })
       .catch(() => {});
@@ -331,27 +340,58 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const updateRoomPrice = (id: string, pricePerNight: number, priceHourlyFirst2h: number, priceHourlyExtra: number) => {
-    setRooms(prev =>
-      prev.map(r => (r.id === id ? { ...r, pricePerNight, priceHourlyFirst2h, priceHourlyExtra } : r))
-    );
+    setRooms(prev => {
+      const updated = prev.map(r => (r.id === id ? { ...r, pricePerNight, priceHourlyFirst2h, priceHourlyExtra } : r));
+      const targetRoom = updated.find(r => r.id === id);
+      if (targetRoom) {
+        fetch('/api/rooms.php', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(targetRoom),
+        }).catch(() => {});
+      }
+      return updated;
+    });
   };
 
   const updateRoomStatus = (id: string, status: RoomStatus) => {
-    setRooms(prev =>
-      prev.map(r => (r.id === id ? { ...r, status } : r))
-    );
+    setRooms(prev => {
+      const updated = prev.map(r => (r.id === id ? { ...r, status } : r));
+      const targetRoom = updated.find(r => r.id === id);
+      if (targetRoom) {
+        fetch('/api/rooms.php', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(targetRoom),
+        }).catch(() => {});
+      }
+      return updated;
+    });
   };
 
   const updateRoom = (updatedRoom: Room) => {
     setRooms(prev => prev.map(r => (r.id === updatedRoom.id ? updatedRoom : r)));
+    fetch('/api/rooms.php', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedRoom),
+    }).catch(() => {});
   };
 
   const addNewRoom = (newRoom: Room) => {
     setRooms(prev => [...prev, newRoom]);
+    fetch('/api/rooms.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newRoom),
+    }).catch(() => {});
   };
 
   const deleteRoom = (id: string) => {
     setRooms(prev => prev.filter(r => r.id !== id));
+    fetch(`/api/rooms.php?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }).catch(() => {});
   };
 
   return (

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useBookings } from '../context/BookingContext';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { Room } from '../types';
 import { roomsData } from '../data/mockData';
@@ -12,10 +13,13 @@ interface RoomsSectionProps {
 
 export const RoomsSection: React.FC<RoomsSectionProps> = ({ onSelectRoom, onBookRoom }) => {
   const { lang, t } = useLanguage();
+  const { rooms } = useBookings();
   const [filter, setFilter] = useState<'all' | 'suite' | 'deluxe'>('all');
   const { ref: sectionRef, isVisible } = useScrollReveal<HTMLElement>(0.05);
 
-  const filteredRooms = roomsData.filter((room) => {
+  const displayRooms = (rooms && rooms.length > 0) ? rooms : roomsData;
+
+  const filteredRooms = displayRooms.filter((room) => {
     if (filter === 'all') return true;
     if (filter === 'suite') return room.maxAdults >= 4 || room.slug.includes('suite') || room.slug.includes('phong-c') || room.slug.includes('phong-d');
     if (filter === 'deluxe') return room.maxAdults <= 3 && !room.slug.includes('phong-c') && !room.slug.includes('phong-d');
@@ -60,7 +64,7 @@ export const RoomsSection: React.FC<RoomsSectionProps> = ({ onSelectRoom, onBook
                   : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
-              {lang === 'vi' ? 'Tất cả phòng' : 'All Rooms'} ({roomsData.length})
+              {lang === 'vi' ? 'Tất cả phòng' : 'All Rooms'} ({displayRooms.length})
             </button>
             <button
               onClick={() => setFilter('deluxe')}

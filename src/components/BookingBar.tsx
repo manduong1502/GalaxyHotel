@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useBookings } from '../context/BookingContext';
 import { roomsData } from '../data/mockData';
 import { Calendar as CalendarIcon, Clock, Users, Search, ArrowRight } from 'lucide-react';
 
@@ -18,7 +19,9 @@ interface BookingBarProps {
 
 export const BookingBar: React.FC<BookingBarProps> = ({ onSearch }) => {
   const { lang, t } = useLanguage();
+  const { rooms } = useBookings();
   const [bookingType, setBookingType] = useState<'daily' | 'hourly'>('daily');
+  const displayRooms = (rooms && rooms.length > 0) ? rooms : roomsData;
 
   const today = new Date().toISOString().split('T')[0];
   const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
@@ -181,7 +184,7 @@ export const BookingBar: React.FC<BookingBarProps> = ({ onSearch }) => {
               className="w-full bg-[#FAF9F5] border border-neutral-200 rounded-lg px-3.5 py-2.5 text-xs font-medium text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
             >
               <option value="all">{lang === 'vi' ? 'Tất cả các hạng phòng' : 'All Room Types'}</option>
-              {roomsData.map((room) => (
+              {displayRooms.map((room) => (
                 <option key={room.id} value={room.id}>
                   {room.name[lang]}
                 </option>
