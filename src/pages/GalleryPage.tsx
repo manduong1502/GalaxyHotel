@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { Home, ChevronRight, Maximize2, X, ChevronLeft, ChevronRight as RightIcon, Heart, Camera } from 'lucide-react';
 
@@ -22,7 +22,7 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onNavigate }) => {
     { id: 8, category: 'checkin', title: 'Khăn tắm & Tiện nghi thơm tho', src: '/images/towels.png' },
   ];
 
-  const galleryItems = React.useMemo(() => {
+  const [galleryItems, setGalleryItems] = useState<{ id: string | number; category: string; title: string; src: string }[]>(() => {
     try {
       const saved = localStorage.getItem('galaxy_hotel_gallery_photos');
       if (saved) {
@@ -40,6 +40,24 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onNavigate }) => {
       console.error(e);
     }
     return initialItems;
+  });
+
+  useEffect(() => {
+    fetch('/api/gallery.php')
+      .then(res => res.json())
+      .then(res => {
+        if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+          const mapped = res.data.map((p: any, i: number) => ({
+            id: p.id || i + 1,
+            category: p.category || 'checkin',
+            title: p.title || 'Khoảnh khắc check-in',
+            src: p.url || p.src || '/images/checkin-1.jpg'
+          }));
+          setGalleryItems(mapped);
+          localStorage.setItem('galaxy_hotel_gallery_photos', JSON.stringify(res.data));
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const filteredItems = galleryItems.filter(item => {

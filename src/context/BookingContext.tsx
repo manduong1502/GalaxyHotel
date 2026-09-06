@@ -333,10 +333,18 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setBookings(prev =>
       prev.map(b => (b.id === id ? { ...b, status, staffNotes: staffNotes !== undefined ? staffNotes : b.staffNotes, updatedAt: new Date().toISOString() } : b))
     );
+    fetch('/api/bookings.php', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status, staffNotes }),
+    }).catch(() => {});
   };
 
   const deleteBooking = (id: string) => {
     setBookings(prev => prev.filter(b => b.id !== id));
+    fetch(`/api/bookings.php?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }).catch(() => {});
   };
 
   const updateRoomPrice = (id: string, pricePerNight: number, priceHourlyFirst2h: number, priceHourlyExtra: number) => {
