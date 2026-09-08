@@ -104,8 +104,9 @@ export const RoomsSection: React.FC<RoomsSectionProps> = ({ onSelectRoom, onBook
                   onClick={() => onSelectRoom(room)}
                 >
                   <img
-                    src={room.images[0]}
-                    alt={room.name[lang]}
+                    src={(room.images && room.images.length > 0) ? room.images[0] : '/images/rooms/phong-a.jpg'}
+                    alt={room.name?.[lang] || room.name?.vi || 'Phòng Khách Sạn'}
+                    onError={(e) => { e.currentTarget.src = '/images/rooms/phong-a.jpg'; }}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                     loading="lazy"
                   />
@@ -125,7 +126,7 @@ export const RoomsSection: React.FC<RoomsSectionProps> = ({ onSelectRoom, onBook
                   {/* Photo count indicator */}
                   <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white text-[11px] px-2.5 py-1 rounded font-medium flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
                     <Eye className="w-3.5 h-3.5 text-[#E8DCB9]" />
-                    <span>{room.images.length} {lang === 'vi' ? 'ảnh' : 'photos'}</span>
+                    <span>{room.images?.length || 1} {lang === 'vi' ? 'ảnh' : 'photos'}</span>
                   </div>
                 </div>
 
@@ -136,12 +137,12 @@ export const RoomsSection: React.FC<RoomsSectionProps> = ({ onSelectRoom, onBook
                       onClick={() => onSelectRoom(room)}
                       className="font-serif font-bold text-xl text-neutral-900 hover:text-[#8A6943] transition-colors cursor-pointer leading-tight"
                     >
-                      {room.name[lang]}
+                      {room.name?.[lang] || room.name?.vi}
                     </h3>
                   </div>
 
                   <p className="text-neutral-500 text-xs line-clamp-2 leading-relaxed mb-4">
-                    {room.subtitle[lang]}
+                    {room.subtitle?.[lang] || room.subtitle?.vi || ''}
                   </p>
 
                   {/* Meta Specs Row */}
@@ -158,13 +159,13 @@ export const RoomsSection: React.FC<RoomsSectionProps> = ({ onSelectRoom, onBook
                     <span className="text-neutral-300">•</span>
                     <span className="flex items-center gap-1">
                       <Bed className="w-3.5 h-3.5 text-[#8A6943]" />
-                      <span className="truncate max-w-[120px]">{room.bedType[lang].split('(')[0]}</span>
+                      <span className="truncate max-w-[120px]">{(room.bedType?.[lang] || room.bedType?.vi || '1 Giường Đôi').split('(')[0]}</span>
                     </span>
                   </div>
 
                   {/* Amenities highlights */}
                   <div className="flex flex-wrap gap-1.5 mt-3.5">
-                    {room.amenities[lang].slice(0, 3).map((amenity, i) => (
+                    {(room.amenities?.[lang] || room.amenities?.vi || (Array.isArray(room.amenities) ? room.amenities : [])).slice(0, 3).map((amenity: string, i: number) => (
                       <span
                         key={i}
                         className="inline-flex items-center gap-1 text-[11px] bg-[#F4F1EA] text-neutral-700 px-2 py-0.5 rounded font-medium"

@@ -149,8 +149,9 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({
                   onClick={() => onSelectRoomForDetail(room)}
                 >
                   <img
-                    src={room.images[0]}
-                    alt={room.name[lang]}
+                    src={(room.images && room.images.length > 0) ? room.images[0] : '/images/rooms/phong-a.jpg'}
+                    alt={room.name?.[lang] || room.name?.vi || 'Phòng Khách Sạn'}
+                    onError={(e) => { e.currentTarget.src = '/images/rooms/phong-a.jpg'; }}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     loading="lazy"
                   />
@@ -167,7 +168,7 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({
                   <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs">
                     <span className="font-semibold">{room.areaSqm} m² • {room.maxAdults} {lang === 'vi' ? 'Khách' : 'Guests'}</span>
                     <span className="text-[11px] bg-white/20 backdrop-blur-md px-2 py-0.5 rounded font-medium">
-                      {room.images.length} {lang === 'vi' ? 'ảnh' : 'photos'}
+                      {room.images?.length || 1} {lang === 'vi' ? 'ảnh' : 'photos'}
                     </span>
                   </div>
                 </div>
@@ -180,10 +181,10 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({
                         onClick={() => onSelectRoomForDetail(room)}
                         className="font-serif font-bold text-xl text-neutral-900 hover:text-[#8A6943] transition-colors cursor-pointer"
                       >
-                        {room.name[lang]}
+                        {room.name?.[lang] || room.name?.vi}
                       </h3>
                       <p className="text-xs text-neutral-500 line-clamp-1 mt-0.5">
-                        {room.subtitle[lang]}
+                        {room.subtitle?.[lang] || room.subtitle?.vi || ''}
                       </p>
                     </div>
                   </div>
@@ -192,7 +193,7 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({
                   <div className="flex items-center gap-4 py-3 border-y border-neutral-100 text-xs text-neutral-600 my-4">
                     <span className="flex items-center gap-1.5">
                       <Bed className="w-4 h-4 text-[#8A6943]" />
-                      <span className="truncate max-w-[130px]">{room.bedType[lang].split('(')[0]}</span>
+                      <span className="truncate max-w-[130px]">{(room.bedType?.[lang] || room.bedType?.vi || '1 Giường Đôi').split('(')[0]}</span>
                     </span>
                     <span className="flex items-center gap-1.5">
                       <Users className="w-4 h-4 text-[#8A6943]" />
@@ -202,7 +203,7 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({
 
                   {/* Amenities Highlights */}
                   <div className="flex flex-wrap gap-1.5 mb-2">
-                    {room.amenities[lang].slice(0, 4).map((item, i) => (
+                    {(room.amenities?.[lang] || room.amenities?.vi || (Array.isArray(room.amenities) ? room.amenities : [])).slice(0, 4).map((item: string, i: number) => (
                       <span
                         key={i}
                         className="text-[11px] bg-[#FAF9F5] text-neutral-700 px-2.5 py-1 rounded border border-neutral-200/70 flex items-center gap-1"

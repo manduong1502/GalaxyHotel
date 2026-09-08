@@ -94,10 +94,10 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ room, onClose,
                 {lang === 'vi' ? 'Phòng Nghỉ Thực Tế' : 'Boutique Room'}
               </span>
               <h2 className="font-serif font-bold text-2xl sm:text-3xl text-neutral-900 mt-2">
-                {room.name[lang]}
+                {room.name?.[lang] || room.name?.vi}
               </h2>
               <p className="text-xs sm:text-sm text-neutral-500 mt-1 font-sans">
-                {room.subtitle[lang]}
+                {room.subtitle?.[lang] || room.subtitle?.vi || ''}
               </p>
             </div>
 
@@ -138,14 +138,14 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ room, onClose,
               <Bed className="w-4 h-4 text-neutral-700" />
               <div>
                 <span className="text-[10px] text-neutral-400 uppercase block font-semibold">{t('rooms.bed')}</span>
-                <span className="text-xs font-semibold text-neutral-900 truncate">{room.bedType[lang]}</span>
+                <span className="text-xs font-semibold text-neutral-900 truncate">{room.bedType?.[lang] || room.bedType?.vi || '1 Giường Đôi'}</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-neutral-700" />
               <div>
                 <span className="text-[10px] text-neutral-400 uppercase block font-semibold">{t('rooms.view')}</span>
-                <span className="text-xs font-semibold text-neutral-900">{room.view[lang]}</span>
+                <span className="text-xs font-semibold text-neutral-900">{room.view?.[lang] || room.view?.vi || 'Cửa sổ tự nhiên'}</span>
               </div>
             </div>
           </div>
@@ -156,7 +156,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ room, onClose,
               {lang === 'vi' ? 'Mô Tả Chi Tiết' : 'Detailed Description'}
             </h3>
             <p className="text-neutral-600 text-xs sm:text-sm leading-relaxed font-sans">
-              {room.description[lang]}
+              {room.description?.[lang] || room.description?.vi || ''}
             </p>
           </div>
 
@@ -167,7 +167,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ room, onClose,
                 {lang === 'vi' ? 'Tiện Nghi Phòng' : 'Room Amenities'}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {room.amenities[lang].map((amenity, idx) => (
+                {(room.amenities?.[lang] || room.amenities?.vi || (Array.isArray(room.amenities) ? room.amenities : [])).map((amenity: string, idx: number) => (
                   <div key={idx} className="flex items-center gap-2 text-xs text-neutral-700">
                     <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
                     <span>{amenity}</span>
@@ -181,7 +181,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ room, onClose,
                 {lang === 'vi' ? 'Dịch Vụ Kèm Theo' : 'Included Services'}
               </h3>
               <div className="space-y-2">
-                {room.features[lang].map((feature, idx) => (
+                {(room.features?.[lang] || room.features?.vi || ['Miễn phí nước suối hàng ngày', 'Lễ tân 24/7', 'Dọn phòng hàng ngày']).map((feature: string, idx: number) => (
                   <div key={idx} className="flex items-center gap-2 text-xs text-neutral-800 font-medium bg-[#FAF9F5] p-2.5 rounded-lg border border-neutral-200/60">
                     <span className="text-[#8A6943] font-bold">✓</span>
                     <span>{feature}</span>
