@@ -43,9 +43,14 @@ if (fs.existsSync(distDir)) {
   });
 }
 
-// 2. Thêm thư mục api/ vào zip
+// 2. Thêm thư mục api/ vào zip (bảo vệ uploads và logs)
 if (fs.existsSync(apiDir)) {
-  archive.directory(apiDir, 'api');
+  archive.directory(apiDir, 'api', (entry) => {
+    if (entry.name.includes('uploads/') || entry.name.endsWith('.log')) {
+      return false;
+    }
+    return entry;
+  });
 }
 
 archive.finalize();

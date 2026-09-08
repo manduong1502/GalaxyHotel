@@ -37,18 +37,28 @@ if (isset($pdo) && $pdo) {
             `max_adults` INT NOT NULL DEFAULT 2,
             `max_children` INT NOT NULL DEFAULT 1,
             `area_sqm` INT NOT NULL DEFAULT 18,
-            `bed_type_vi` VARCHAR(100) DEFAULT '1 Giường Đôi',
-            `bed_type_en` VARCHAR(100) DEFAULT '1 Double Bed',
-            `view_vi` VARCHAR(100) DEFAULT '',
-            `view_en` VARCHAR(100) DEFAULT '',
-            `amenities_json` TEXT,
-            `images_json` TEXT,
+            `bed_type_vi` VARCHAR(150) DEFAULT '1 Giường Đôi',
+            `bed_type_en` VARCHAR(150) DEFAULT '1 Double Bed',
+            `view_vi` VARCHAR(150) DEFAULT '',
+            `view_en` VARCHAR(150) DEFAULT '',
+            `amenities_json` MEDIUMTEXT,
+            `images_json` MEDIUMTEXT,
             `description_vi` TEXT,
             `description_en` TEXT,
             `status` ENUM('available', 'occupied', 'cleaning', 'maintenance') DEFAULT 'available',
             `is_popular` TINYINT(1) DEFAULT 0,
             `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
+        // Safe auto-migration for existing tables
+        $pdo->exec("ALTER TABLE `rooms` ADD COLUMN IF NOT EXISTS `bed_type_vi` VARCHAR(150) DEFAULT '1 Giường Đôi'");
+        $pdo->exec("ALTER TABLE `rooms` ADD COLUMN IF NOT EXISTS `bed_type_en` VARCHAR(150) DEFAULT '1 Double Bed'");
+        $pdo->exec("ALTER TABLE `rooms` ADD COLUMN IF NOT EXISTS `view_vi` VARCHAR(150) DEFAULT ''");
+        $pdo->exec("ALTER TABLE `rooms` ADD COLUMN IF NOT EXISTS `view_en` VARCHAR(150) DEFAULT ''");
+        $pdo->exec("ALTER TABLE `rooms` ADD COLUMN IF NOT EXISTS `amenities_json` MEDIUMTEXT");
+        $pdo->exec("ALTER TABLE `rooms` ADD COLUMN IF NOT EXISTS `images_json` MEDIUMTEXT");
+        $pdo->exec("ALTER TABLE `rooms` MODIFY COLUMN `images_json` MEDIUMTEXT");
+        $pdo->exec("ALTER TABLE `rooms` MODIFY COLUMN `amenities_json` MEDIUMTEXT");
     } catch (Exception $e) {}
 }
 
@@ -194,7 +204,23 @@ switch ($method) {
         $areaSqm = (int)($input['areaSqm'] ?? 18);
         $bedTypeVi = is_array($input['bedType'] ?? null) ? ($input['bedType']['vi'] ?? '') : ($input['bedType'] ?? '1 Giường Đôi');
         $bedTypeEn = is_array($input['bedType'] ?? null) ? ($input['bedType']['en'] ?? $bedTypeVi) : $bedTypeVi;
+        $viewVi = is_array($input['view'] ?? null) ? ($input['view']['vi'] ?? '') : ($input['view'] ?? 'Cửa sổ đón gió tự nhiên');
+        $viewEn = is_array($input['view'] ?? null) ? ($input['view']['en'] ?? $viewVi) : $viewVi;
         $imagesJson = json_encode(array_values(is_array($input['images'] ?? null) ? $input['images'] : []), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        
+        // Amenities JSON formatting
+        $amenitiesObj = ['vi' => [], 'en' => []];
+        if (isset($input['amenities'])) {
+            if (isset($input['amenities']['vi']) && is_array($input['amenities']['vi'])) {
+                $amenitiesObj['vi'] = $input['amenities']['vi'];
+                $amenitiesObj['en'] = $input['amenities']['en'] ?? $input['amenities']['vi'];
+            } elseif (is_array($input['amenities'])) {
+                $amenitiesObj['vi'] = $input['amenities'];
+                $amenitiesObj['en'] = $input['amenities'];
+            }
+        }
+        $amenitiesJson = json_encode($amenitiesObj, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        
         $status = $input['status'] ?? 'available';
         $isPopular = !empty($input['isPopular']) ? 1 : 0;
 
@@ -204,12 +230,12 @@ switch ($method) {
                     id, name_vi, name_en, slug, subtitle_vi, subtitle_en,
                     price_per_night, price_hourly_first2h, price_hourly_extra,
                     max_adults, max_children, area_sqm, bed_type_vi, bed_type_en,
-                    description_vi, description_en, images_json, status, is_popular
+                    view_vi, view_en, amenities_json, description_vi, description_en, images_json, status, is_popular
                 ) VALUES (
                     ?, ?, ?, ?, ?, ?,
                     ?, ?, ?,
                     ?, ?, ?, ?, ?,
-                    ?, ?, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?
                 ) ON DUPLICATE KEY UPDATE
                     name_vi = VALUES(name_vi),
                     name_en = VALUES(name_en),
@@ -225,6 +251,9 @@ switch ($method) {
                     area_sqm = VALUES(area_sqm),
                     bed_type_vi = VALUES(bed_type_vi),
                     bed_type_en = VALUES(bed_type_en),
+                    view_vi = VALUES(view_vi),
+                    view_en = VALUES(view_en),
+                    amenities_json = VALUES(amenities_json),
                     images_json = VALUES(images_json),
                     status = VALUES(status),
                     is_popular = VALUES(is_popular)";
@@ -234,7 +263,7 @@ switch ($method) {
                     $id, $nameVi, $nameEn, $slug, $subtitleVi, $subtitleEn,
                     $priceNight, $priceFirst2h, $priceExtra,
                     $maxAdults, $maxChildren, $areaSqm, $bedTypeVi, $bedTypeEn,
-                    $descVi, $descEn, $imagesJson, $status, $isPopular
+                    $viewVi, $viewEn, $amenitiesJson, $descVi, $descEn, $imagesJson, $status, $isPopular
                 ]);
             } catch (Exception $e) {
                 // error logged

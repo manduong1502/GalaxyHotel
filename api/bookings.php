@@ -22,6 +22,36 @@ if (!is_dir($dataDir)) {
 }
 $bookingsFile = $dataDir . '/bookings.json';
 
+// Auto create bookings table in MySQL if connected
+if (isset($pdo) && $pdo) {
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `bookings` (
+            `id` INT AUTO_INCREMENT PRIMARY KEY,
+            `booking_code` VARCHAR(50) NOT NULL UNIQUE,
+            `booking_type` ENUM('daily', 'hourly') NOT NULL DEFAULT 'daily',
+            `room_id` VARCHAR(50) NOT NULL,
+            `room_name` VARCHAR(150) NOT NULL,
+            `guest_name` VARCHAR(150) NOT NULL,
+            `guest_phone` VARCHAR(50) NOT NULL,
+            `guest_email` VARCHAR(150) DEFAULT '',
+            `check_in_date` DATE NOT NULL,
+            `check_in_time` VARCHAR(10) DEFAULT '14:00',
+            `check_out_date` DATE NOT NULL,
+            `check_out_time` VARCHAR(10) DEFAULT '12:00',
+            `hours_count` INT DEFAULT NULL,
+            `nights_count` INT DEFAULT NULL,
+            `adults` INT NOT NULL DEFAULT 1,
+            `children` INT NOT NULL DEFAULT 0,
+            `total_price` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+            `special_requests` TEXT,
+            `staff_notes` TEXT,
+            `status` ENUM('pending', 'confirmed', 'checked_in', 'completed', 'cancelled') NOT NULL DEFAULT 'pending',
+            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+    } catch (Exception $e) {}
+}
+
 // Initial seed bookings (including verified VIP test booking)
 $defaultSeedBookings = [
     [

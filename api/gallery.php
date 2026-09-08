@@ -26,13 +26,15 @@ if (isset($pdo) && $pdo) {
     try {
         $pdo->exec("CREATE TABLE IF NOT EXISTS `gallery` (
             `id` VARCHAR(50) PRIMARY KEY,
-            `url` TEXT NOT NULL,
+            `url` MEDIUMTEXT NOT NULL,
             `title` VARCHAR(255) NOT NULL,
             `category` VARCHAR(50) NOT NULL DEFAULT 'checkin',
             `date` DATE DEFAULT NULL,
             `sort_order` INT DEFAULT 0,
             `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
+        $pdo->exec("ALTER TABLE `gallery` MODIFY COLUMN `url` MEDIUMTEXT NOT NULL");
     } catch (Exception $e) {}
 }
 
