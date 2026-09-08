@@ -3,9 +3,54 @@
 // GALAXY BOUTIQUE HOTEL - ROOMS & PRICING REST API (FULL CRUD & DUAL-ENGINE)
 // =========================================================================
 
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+header('Content-Type: application/json; charset=UTF-8');
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
 require_once __DIR__ . '/db.php';
 
-$jsonBackupFile = __DIR__ . '/data/rooms.json';
+$dataDir = __DIR__ . '/data';
+if (!is_dir($dataDir)) {
+    @mkdir($dataDir, 0777, true);
+}
+$jsonBackupFile = $dataDir . '/rooms.json';
+
+// Auto create rooms table in MySQL if connected
+if (isset($pdo) && $pdo) {
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `rooms` (
+            `id` VARCHAR(50) PRIMARY KEY,
+            `name_vi` VARCHAR(150) NOT NULL,
+            `name_en` VARCHAR(150) DEFAULT '',
+            `slug` VARCHAR(100) NOT NULL,
+            `subtitle_vi` VARCHAR(255) DEFAULT '',
+            `subtitle_en` VARCHAR(255) DEFAULT '',
+            `price_per_night` DECIMAL(12,2) NOT NULL DEFAULT 650000.00,
+            `price_hourly_first2h` DECIMAL(12,2) NOT NULL DEFAULT 150000.00,
+            `price_hourly_extra` DECIMAL(12,2) NOT NULL DEFAULT 50000.00,
+            `max_adults` INT NOT NULL DEFAULT 2,
+            `max_children` INT NOT NULL DEFAULT 1,
+            `area_sqm` INT NOT NULL DEFAULT 18,
+            `bed_type_vi` VARCHAR(100) DEFAULT '1 Giường Đôi',
+            `bed_type_en` VARCHAR(100) DEFAULT '1 Double Bed',
+            `view_vi` VARCHAR(100) DEFAULT '',
+            `view_en` VARCHAR(100) DEFAULT '',
+            `amenities_json` TEXT,
+            `images_json` TEXT,
+            `description_vi` TEXT,
+            `description_en` TEXT,
+            `status` ENUM('available', 'occupied', 'cleaning', 'maintenance') DEFAULT 'available',
+            `is_popular` TINYINT(1) DEFAULT 0,
+            `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+    } catch (Exception $e) {}
+}
 
 // Helper: Save rooms to JSON backup file
 function saveRoomsBackup($roomsList) {
@@ -96,7 +141,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 switch ($method) {
     case 'GET':
         $rooms = [];
-        if ($pdo) {
+        if (isset($pdo) && $pdo) {
             try {
                 $stmt = $pdo->query("SELECT * FROM rooms ORDER BY price_per_night DESC");
                 $dbRows = $stmt->fetchAll();
@@ -153,7 +198,7 @@ switch ($method) {
         $status = $input['status'] ?? 'available';
         $isPopular = !empty($input['isPopular']) ? 1 : 0;
 
-        if ($pdo) {
+        if (isset($pdo) && $pdo) {
             try {
                 $sql = "INSERT INTO rooms (
                     id, name_vi, name_en, slug, subtitle_vi, subtitle_en,
@@ -232,7 +277,7 @@ switch ($method) {
             exit();
         }
 
-        if ($pdo) {
+        if (isset($pdo) && $pdo) {
             try {
                 $stmt = $pdo->prepare("DELETE FROM rooms WHERE id = ?");
                 $stmt->execute([$id]);

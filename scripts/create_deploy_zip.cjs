@@ -22,7 +22,8 @@ output.on('close', function () {
   console.log(`\n======================================================`);
   console.log(`✓ ĐÃ TẠO THÀNH CÔNG: galaxy_hotel_deploy.zip (${sizeMb} MB)`);
   console.log(`✓ Chuẩn định dạng Linux / cPanel (Forward Slash / POSIX)`);
-  console.log(`✓ File giải nén an toàn 100% trên hosting cPanel AZDIGI`);
+  console.log(`✓ Bảo vệ dữ liệu: Không ghi đè thư mục uploads thực tế`);
+  console.log(`✓ Giải nén an toàn 100% trên hosting cPanel AZDIGI`);
   console.log(`======================================================\n`);
 });
 
@@ -32,9 +33,14 @@ archive.on('error', function (err) {
 
 archive.pipe(output);
 
-// 1. Thêm toàn bộ file/thư mục trong dist/ vào root của zip
+// 1. Thêm toàn bộ file/thư mục trong dist/ vào root của zip (bỏ qua uploads/ rỗng nếu có)
 if (fs.existsSync(distDir)) {
-  archive.directory(distDir, false);
+  archive.directory(distDir, false, (entry) => {
+    if (entry.name.includes('images/uploads/') || entry.name.includes('uploads/')) {
+      return false; // Không bao gồm thư mục uploads trong zip để tránh đè ảnh thực tế của khách trên server
+    }
+    return entry;
+  });
 }
 
 // 2. Thêm thư mục api/ vào zip

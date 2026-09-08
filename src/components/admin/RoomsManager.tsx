@@ -68,12 +68,23 @@ export const RoomsManager: React.FC = () => {
     setEditIsPopular(false);
   };
 
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setIsUploadingImage(true);
     try {
+      const base64 = await fileToBase64(file);
+
       const formData = new FormData();
       formData.append('image', file);
       const res = await fetch('/api/upload_image.php', {
@@ -81,18 +92,31 @@ export const RoomsManager: React.FC = () => {
         body: formData
       });
       const data = await res.json();
-      if (data.success && data.url) {
-        // Append to list so existing cover photo at index 0 remains preserved unless changed by user
+      if (data && data.success && data.url) {
         setEditImages(prev => [...prev, data.url]);
       } else {
-        // Fallback preview
-        const localUrl = URL.createObjectURL(file);
-        setEditImages(prev => [...prev, localUrl]);
+        // Try Base64 JSON upload
+        const b64Res = await fetch('/api/upload_image.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ base64 })
+        });
+        const b64Data = await b64Res.json();
+        if (b64Data && b64Data.success && b64Data.url) {
+          setEditImages(prev => [...prev, b64Data.url]);
+        } else {
+          // Direct base64 string fallback: permanently stored in MySQL and never expires
+          setEditImages(prev => [...prev, base64]);
+        }
       }
     } catch (err) {
-      console.warn('Upload API error, using local url preview', err);
-      const localUrl = URL.createObjectURL(file);
-      setEditImages(prev => [...prev, localUrl]);
+      console.warn('Upload API error, using safe base64 storage', err);
+      try {
+        const base64 = await fileToBase64(file);
+        setEditImages(prev => [...prev, base64]);
+      } catch (e) {
+        alert('Không thể tải file ảnh, vui lòng thử lại');
+      }
     } finally {
       setIsUploadingImage(false);
       if (e.target) e.target.value = '';
@@ -254,6 +278,7 @@ export const RoomsManager: React.FC = () => {
                 <img
                   src={room.images[0]}
                   alt={room.name.vi}
+                  onError={(e) => { e.currentTarget.src = '/images/rooms/phong-a.jpg'; }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute top-3 right-3">
@@ -400,6 +425,7 @@ export const RoomsManager: React.FC = () => {
                         <img 
                           src={imgUrl} 
                           alt={`Room Photo ${i + 1}`} 
+                          onError={(e) => { e.currentTarget.src = '/images/rooms/phong-a.jpg'; }}
                           className="absolute inset-0 w-full h-full object-cover" 
                         />
 
