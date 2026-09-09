@@ -6,6 +6,7 @@ import {
   Edit, Check, X, AlertCircle, Plus, Trash2, Upload, Image as ImageIcon, Sparkles,
   Star, ChevronLeft, ChevronRight, CheckCircle2, ArrowLeft, ArrowRight
 } from 'lucide-react';
+import { compressImage } from '../../utils/imageCompressor';
 
 export const RoomsManager: React.FC = () => {
   const { rooms, updateRoom, addNewRoom, deleteRoom } = useBookings();
@@ -74,25 +75,18 @@ export const RoomsManager: React.FC = () => {
     setEditIsPopular(false);
   };
 
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
-    });
-  };
-
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setIsUploadingImage(true);
     try {
-      const base64 = await fileToBase64(file);
+      // 1. Client-side compress to ~200KB-300KB HD
+      const compressed = await compressImage(file, 1600, 1600, 0.82);
 
+      // 2. Upload compressed file to persistent /uploads/
       const formData = new FormData();
-      formData.append('image', file);
+      formData.append('image', compressed.compressedFile);
       const res = await fetch('/api/upload_image.php', {
         method: 'POST',
         body: formData
@@ -100,26 +94,15 @@ export const RoomsManager: React.FC = () => {
       const data = await res.json();
       if (data && data.success && data.url) {
         setEditImages(prev => [...prev, data.url]);
-      } else {
-        // Try Base64 JSON upload
-        const b64Res = await fetch('/api/upload_image.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ base64 })
-        });
-        const b64Data = await b64Res.json();
-        if (b64Data && b64Data.success && b64Data.url) {
-          setEditImages(prev => [...prev, b64Data.url]);
-        } else {
-          // Direct base64 string fallback: permanently stored in MySQL and never expires
-          setEditImages(prev => [...prev, base64]);
-        }
+      } else if (compressed.base64) {
+        // Direct compressed base64 fallback
+        setEditImages(prev => [...prev, compressed.base64]);
       }
     } catch (err) {
-      console.warn('Upload API error, using safe base64 storage', err);
+      console.warn('Upload API error, using safe compressed base64 storage', err);
       try {
-        const base64 = await fileToBase64(file);
-        setEditImages(prev => [...prev, base64]);
+        const compressed = await compressImage(file, 1600, 1600, 0.82);
+        setEditImages(prev => [...prev, compressed.base64]);
       } catch (e) {
         alert('Không thể tải file ảnh, vui lòng thử lại');
       }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Trash2, Plus, Image as ImageIcon, CheckCircle, Heart, Eye } from 'lucide-react';
+import { Upload, Trash2, Plus, Image as ImageIcon, CheckCircle, Heart, Eye, Loader2, Sparkles } from 'lucide-react';
+import { compressImage } from '../../utils/imageCompressor';
 
 interface GalleryPhoto {
   id: string;
@@ -25,17 +26,19 @@ export const GalleryManager: React.FC = () => {
       if (saved) {
         return JSON.parse(saved);
       }
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) {}
     return defaultPhotos;
   });
 
+  const [isCompressing, setIsCompressing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newCategory, setNewCategory] = useState<'checkin' | 'facilities'>('checkin');
   const [previewUrl, setPreviewUrl] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fallbackBase64, setFallbackBase64] = useState<string>('');
+  const [sizeInfo, setSizeInfo] = useState<{ orig: number; comp: number } | null>(null);
   const [successMsg, setSuccessMsg] = useState('');
 
   // Fetch photos from server on mount
@@ -45,7 +48,9 @@ export const GalleryManager: React.FC = () => {
       .then(res => {
         if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
           setPhotos(res.data);
-          localStorage.setItem('galaxy_hotel_gallery_photos', JSON.stringify(res.data));
+          try {
+            localStorage.setItem('galaxy_hotel_gallery_photos', JSON.stringify(res.data));
+          } catch (e) {}
         }
       })
       .catch(() => {});
@@ -53,7 +58,11 @@ export const GalleryManager: React.FC = () => {
 
   const savePhotos = async (updated: GalleryPhoto[]) => {
     setPhotos(updated);
-    localStorage.setItem('galaxy_hotel_gallery_photos', JSON.stringify(updated));
+    try {
+      localStorage.setItem('galaxy_hotel_gallery_photos', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('localStorage storage full, using backend database', e);
+    }
     try {
       await fetch('/api/gallery.php', {
         method: 'POST',
@@ -63,35 +72,65 @@ export const GalleryManager: React.FC = () => {
     } catch (e) {}
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
+  const processFile = async (file: File) => {
+    if (!file) return;
+    setIsCompressing(true);
+    try {
+      // Compress file client-side to ~200KB-300KB
+      const result = await compressImage(file, 1600, 1600, 0.82);
+      setSelectedFile(result.compressedFile);
+      setFallbackBase64(result.base64);
+      setPreviewUrl(result.base64 || URL.createObjectURL(result.compressedFile));
+      setSizeInfo({
+        orig: result.originalSizeKb,
+        comp: result.compressedSizeKb
+      });
+    } catch (err) {
+      console.error('Compression error, using raw file', err);
       setSelectedFile(file);
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
+      setPreviewUrl(URL.createObjectURL(file));
+    } finally {
+      setIsCompressing(false);
     }
   };
 
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
-    });
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await processFile(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      await processFile(file);
+    }
   };
 
   const handleUploadNewPhoto = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!previewUrl && !selectedFile) {
-      alert('Vui lòng chọn file hình ảnh từ thiết bị');
+      alert('Vui lòng chọn hình ảnh từ thiết bị');
       return;
     }
 
     setIsUploading(true);
     let finalUrl = '';
 
-    // Upload to server if real file
+    // 1. Upload to persistent server directory (/uploads/)
     if (selectedFile) {
       try {
         const formData = new FormData();
@@ -103,39 +142,21 @@ export const GalleryManager: React.FC = () => {
         const data = await res.json();
         if (data && data.success && data.url) {
           finalUrl = data.url;
-        } else {
-          // Fallback to base64 upload
-          const base64 = await fileToBase64(selectedFile);
-          const b64Res = await fetch('/api/upload_image.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ base64 })
-          });
-          const b64Data = await b64Res.json();
-          if (b64Data && b64Data.success && b64Data.url) {
-            finalUrl = b64Data.url;
-          } else {
-            finalUrl = base64; // Direct base64 image string as persistent fallback
-          }
+        } else if (fallbackBase64) {
+          finalUrl = fallbackBase64;
         }
       } catch (err) {
-        try {
-          const base64 = await fileToBase64(selectedFile);
-          finalUrl = base64;
-        } catch (e) {
-          alert('Không thể tải ảnh lên máy chủ. Vui lòng kiểm tra dung lượng ảnh.');
-          setIsUploading(false);
-          return;
-        }
+        console.warn('Upload API endpoint unreachable, using direct optimized base64', err);
+        finalUrl = fallbackBase64 || previewUrl;
       }
     } else {
-      finalUrl = previewUrl;
+      finalUrl = fallbackBase64 || previewUrl;
     }
 
     const newPhoto: GalleryPhoto = {
-      id: Date.now().toString(),
+      id: 'gal-' + Date.now(),
       url: finalUrl,
-      title: newTitle || (newCategory === 'checkin' ? 'Khoảnh khắc khách hàng check-in' : 'Không gian khách sạn'),
+      title: newTitle.trim() || (newCategory === 'checkin' ? 'Khoảnh khắc khách hàng check-in' : 'Không gian khách sạn'),
       category: newCategory,
       date: new Date().toISOString().split('T')[0]
     };
@@ -145,19 +166,23 @@ export const GalleryManager: React.FC = () => {
 
     setSelectedFile(null);
     setPreviewUrl('');
+    setFallbackBase64('');
+    setSizeInfo(null);
     setNewTitle('');
     setIsUploading(false);
-    setSuccessMsg('Đã đăng ảnh check-in mới lên "Góc nhỏ yêu thương" thành công và đồng bộ cho tất cả khách!');
-    setTimeout(() => setSuccessMsg(''), 4000);
+    setSuccessMsg('Đã lưu ảnh mới vào "Góc nhỏ yêu thương" và hiển thị lên website thành công!');
+    setTimeout(() => setSuccessMsg(''), 5000);
   };
 
   const handleDeletePhoto = async (id: string) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa ảnh này khỏi Góc nhỏ yêu thương?')) {
       const updated = photos.filter(p => p.id !== id);
       setPhotos(updated);
-      localStorage.setItem('galaxy_hotel_gallery_photos', JSON.stringify(updated));
       try {
-        await fetch(`/api/gallery.php?id=${id}`, { method: 'DELETE' });
+        localStorage.setItem('galaxy_hotel_gallery_photos', JSON.stringify(updated));
+      } catch (e) {}
+      try {
+        await fetch(`/api/gallery.php?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
       } catch (e) {}
     }
   };
@@ -203,27 +228,52 @@ export const GalleryManager: React.FC = () => {
             <label className="block text-xs font-bold text-neutral-700 mb-2">
               Chọn hình ảnh từ thiết bị *
             </label>
-            <div className="relative border-2 border-dashed border-neutral-300 hover:border-neutral-900 rounded-2xl p-4 flex flex-col items-center justify-center text-center bg-neutral-50 hover:bg-white transition-colors cursor-pointer min-h-[160px]">
+            <div 
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`relative border-2 border-dashed rounded-2xl p-4 flex flex-col items-center justify-center text-center transition-all cursor-pointer min-h-[170px] ${
+                isDragging 
+                  ? 'border-neutral-900 bg-amber-50/60 scale-[1.01]' 
+                  : 'border-neutral-300 hover:border-neutral-900 bg-neutral-50 hover:bg-white'
+              }`}
+            >
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleFileSelect}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               />
-              {previewUrl ? (
-                <div className="relative w-full h-32 rounded-xl overflow-hidden shadow-sm">
+              
+              {isCompressing ? (
+                <div className="space-y-2 py-4 flex flex-col items-center">
+                  <Loader2 className="w-8 h-8 text-[#8A6943] animate-spin" />
+                  <p className="text-xs font-bold text-neutral-800">Đang tối ưu hóa hình ảnh...</p>
+                  <p className="text-[10px] text-neutral-400">Nén ảnh chuẩn HD để tải lên siêu nhanh</p>
+                </div>
+              ) : previewUrl ? (
+                <div className="relative w-full h-36 rounded-xl overflow-hidden shadow-sm group">
                   <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
-                  <span className="absolute bottom-1 right-1 bg-black/75 text-white text-[10px] px-2 py-0.5 rounded font-bold">
-                    Thay ảnh khác
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold">
+                    Nhấp để đổi ảnh khác
+                  </div>
+                  {sizeInfo && (
+                    <span className="absolute bottom-1.5 left-1.5 bg-neutral-900/80 backdrop-blur-sm text-[#E8DCB9] text-[10px] px-2 py-0.5 rounded font-medium flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" />
+                      <span>{sizeInfo.orig}KB ➔ {sizeInfo.comp}KB</span>
+                    </span>
+                  )}
+                  <span className="absolute bottom-1.5 right-1.5 bg-black/75 text-white text-[10px] px-2 py-0.5 rounded font-bold">
+                    Đã sẵn sàng
                   </span>
                 </div>
               ) : (
-                <div className="space-y-2 pointer-events-none">
+                <div className="space-y-2 pointer-events-none py-2">
                   <div className="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center mx-auto text-neutral-600">
                     <Upload className="w-5 h-5" />
                   </div>
-                  <p className="text-xs font-bold text-neutral-800">Nhấp để tải ảnh lên</p>
-                  <p className="text-[10px] text-neutral-400">JPG, PNG, WEBP (Tối đa 10MB)</p>
+                  <p className="text-xs font-bold text-neutral-800">Nhấp hoặc Kéo thả ảnh vào đây</p>
+                  <p className="text-[10px] text-neutral-400">JPG, PNG, WEBP, HEIC (Tự động nén HD)</p>
                 </div>
               )}
             </div>
@@ -276,11 +326,14 @@ export const GalleryManager: React.FC = () => {
 
             <button
               type="submit"
-              disabled={isUploading || (!selectedFile && !previewUrl)}
-              className="w-full py-3 rounded-xl bg-neutral-900 hover:bg-neutral-800 disabled:bg-neutral-300 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all"
+              disabled={isUploading || isCompressing || (!selectedFile && !previewUrl)}
+              className="w-full py-3 rounded-xl bg-neutral-900 hover:bg-neutral-800 disabled:bg-neutral-300 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.99]"
             >
               {isUploading ? (
-                <span>Đang tải lên...</span>
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Đang tải và lưu ảnh...</span>
+                </>
               ) : (
                 <>
                   <Upload className="w-4 h-4 text-[#E8DCB9]" />

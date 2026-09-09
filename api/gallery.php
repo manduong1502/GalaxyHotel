@@ -148,7 +148,7 @@ switch ($method) {
             // Sync to MySQL
             if ($pdo) {
                 try {
-                    $pdo->exec("TRUNCATE TABLE gallery");
+                    $pdo->exec("DELETE FROM gallery");
                     $stmt = $pdo->prepare("INSERT INTO gallery (id, url, title, category, date, sort_order) VALUES (?, ?, ?, ?, ?, ?)");
                     foreach ($photos as $idx => $p) {
                         $stmt->execute([
@@ -160,7 +160,9 @@ switch ($method) {
                             $idx
                         ]);
                     }
-                } catch (Exception $e) {}
+                } catch (Exception $e) {
+                    @file_put_contents($dataDir . '/gallery_sql_error.log', date('c') . " - " . $e->getMessage() . "\n", FILE_APPEND);
+                }
             }
         } else if (!empty($input['url'])) {
             $newId = $input['id'] ?? ('gal-' . time() . '-' . rand(100, 999));
