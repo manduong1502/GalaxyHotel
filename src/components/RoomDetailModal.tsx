@@ -46,6 +46,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ room, onClose,
           <img
             src={room.images[activeImageIndex]}
             alt={room.name[lang]}
+            onError={(e) => { e.currentTarget.src = '/images/rooms/phong-a.jpg'; }}
             className="w-full h-full object-cover transition-all duration-500 ease-out"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
@@ -78,7 +79,12 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ room, onClose,
                   idx === activeImageIndex ? 'border-white scale-105 shadow-md' : 'border-white/40 opacity-60 hover:opacity-100'
                 }`}
               >
-                <img src={img} alt="Thumb" className="w-full h-full object-cover" />
+                <img 
+                  src={img} 
+                  alt="Thumb" 
+                  onError={(e) => { e.currentTarget.src = '/images/rooms/phong-a.jpg'; }}
+                  className="w-full h-full object-cover" 
+                />
               </button>
             ))}
           </div>

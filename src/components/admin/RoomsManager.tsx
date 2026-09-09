@@ -76,40 +76,46 @@ export const RoomsManager: React.FC = () => {
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    if (files.length === 0) return;
 
     setIsUploadingImage(true);
-    try {
-      // 1. Client-side compress to ~200KB-300KB HD
-      const compressed = await compressImage(file, 1600, 1600, 0.82);
+    const newUploadedUrls: string[] = [];
 
-      // 2. Upload compressed file to persistent /uploads/
-      const formData = new FormData();
-      formData.append('image', compressed.compressedFile);
-      const res = await fetch('/api/upload_image.php', {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      if (data && data.success && data.url) {
-        setEditImages(prev => [...prev, data.url]);
-      } else if (compressed.base64) {
-        // Direct compressed base64 fallback
-        setEditImages(prev => [...prev, compressed.base64]);
-      }
-    } catch (err) {
-      console.warn('Upload API error, using safe compressed base64 storage', err);
+    for (const file of files) {
       try {
+        // 1. Client-side compress to ~200KB-300KB HD
         const compressed = await compressImage(file, 1600, 1600, 0.82);
-        setEditImages(prev => [...prev, compressed.base64]);
-      } catch (e) {
-        alert('Không thể tải file ảnh, vui lòng thử lại');
+
+        // 2. Upload compressed file to persistent /uploads/
+        const formData = new FormData();
+        formData.append('image', compressed.compressedFile);
+        const res = await fetch('/api/upload_image.php', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data && data.success && data.url) {
+          newUploadedUrls.push(data.url);
+        } else if (compressed.base64) {
+          newUploadedUrls.push(compressed.base64);
+        }
+      } catch (err) {
+        console.warn('Upload API error, using safe compressed base64 fallback', err);
+        try {
+          const compressed = await compressImage(file, 1600, 1600, 0.82);
+          newUploadedUrls.push(compressed.base64);
+        } catch (e) {
+          console.error('Failed to compress file', e);
+        }
       }
-    } finally {
-      setIsUploadingImage(false);
-      if (e.target) e.target.value = '';
     }
+
+    if (newUploadedUrls.length > 0) {
+      setEditImages(prev => [...prev, ...newUploadedUrls]);
+    }
+    setIsUploadingImage(false);
+    if (e.target) e.target.value = '';
   };
 
   const handleSetAsMain = (index: number) => {
@@ -432,6 +438,7 @@ export const RoomsManager: React.FC = () => {
                     <input
                       type="file"
                       accept="image/*"
+                      multiple
                       onChange={handleImageUpload}
                       disabled={isUploadingImage}
                       className="hidden"
