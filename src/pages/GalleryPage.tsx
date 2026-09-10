@@ -62,6 +62,9 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onNavigate }) => {
 
   const filteredItems = galleryItems.filter(item => {
     if (selectedFilter === 'all') return true;
+    if (selectedFilter === 'spaces' || selectedFilter === 'facilities') {
+      return item.category === 'spaces' || item.category === 'facilities';
+    }
     return item.category === selectedFilter;
   });
 

@@ -88,6 +88,16 @@ function getStoredPhotos($dataFile, $defaultPhotos, $pdo = null) {
     // 1. Try MySQL
     if ($pdo) {
         try {
+            $pdo->exec("CREATE TABLE IF NOT EXISTS `gallery` (
+                `id` VARCHAR(50) PRIMARY KEY,
+                `url` MEDIUMTEXT NOT NULL,
+                `title` VARCHAR(255) NOT NULL,
+                `category` VARCHAR(50) NOT NULL DEFAULT 'checkin',
+                `date` DATE DEFAULT NULL,
+                `sort_order` INT DEFAULT 0,
+                `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
             $stmt = $pdo->query("SELECT * FROM gallery ORDER BY sort_order ASC, created_at DESC");
             $rows = $stmt->fetchAll();
             if (!empty($rows)) {
@@ -148,11 +158,21 @@ switch ($method) {
             // Sync to MySQL
             if ($pdo) {
                 try {
+                    $pdo->exec("CREATE TABLE IF NOT EXISTS `gallery` (
+                        `id` VARCHAR(50) PRIMARY KEY,
+                        `url` MEDIUMTEXT NOT NULL,
+                        `title` VARCHAR(255) NOT NULL,
+                        `category` VARCHAR(50) NOT NULL DEFAULT 'checkin',
+                        `date` DATE DEFAULT NULL,
+                        `sort_order` INT DEFAULT 0,
+                        `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
                     $pdo->exec("DELETE FROM gallery");
                     $stmt = $pdo->prepare("INSERT INTO gallery (id, url, title, category, date, sort_order) VALUES (?, ?, ?, ?, ?, ?)");
                     foreach ($photos as $idx => $p) {
                         $stmt->execute([
-                            $p['id'] ?? (string)($idx + 1),
+                            $p['id'] ?? ('gal-' . $idx),
                             $p['url'] ?? '',
                             $p['title'] ?? 'Ảnh khách sạn',
                             $p['category'] ?? 'checkin',
@@ -164,6 +184,11 @@ switch ($method) {
                     @file_put_contents($dataDir . '/gallery_sql_error.log', date('c') . " - " . $e->getMessage() . "\n", FILE_APPEND);
                 }
             }
+
+            // Always save JSON backup
+            @file_put_contents($dataFile, json_encode($photos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            echo json_encode(['success' => true, 'data' => $photos, 'message' => 'Đã lưu hình ảnh vào Thư viện thành công']);
+            exit;
         } else if (!empty($input['url'])) {
             $newId = $input['id'] ?? ('gal-' . time() . '-' . rand(100, 999));
             $newPhoto = [
@@ -177,6 +202,16 @@ switch ($method) {
 
             if ($pdo) {
                 try {
+                    $pdo->exec("CREATE TABLE IF NOT EXISTS `gallery` (
+                        `id` VARCHAR(50) PRIMARY KEY,
+                        `url` MEDIUMTEXT NOT NULL,
+                        `title` VARCHAR(255) NOT NULL,
+                        `category` VARCHAR(50) NOT NULL DEFAULT 'checkin',
+                        `date` DATE DEFAULT NULL,
+                        `sort_order` INT DEFAULT 0,
+                        `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
                     $stmt = $pdo->prepare("INSERT INTO gallery (id, url, title, category, date, sort_order) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE url = VALUES(url), title = VALUES(title), category = VALUES(category), date = VALUES(date)");
                     $stmt->execute([
                         $newId,
@@ -188,16 +223,16 @@ switch ($method) {
                     ]);
                 } catch (Exception $e) {}
             }
+
+            // Always save JSON backup
+            @file_put_contents($dataFile, json_encode($photos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            echo json_encode(['success' => true, 'data' => $photos, 'message' => 'Đã lưu hình ảnh vào Thư viện thành công']);
+            exit;
         } else {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Thiếu dữ liệu hình ảnh hoặc đường dẫn']);
             exit;
         }
-
-        // Always save JSON backup
-        @file_put_contents($dataFile, json_encode($photos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-        echo json_encode(['success' => true, 'data' => $photos, 'message' => 'Đã lưu hình ảnh vào Thư viện thành công']);
-        break;
 
     case 'DELETE':
         $id = $_GET['id'] ?? '';
