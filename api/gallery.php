@@ -15,11 +15,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once __DIR__ . '/db.php';
 
-$dataDir = __DIR__ . '/data';
-if (!is_dir($dataDir)) {
-    @mkdir($dataDir, 0777, true);
+// Helper: Multi-location persistence paths
+function getPossibleGalleryFiles() {
+    $webRoot = dirname(__DIR__);
+    return [
+        $webRoot . '/uploads/gallery.json',
+        __DIR__ . '/data/gallery.json',
+        __DIR__ . '/gallery.json'
+    ];
 }
-$dataFile = $dataDir . '/gallery.json';
+
+function saveGalleryJson($photos) {
+    $encoded = json_encode($photos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    foreach (getPossibleGalleryFiles() as $path) {
+        $dir = dirname($path);
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0777, true);
+        }
+        @file_put_contents($path, $encoded);
+    }
+}
+
+function loadGalleryJson() {
+    foreach (getPossibleGalleryFiles() as $path) {
+        if (file_exists($path)) {
+            $content = @file_get_contents($path);
+            if ($content) {
+                $json = json_decode($content, true);
+                if (is_array($json) && count($json) > 0) {
+                    return $json;
+                }
+            }
+        }
+    }
+    return null;
+}
 
 // Auto create gallery table in MySQL if connected
 if (isset($pdo) && $pdo) {
@@ -84,7 +114,7 @@ $defaultPhotos = [
     ]
 ];
 
-function getStoredPhotos($dataFile, $defaultPhotos, $pdo = null) {
+function getStoredPhotos($defaultPhotos, $pdo = null) {
     // 1. Try MySQL
     if ($pdo) {
         try {
@@ -111,24 +141,20 @@ function getStoredPhotos($dataFile, $defaultPhotos, $pdo = null) {
                         'date' => $row['date'] ?? date('Y-m-d')
                     ];
                 }
+                saveGalleryJson($list);
                 return $list;
             }
         } catch (Exception $e) {}
     }
 
-    // 2. Try JSON backup
-    if (file_exists($dataFile)) {
-        $content = @file_get_contents($dataFile);
-        if ($content) {
-            $json = json_decode($content, true);
-            if (is_array($json) && count($json) > 0) {
-                return $json;
-            }
-        }
+    // 2. Try JSON backup across multiple locations
+    $backup = loadGalleryJson();
+    if ($backup && count($backup) > 0) {
+        return $backup;
     }
 
     // 3. Fallback to default
-    @file_put_contents($dataFile, json_encode($defaultPhotos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    saveGalleryJson($defaultPhotos);
     return $defaultPhotos;
 }
 
@@ -136,7 +162,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        $photos = getStoredPhotos($dataFile, $defaultPhotos, $pdo);
+        $photos = getStoredPhotos($defaultPhotos, $pdo);
         echo json_encode(['success' => true, 'data' => $photos]);
         break;
 
@@ -150,7 +176,7 @@ switch ($method) {
             exit;
         }
 
-        $photos = getStoredPhotos($dataFile, $defaultPhotos, $pdo);
+        $photos = getStoredPhotos($defaultPhotos, $pdo);
 
         if (isset($input['action']) && $input['action'] === 'save_all' && isset($input['photos']) && is_array($input['photos'])) {
             $photos = $input['photos'];
@@ -174,20 +200,18 @@ switch ($method) {
                         $stmt->execute([
                             $p['id'] ?? ('gal-' . $idx),
                             $p['url'] ?? '',
-                            $p['title'] ?? 'Ảnh khách sạn',
+                            $p['title'] ?? 'Khoảnh khắc khách hàng',
                             $p['category'] ?? 'checkin',
                             $p['date'] ?? date('Y-m-d'),
                             $idx
                         ]);
                     }
-                } catch (Exception $e) {
-                    @file_put_contents($dataDir . '/gallery_sql_error.log', date('c') . " - " . $e->getMessage() . "\n", FILE_APPEND);
-                }
+                } catch (Exception $e) {}
             }
 
-            // Always save JSON backup
-            @file_put_contents($dataFile, json_encode($photos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-            echo json_encode(['success' => true, 'data' => $photos, 'message' => 'Đã lưu hình ảnh vào Thư viện thành công']);
+            // Always save JSON backup across all writeable locations
+            saveGalleryJson($photos);
+            echo json_encode(['success' => true, 'data' => $photos, 'message' => 'Đã lưu danh sách ảnh thành công']);
             exit;
         } else if (!empty($input['url'])) {
             $newId = $input['id'] ?? ('gal-' . time() . '-' . rand(100, 999));
@@ -224,8 +248,7 @@ switch ($method) {
                 } catch (Exception $e) {}
             }
 
-            // Always save JSON backup
-            @file_put_contents($dataFile, json_encode($photos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            saveGalleryJson($photos);
             echo json_encode(['success' => true, 'data' => $photos, 'message' => 'Đã lưu hình ảnh vào Thư viện thành công']);
             exit;
         } else {
@@ -248,7 +271,7 @@ switch ($method) {
             exit;
         }
 
-        $photos = getStoredPhotos($dataFile, $defaultPhotos, $pdo);
+        $photos = getStoredPhotos($defaultPhotos, $pdo);
         $filtered = array_values(array_filter($photos, function($p) use ($id) {
             return ($p['id'] ?? '') != $id;
         }));
@@ -260,7 +283,12 @@ switch ($method) {
             } catch (Exception $e) {}
         }
 
-        @file_put_contents($dataFile, json_encode($filtered, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        saveGalleryJson($filtered);
         echo json_encode(['success' => true, 'data' => $filtered, 'message' => 'Đã xóa ảnh']);
+        break;
+
+    default:
+        http_response_code(405);
+        echo json_encode(['success' => false, 'message' => 'Phương thức không được hỗ trợ']);
         break;
 }

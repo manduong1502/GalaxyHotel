@@ -1,0 +1,8 @@
+[
+  { "id": "gal-1", "url": "/images/checkin-1.jpg", "title": "Check-in nụ cười du khách tại sảnh", "category": "checkin", "date": "2026-08-30" },
+  { "id": "gal-2", "url": "/images/welcome-1.jpg", "title": "Phòng Hạng Sang Máy Chiếu ấm cúng", "category": "checkin", "date": "2026-08-28" },
+  { "id": "gal-3", "url": "/images/hero-1.jpg", "title": "Sảnh đón tiếp & Quầy thông tin Tour", "category": "facilities", "date": "2026-08-25" },
+  { "id": "gal-4", "url": "/images/facility-1.jpg", "title": "Khu vực tiếp khách & thư giãn", "category": "facilities", "date": "2026-08-20" },
+  { "id": "gal-5", "url": "/images/welcome-2.jpg", "title": "Góc phòng xinh xắn đón nắng sáng", "category": "checkin", "date": "2026-08-15" },
+  { "id": "gal-6", "url": "/images/hero-2.jpg", "title": "Không gian ấm cúng Galaxy Boutique", "category": "facilities", "date": "2026-08-10" }
+]

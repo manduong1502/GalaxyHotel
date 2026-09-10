@@ -62,21 +62,35 @@ if (isset($pdo) && $pdo) {
     } catch (Exception $e) {}
 }
 
-// Helper: Save rooms to JSON backup file
-function saveRoomsBackup($roomsList) {
-    global $jsonBackupFile;
-    @file_put_contents($jsonBackupFile, json_encode($roomsList, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+function getPossibleRoomsFiles() {
+    $webRoot = dirname(__DIR__);
+    return [
+        $webRoot . '/uploads/rooms.json',
+        __DIR__ . '/data/rooms.json',
+        __DIR__ . '/rooms.json'
+    ];
 }
 
-// Helper: Load rooms from JSON backup file
+function saveRoomsBackup($roomsList) {
+    $encoded = json_encode($roomsList, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    foreach (getPossibleRoomsFiles() as $path) {
+        $dir = dirname($path);
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0777, true);
+        }
+        @file_put_contents($path, $encoded);
+    }
+}
+
 function loadRoomsBackup() {
-    global $jsonBackupFile;
-    if (file_exists($jsonBackupFile)) {
-        $content = @file_get_contents($jsonBackupFile);
-        if ($content) {
-            $data = json_decode($content, true);
-            if (is_array($data) && count($data) > 0) {
-                return $data;
+    foreach (getPossibleRoomsFiles() as $path) {
+        if (file_exists($path)) {
+            $content = @file_get_contents($path);
+            if ($content) {
+                $data = json_decode($content, true);
+                if (is_array($data) && count($data) > 0) {
+                    return $data;
+                }
             }
         }
     }

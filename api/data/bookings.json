@@ -1,0 +1,23 @@
+[
+  {
+    "id": "bk-1005",
+    "bookingCode": "GBH-8899",
+    "bookingType": "daily",
+    "roomId": "phong-may-chieu",
+    "roomName": "Phòng Máy Chiếu (Cinema Experience)",
+    "guestName": "Nguyễn Văn Hùng",
+    "guestPhone": "0909 123 456",
+    "guestEmail": "hung.nguyen@gmail.com",
+    "checkInDate": "2026-09-12",
+    "checkInTime": "14:00",
+    "checkOutDate": "2026-09-14",
+    "checkOutTime": "12:00",
+    "nightsCount": 2,
+    "adults": 2,
+    "children": 0,
+    "totalPrice": 1300000,
+    "specialRequests": "Yêu cầu phòng tầng cao yên tĩnh, chuẩn bị sẵn Netflix và máy chiếu",
+    "status": "confirmed",
+    "createdAt": "2026-09-08 10:30:00"
+  }
+]
