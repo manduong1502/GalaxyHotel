@@ -13,6 +13,38 @@ interface AboutPageProps {
 export const AboutPage: React.FC<AboutPageProps> = ({ onOpenBooking, onNavigate }) => {
   const { lang, t } = useLanguage();
 
+  const [aboutImages, setAboutImages] = React.useState({
+    mainImage: '/images/welcome-1.jpg',
+    secondaryImage: '/images/welcome-2.jpg'
+  });
+
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem('galaxy_hotel_banners');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.welcomeImages) {
+          setAboutImages({
+            mainImage: parsed.welcomeImages.mainImage || '/images/welcome-1.jpg',
+            secondaryImage: parsed.welcomeImages.secondaryImage || '/images/welcome-2.jpg'
+          });
+        }
+      }
+    } catch (e) {}
+
+    fetch('/api/banners.php')
+      .then(res => res.json())
+      .then(res => {
+        if (res && res.success && res.data && res.data.welcomeImages) {
+          setAboutImages({
+            mainImage: res.data.welcomeImages.mainImage || '/images/welcome-1.jpg',
+            secondaryImage: res.data.welcomeImages.secondaryImage || '/images/welcome-2.jpg'
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const attractions = [
     { name: lang === 'vi' ? 'Phố Đi Bộ Bùi Viện' : 'Bui Vien Walking Street', distance: '100m', time: '1 phút đi bộ', desc: lang === 'vi' ? 'Trung tâm vui chơi, ẩm thực đêm sôi động nhất Sài Gòn' : 'Vibrant nightlife and street food hub' },
     { name: lang === 'vi' ? 'Công Viên 23 Tháng 9' : '23/9 Central Park', distance: '150m', time: '2 phút đi bộ', desc: lang === 'vi' ? 'Mảng xanh thư giãn, trạm xe buýt trung tâm' : 'Lush green park and central bus terminal' },
@@ -69,8 +101,9 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onOpenBooking, onNavigate 
             <div className="space-y-4">
               <div className="rounded-2xl overflow-hidden shadow-sm border border-neutral-200 aspect-[4/5] bg-neutral-200">
                 <img
-                  src="/images/welcome-1.jpg"
+                  src={aboutImages.mainImage}
                   alt="Galaxy Hotel Reception & Room"
+                  onError={(e) => { e.currentTarget.src = '/images/welcome-1.jpg'; }}
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                 />
               </div>
@@ -87,8 +120,9 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onOpenBooking, onNavigate 
               </div>
               <div className="rounded-2xl overflow-hidden shadow-sm border border-neutral-200 aspect-[4/5] bg-neutral-200">
                 <img
-                  src="/images/welcome-2.jpg"
+                  src={aboutImages.secondaryImage}
                   alt="Galaxy Hotel Interior"
+                  onError={(e) => { e.currentTarget.src = '/images/welcome-2.jpg'; }}
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                 />
               </div>

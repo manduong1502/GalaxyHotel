@@ -7,17 +7,18 @@ import { RoomsManager } from './RoomsManager';
 import { RoomCalendarView } from './RoomCalendarView';
 import { GalleryManager } from './GalleryManager';
 import { ServicesManager } from './ServicesManager';
+import { BannersManager } from './BannersManager';
 import { AdminSettings } from './AdminSettings';
 import { 
   LayoutDashboard, CalendarCheck, BedDouble, Calendar, 
-  Settings, LogOut, ArrowLeft, Globe, Heart, Compass, Menu, X 
+  Settings, LogOut, ArrowLeft, Globe, Heart, Compass, Sparkles, Menu, X 
 } from 'lucide-react';
 
 interface AdminLayoutProps {
   onBackToWebsite: () => void;
 }
 
-export type AdminTab = 'dashboard' | 'bookings' | 'rooms' | 'gallery' | 'services' | 'calendar' | 'settings';
+export type AdminTab = 'dashboard' | 'bookings' | 'rooms' | 'gallery' | 'services' | 'banners' | 'calendar' | 'settings';
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => {
   const { user, logout } = useAuth();
@@ -33,6 +34,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => 
     { id: 'rooms', label: 'Phòng, Giá & Ảnh', icon: BedDouble },
     { id: 'gallery', label: 'Góc Nhỏ Yêu Thương', icon: Heart },
     { id: 'services', label: 'Dịch Vụ & Tour', icon: Compass },
+    { id: 'banners', label: 'Banner & Trang Chủ', icon: Sparkles },
     { id: 'calendar', label: 'Sơ Đồ Lịch Phòng', icon: Calendar },
     { id: 'settings', label: 'Cài Đặt & SMTP Mail', icon: Settings },
   ];
@@ -259,6 +261,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => 
         {activeTab === 'rooms' && <RoomsManager />}
         {activeTab === 'gallery' && <GalleryManager />}
         {activeTab === 'services' && <ServicesManager />}
+        {activeTab === 'banners' && <BannersManager />}
         {activeTab === 'calendar' && <RoomCalendarView />}
         {activeTab === 'settings' && <AdminSettings />}
       </main>

@@ -10,7 +10,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ onOpenBooking }) => {
   const { t } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const slides = [
+  const defaultSlides = [
     {
       image: '/images/hero-1.jpg',
       subtitle: t('hero.slide1.subtitle'),
@@ -30,6 +30,41 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ onOpenBooking }) => {
       highlight: 'TÂM ĐIỂM QUẬN 1',
     }
   ];
+
+  const [customSlides, setCustomSlides] = useState<any[] | null>(() => {
+    try {
+      const saved = localStorage.getItem('galaxy_hotel_banners');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && Array.isArray(parsed.heroSlides) && parsed.heroSlides.length > 0) {
+          return parsed.heroSlides;
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return null;
+  });
+
+  // Fetch live banners from API
+  useEffect(() => {
+    fetch('/api/banners.php')
+      .then(res => res.json())
+      .then(res => {
+        if (res && res.success && res.data && Array.isArray(res.data.heroSlides) && res.data.heroSlides.length > 0) {
+          setCustomSlides(res.data.heroSlides);
+          localStorage.setItem('galaxy_hotel_banners', JSON.stringify(res.data));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const slides = customSlides ? customSlides.map((s, idx) => ({
+    image: s.image || defaultSlides[idx % defaultSlides.length].image,
+    title: s.title || defaultSlides[idx % defaultSlides.length].title,
+    subtitle: s.subtitle || defaultSlides[idx % defaultSlides.length].subtitle,
+    highlight: s.highlight || defaultSlides[idx % defaultSlides.length].highlight
+  })) : defaultSlides;
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -59,6 +94,9 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ onOpenBooking }) => {
           <img
             src={slide.image}
             alt={slide.title}
+            onError={(e) => {
+              e.currentTarget.src = defaultSlides[index % defaultSlides.length]?.image || '/images/hero-1.jpg';
+            }}
             className={`w-full h-full object-cover object-center brightness-[0.65] ${
               index === currentSlide ? 'animate-ken-burns' : ''
             }`}
@@ -76,7 +114,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ onOpenBooking }) => {
           key={`tag-${currentSlide}`}
           className="text-xs sm:text-sm font-semibold tracking-[0.25em] text-[#E8DCB9] uppercase mb-4 animate-fade-in block"
         >
-          GALAXY BOUTIQUE HOTEL • QUẬN 1
+          {slides[currentSlide]?.highlight ? `GALAXY BOUTIQUE HOTEL • ${slides[currentSlide].highlight}` : 'GALAXY BOUTIQUE HOTEL • QUẬN 1'}
         </span>
 
         {/* Dynamic Slide Title with Plus Jakarta Sans */}

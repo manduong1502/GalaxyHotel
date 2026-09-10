@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { Compass, Shirt, MapPin, Clock, Check, Sparkles } from 'lucide-react';
@@ -8,7 +8,7 @@ export const GymFacilitySection: React.FC = () => {
   const { ref: sectionRef, isVisible } = useScrollReveal<HTMLElement>(0.1);
 
   // Load custom admin edited boxes if any
-  const customBoxes = React.useMemo(() => {
+  const [customBoxes, setCustomBoxes] = useState<any[] | null>(() => {
     try {
       const saved = localStorage.getItem('galaxy_hotel_services_boxes');
       if (saved) return JSON.parse(saved);
@@ -16,6 +16,19 @@ export const GymFacilitySection: React.FC = () => {
       console.error(e);
     }
     return null;
+  });
+
+  // Fetch live services from server on mount
+  useEffect(() => {
+    fetch('/api/services.php')
+      .then(res => res.json())
+      .then(res => {
+        if (res && res.success && Array.isArray(res.data) && res.data.length >= 3) {
+          setCustomBoxes(res.data);
+          localStorage.setItem('galaxy_hotel_services_boxes', JSON.stringify(res.data));
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const defaultServices = [
@@ -53,27 +66,27 @@ export const GymFacilitySection: React.FC = () => {
       icon: Compass,
       title: customBoxes[0]?.title || t('facilities.gym_title'),
       desc: customBoxes[0]?.desc || t('facilities.gym_desc'),
-      image: '/images/tour-mekong.jpg',
+      image: customBoxes[0]?.image || '/images/tour-mekong.jpg',
       tag: customBoxes[0]?.tag || t('facilities.gym_tag'),
-      hours: '24/7 Hỗ trợ',
+      hours: customBoxes[0]?.hours || '24/7 Hỗ trợ',
       highlights: customBoxes[0]?.items || [t('facilities.gym_hl1'), t('facilities.gym_hl2'), t('facilities.gym_hl3')]
     },
     {
       icon: Shirt,
       title: customBoxes[1]?.title || t('facilities.spa_title'),
       desc: customBoxes[1]?.desc || t('facilities.spa_desc'),
-      image: '/images/towels.png',
+      image: customBoxes[1]?.image || '/images/towels.png',
       tag: customBoxes[1]?.tag || t('facilities.spa_tag'),
-      hours: 'Lấy trong ngày',
+      hours: customBoxes[1]?.hours || 'Lấy trong ngày',
       highlights: customBoxes[1]?.items || [t('facilities.spa_hl1'), t('facilities.spa_hl2'), t('facilities.spa_hl3')]
     },
     {
       icon: MapPin,
       title: customBoxes[2]?.title || t('facilities.pool_title'),
       desc: customBoxes[2]?.desc || t('facilities.pool_desc'),
-      image: '/images/bui-vien-night.jpg',
+      image: customBoxes[2]?.image || '/images/bui-vien-night.jpg',
       tag: customBoxes[2]?.tag || t('facilities.pool_tag'),
-      hours: 'Vị trí đắc địa',
+      hours: customBoxes[2]?.hours || 'Vị trí đắc địa',
       highlights: customBoxes[2]?.items || [t('facilities.pool_hl1'), t('facilities.pool_hl2'), t('facilities.pool_hl3')]
     }
   ] : defaultServices;
@@ -116,6 +129,9 @@ export const GymFacilitySection: React.FC = () => {
                     <img
                       src={fac.image}
                       alt={fac.title}
+                      onError={(e) => { 
+                        e.currentTarget.src = defaultServices[index]?.image || '/images/tour-mekong.jpg'; 
+                      }}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                       loading="lazy"
                     />

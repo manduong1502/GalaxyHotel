@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { MapPin, Utensils, Waves, ShieldCheck } from 'lucide-react';
@@ -6,6 +6,38 @@ import { MapPin, Utensils, Waves, ShieldCheck } from 'lucide-react';
 export const WelcomeSection: React.FC = () => {
   const { t, lang } = useLanguage();
   const { ref: sectionRef, isVisible } = useScrollReveal<HTMLElement>(0.1);
+
+  const [welcomeImages, setWelcomeImages] = useState({
+    mainImage: '/images/welcome-1.jpg',
+    secondaryImage: '/images/welcome-2.jpg'
+  });
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('galaxy_hotel_banners');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.welcomeImages) {
+          setWelcomeImages({
+            mainImage: parsed.welcomeImages.mainImage || '/images/welcome-1.jpg',
+            secondaryImage: parsed.welcomeImages.secondaryImage || '/images/welcome-2.jpg'
+          });
+        }
+      }
+    } catch (e) {}
+
+    fetch('/api/banners.php')
+      .then(res => res.json())
+      .then(res => {
+        if (res && res.success && res.data && res.data.welcomeImages) {
+          setWelcomeImages({
+            mainImage: res.data.welcomeImages.mainImage || '/images/welcome-1.jpg',
+            secondaryImage: res.data.welcomeImages.secondaryImage || '/images/welcome-2.jpg'
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const stats = [
     { num: '4.7★', label: lang === 'vi' ? 'Đánh giá (320+ lượt)' : 'Rating (320+ reviews)' },
@@ -34,8 +66,9 @@ export const WelcomeSection: React.FC = () => {
           <div className="lg:col-span-6 relative">
             <div className="relative rounded-2xl overflow-hidden shadow-[0_16px_40px_-16px_rgba(0,0,0,0.15)] border border-neutral-200/80 bg-white">
               <img
-                src="/images/welcome-1.jpg"
+                src={welcomeImages.mainImage}
                 alt="Galaxy Boutique Hotel"
+                onError={(e) => { e.currentTarget.src = '/images/welcome-1.jpg'; }}
                 className="w-full h-[420px] sm:h-[500px] object-cover object-center transform hover:scale-103 transition-transform duration-700 ease-out"
               />
               
@@ -58,8 +91,9 @@ export const WelcomeSection: React.FC = () => {
             {/* Overlapping secondary image */}
             <div className="hidden sm:block absolute -bottom-6 -right-6 w-48 h-48 rounded-xl overflow-hidden border-4 border-white shadow-xl z-20">
               <img
-                src="/images/welcome-2.jpg"
+                src={welcomeImages.secondaryImage}
                 alt="Cozy Room Interior"
+                onError={(e) => { e.currentTarget.src = '/images/welcome-2.jpg'; }}
                 className="w-full h-full object-cover"
               />
             </div>
