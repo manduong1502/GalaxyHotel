@@ -4,15 +4,17 @@ import { Room, RoomStatus } from '../../types';
 import { 
   BedDouble, DollarSign, Clock, Users, Maximize2, 
   Edit, Check, X, AlertCircle, Plus, Trash2, Upload, Image as ImageIcon, Sparkles,
-  Star, ChevronLeft, ChevronRight, CheckCircle2, ArrowLeft, ArrowRight
+  Star, ChevronLeft, ChevronRight, CheckCircle2, ArrowLeft, ArrowRight, FolderOpen
 } from 'lucide-react';
 import { compressImage } from '../../utils/imageCompressor';
+import { MediaLibraryModal } from './MediaLibraryModal';
 
 export const RoomsManager: React.FC = () => {
   const { rooms, updateRoom, addNewRoom, deleteRoom } = useBookings();
   const [editingRoom, setEditingRoom] = useState<Room | null>(null);
   const [isAddingRoom, setIsAddingRoom] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
 
   // Edit form state
   const [editPriceNight, setEditPriceNight] = useState<number>(650000);
@@ -431,19 +433,30 @@ export const RoomsManager: React.FC = () => {
                     </p>
                   </div>
                   
-                  {/* File Upload Button */}
-                  <label className="cursor-pointer px-3.5 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all flex-shrink-0 active:scale-95">
-                    <Upload className="w-3.5 h-3.5 text-[#E8DCB9]" />
-                    <span>{isUploadingImage ? 'Đang tải lên...' : 'Tải Thêm Ảnh Từ Máy'}</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleImageUpload}
-                      disabled={isUploadingImage}
-                      className="hidden"
-                    />
-                  </label>
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setIsMediaModalOpen(true)}
+                      className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all active:scale-95"
+                    >
+                      <FolderOpen className="w-3.5 h-3.5 text-amber-700" />
+                      <span>Chọn Từ Kho Uploads</span>
+                    </button>
+
+                    <label className="cursor-pointer px-3.5 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all active:scale-95">
+                      <Upload className="w-3.5 h-3.5 text-[#E8DCB9]" />
+                      <span>{isUploadingImage ? 'Đang tải lên...' : 'Tải Thêm Ảnh Từ Máy'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleImageUpload}
+                        disabled={isUploadingImage}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
                 </div>
 
                 {/* Thumbnails list with Cover Photo Selection and Reordering */}
@@ -771,6 +784,19 @@ export const RoomsManager: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Media Library Picker Modal for Rooms */}
+      <MediaLibraryModal
+        isOpen={isMediaModalOpen}
+        onClose={() => setIsMediaModalOpen(false)}
+        mode="multiple"
+        title="Chọn Ảnh Phòng Từ Kho Thư Viện Uploads"
+        onSelect={(urls) => {
+          if (urls.length > 0) {
+            setEditImages(prev => [...prev, ...urls]);
+          }
+        }}
+      />
 
     </div>
   );

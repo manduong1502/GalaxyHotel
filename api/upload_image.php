@@ -18,12 +18,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Chỉ hỗ trợ phương thức POST']);
-    exit;
-}
-
 // Determine best persistent upload directory
 $webRoot = dirname(__DIR__);
 $possibleDirs = [
@@ -36,10 +30,7 @@ $uploadDir = null;
 $urlPrefix = '/uploads/';
 
 foreach ($possibleDirs as $idx => $dir) {
-    if (!is_dir($dir)) {
-        @mkdir($dir, 0777, true);
-    }
-    if (is_dir($dir) && is_writable($dir)) {
+    if (is_dir($dir)) {
         $uploadDir = $dir;
         if ($idx === 0) {
             $urlPrefix = '/uploads/';
@@ -52,11 +43,46 @@ foreach ($possibleDirs as $idx => $dir) {
     }
 }
 
-// Fallback to first dir
 if (!$uploadDir) {
     $uploadDir = $possibleDirs[0];
     @mkdir($uploadDir, 0777, true);
-    $urlPrefix = '/uploads/';
+}
+
+// Handle GET to list uploaded files
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $images = [];
+    if (is_dir($uploadDir)) {
+        $files = scandir($uploadDir);
+        $validExts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg', 'heic'];
+        foreach ($files as $file) {
+            if ($file === '.' || $file === '..' || $file === '.htaccess') continue;
+            $filePath = $uploadDir . $file;
+            if (is_file($filePath)) {
+                $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                if (in_array($ext, $validExts)) {
+                    $size = filesize($filePath);
+                    $mtime = filemtime($filePath);
+                    $images[] = [
+                        'filename' => $file,
+                        'url' => $urlPrefix . $file,
+                        'size' => $size,
+                        'sizeFormatted' => $size >= 1048576 ? round($size / 1048576, 2) . ' MB' : round($size / 1024, 1) . ' KB',
+                        'updatedAt' => date('Y-m-d H:i:s', $mtime),
+                        'timestamp' => $mtime
+                    ];
+                }
+            }
+        }
+        usort($images, function($a, $b) { return $b['timestamp'] - $a['timestamp']; });
+    }
+    echo json_encode(['success' => true, 'total' => count($images), 'data' => $images]);
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['success' => false, 'message' => 'Chỉ hỗ trợ POST hoặc GET']);
+    exit;
 }
 
 // Auto-create .htaccess in uploadDir to allow direct image access

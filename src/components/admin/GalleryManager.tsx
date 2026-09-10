@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Trash2, Plus, Image as ImageIcon, CheckCircle, Heart, Eye, Loader2, Sparkles } from 'lucide-react';
+import { Upload, Trash2, Plus, Image as ImageIcon, CheckCircle, Heart, Eye, Loader2, Sparkles, FolderOpen } from 'lucide-react';
 import { compressImage } from '../../utils/imageCompressor';
+import { MediaLibraryModal } from './MediaLibraryModal';
 
 interface GalleryPhoto {
   id: string;
@@ -33,6 +34,7 @@ export const GalleryManager: React.FC = () => {
   const [isCompressing, setIsCompressing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newCategory, setNewCategory] = useState<'checkin' | 'facilities'>('checkin');
   const [previewUrl, setPreviewUrl] = useState('');
@@ -225,9 +227,19 @@ export const GalleryManager: React.FC = () => {
           
           {/* File Picker / Drag Drop */}
           <div className="md:col-span-5">
-            <label className="block text-xs font-bold text-neutral-700 mb-2">
-              Chọn hình ảnh từ thiết bị *
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-bold text-neutral-700">
+                Chọn hình ảnh *
+              </label>
+              <button
+                type="button"
+                onClick={() => setIsMediaModalOpen(true)}
+                className="text-[11px] font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-300/80 px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition-colors shadow-xs"
+              >
+                <FolderOpen className="w-3.5 h-3.5 text-amber-700" />
+                <span>Chọn từ Kho Upload</span>
+              </button>
+            </div>
             <div 
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -387,6 +399,22 @@ export const GalleryManager: React.FC = () => {
           ))}
         </div>
       </div>
+
+      {/* Media Library Picker Modal */}
+      <MediaLibraryModal
+        isOpen={isMediaModalOpen}
+        onClose={() => setIsMediaModalOpen(false)}
+        mode="single"
+        title="Chọn Ảnh Cho Góc Nhỏ Yêu Thương Từ Kho Upload"
+        onSelect={(urls) => {
+          if (urls.length > 0) {
+            setPreviewUrl(urls[0]);
+            setSelectedFile(null);
+            setFallbackBase64('');
+            setSizeInfo(null);
+          }
+        }}
+      />
 
     </div>
   );
