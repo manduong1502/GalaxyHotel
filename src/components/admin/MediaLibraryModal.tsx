@@ -176,6 +176,23 @@ export const MediaLibraryModal: React.FC<MediaLibraryModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            {mode === 'multiple' && filteredItems.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (selectedUrls.length === filteredItems.length) {
+                    setSelectedUrls([]);
+                  } else {
+                    setSelectedUrls(filteredItems.map(item => item.url));
+                  }
+                }}
+                className="px-3 py-2 rounded-xl bg-white hover:bg-neutral-100 text-neutral-700 text-xs font-bold border border-neutral-200 shadow-sm transition-all flex items-center gap-1.5"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-amber-600" />
+                <span>{selectedUrls.length === filteredItems.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}</span>
+              </button>
+            )}
+
             <label className="cursor-pointer px-3.5 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all active:scale-95">
               <Upload className="w-3.5 h-3.5 text-amber-300" />
               <span>{isUploadingNew ? 'Đang tải lên...' : 'Tải thêm ảnh mới'}</span>

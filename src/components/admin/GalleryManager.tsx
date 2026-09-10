@@ -97,9 +97,11 @@ export const GalleryManager: React.FC = () => {
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      await processFile(file);
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    if (files.length === 1) {
+      await processFile(files[0]);
+    } else if (files.length > 1) {
+      await handleBatchUploadFiles(files);
     }
   };
 
@@ -116,16 +118,80 @@ export const GalleryManager: React.FC = () => {
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-      await processFile(file);
+    const files = e.dataTransfer.files ? Array.from(e.dataTransfer.files) : [];
+    if (files.length === 1) {
+      await processFile(files[0]);
+    } else if (files.length > 1) {
+      await handleBatchUploadFiles(files);
     }
+  };
+
+  const handleBatchUploadFiles = async (files: File[]) => {
+    setIsUploading(true);
+    const newPhotosToAdd: GalleryPhoto[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      try {
+        const compressed = await compressImage(file, 1600, 1600, 0.82);
+        const formData = new FormData();
+        formData.append('image', compressed.compressedFile);
+        const res = await fetch('/api/upload_image.php', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        const finalUrl = (data && data.success && data.url) ? data.url : compressed.base64;
+
+        newPhotosToAdd.push({
+          id: 'gal-' + (Date.now() + i),
+          url: finalUrl,
+          title: newTitle.trim() 
+            ? (files.length > 1 ? `${newTitle.trim()} (${i + 1})` : newTitle.trim())
+            : (newCategory === 'checkin' ? 'Khoảnh khắc khách hàng check-in' : 'Không gian khách sạn'),
+          category: newCategory,
+          date: new Date().toISOString().split('T')[0]
+        });
+      } catch (err) {
+        console.error('Batch upload file error', err);
+      }
+    }
+
+    if (newPhotosToAdd.length > 0) {
+      const updated = [...newPhotosToAdd, ...photos];
+      await savePhotos(updated);
+      setSuccessMsg(`Đã tải lên và thêm thành công ${newPhotosToAdd.length} ảnh vào "Góc nhỏ yêu thương"!`);
+      setTimeout(() => setSuccessMsg(''), 5000);
+      setNewTitle('');
+    }
+    setIsUploading(false);
+  };
+
+  const handleBatchAddFromLibrary = async (urls: string[]) => {
+    if (urls.length === 0) return;
+    setIsUploading(true);
+    const newPhotosToAdd: GalleryPhoto[] = urls.map((url, idx) => ({
+      id: 'gal-' + (Date.now() + idx),
+      url,
+      title: newTitle.trim() 
+        ? (urls.length > 1 ? `${newTitle.trim()} (${idx + 1})` : newTitle.trim())
+        : (newCategory === 'checkin' ? 'Khoảnh khắc du khách check-in' : 'Không gian Galaxy Boutique Hotel'),
+      category: newCategory,
+      date: new Date().toISOString().split('T')[0]
+    }));
+
+    const updated = [...newPhotosToAdd, ...photos];
+    await savePhotos(updated);
+    setIsUploading(false);
+    setNewTitle('');
+    setSuccessMsg(`Đã thêm thành công ${urls.length} ảnh từ Kho Upload vào "Góc nhỏ yêu thương" và lưu lên website!`);
+    setTimeout(() => setSuccessMsg(''), 5000);
   };
 
   const handleUploadNewPhoto = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!previewUrl && !selectedFile) {
-      alert('Vui lòng chọn hình ảnh từ thiết bị');
+      alert('Vui lòng chọn hình ảnh từ thiết bị hoặc chọn từ Kho Uploads');
       return;
     }
 
@@ -253,6 +319,7 @@ export const GalleryManager: React.FC = () => {
               <input
                 type="file"
                 accept="image/*"
+                multiple
                 onChange={handleFileSelect}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               />
@@ -404,15 +471,10 @@ export const GalleryManager: React.FC = () => {
       <MediaLibraryModal
         isOpen={isMediaModalOpen}
         onClose={() => setIsMediaModalOpen(false)}
-        mode="single"
-        title="Chọn Ảnh Cho Góc Nhỏ Yêu Thương Từ Kho Upload"
+        mode="multiple"
+        title="Chọn Nhiều Ảnh Cho Góc Nhỏ Yêu Thương Từ Kho Upload"
         onSelect={(urls) => {
-          if (urls.length > 0) {
-            setPreviewUrl(urls[0]);
-            setSelectedFile(null);
-            setFallbackBase64('');
-            setSizeInfo(null);
-          }
+          handleBatchAddFromLibrary(urls);
         }}
       />
 
