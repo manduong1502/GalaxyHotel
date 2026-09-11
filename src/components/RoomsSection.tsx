@@ -4,6 +4,7 @@ import { useBookings } from '../context/BookingContext';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { Room } from '../types';
 import { roomsData } from '../data/mockData';
+import { isSingleOrDoubleRoom, isGroupOrFamilyRoom } from '../utils/roomClassifier';
 import { Maximize2, Users, Bed, Eye, ArrowUpRight, Check } from 'lucide-react';
 
 interface RoomsSectionProps {
@@ -21,8 +22,8 @@ export const RoomsSection: React.FC<RoomsSectionProps> = ({ onSelectRoom, onBook
 
   const filteredRooms = displayRooms.filter((room) => {
     if (filter === 'all') return true;
-    if (filter === 'single_double') return room.maxAdults <= 2;
-    if (filter === 'group_family') return room.maxAdults >= 3;
+    if (filter === 'single_double') return isSingleOrDoubleRoom(room);
+    if (filter === 'group_family') return isGroupOrFamilyRoom(room);
     return true;
   });
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useBookings } from '../context/BookingContext';
 import { Room } from '../types';
+import { isSingleOrDoubleRoom, isGroupOrFamilyRoom } from '../utils/roomClassifier';
 import { 
   Bed, Users, Maximize2, Check, ArrowRight, Calendar, 
   Clock, ShieldCheck, Sparkles, ChevronRight, Home, Filter 
@@ -31,8 +32,8 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({
 
   const filteredRooms = rooms.filter((room) => {
     if (selectedCategory === 'all') return true;
-    if (selectedCategory === 'single_double') return room.maxAdults <= 2;
-    if (selectedCategory === 'group_family') return room.maxAdults >= 3;
+    if (selectedCategory === 'single_double') return isSingleOrDoubleRoom(room);
+    if (selectedCategory === 'group_family') return isGroupOrFamilyRoom(room);
     return true;
   });
 
@@ -72,8 +73,8 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({
           </h1>
           <p className="text-neutral-300 text-xs sm:text-sm max-w-2xl font-sans leading-relaxed">
             {lang === 'vi' 
-              ? 'Tất cả 8 hạng phòng thực tế tại Galaxy Boutique Hotel đều được trang bị đầy đủ máy lạnh, nệm cao cấp, TV màn hình phẳng, phòng tắm riêng và Wi-Fi tốc độ cao.'
-              : 'Explore all 8 authentic boutique room types at Galaxy Hotel with transparent rates for daily and flexible hourly stays in the heart of District 1.'}
+              ? 'Tất cả 9 hạng phòng thực tế tại Galaxy Boutique Hotel đều được trang bị đầy đủ máy lạnh, nệm cao cấp, TV màn hình phẳng, phòng tắm riêng và Wi-Fi tốc độ cao.'
+              : 'Explore all 9 authentic boutique room types at Galaxy Hotel with transparent rates for daily and flexible hourly stays in the heart of District 1.'}
           </p>
 
         </div>

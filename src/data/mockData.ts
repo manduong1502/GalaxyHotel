@@ -25,322 +25,104 @@ export const hotelInfo = {
 
 export const roomsData: Room[] = [
   {
-    id: 'phong-a',
-    slug: 'phong-a',
+    id: 'phong-don-tiet-kiem',
+    slug: 'phong-don-tiet-kiem',
     name: {
-      vi: 'Phòng A (Standard Deluxe)',
-      en: 'Room A (Standard Deluxe)'
+      vi: 'Phòng Đơn Tiết Kiệm',
+      en: 'Budget Single Room'
     },
     subtitle: {
-      vi: 'Không gian ấm cúng, thiết kế hiện đại và tiện nghi hoàn hảo cho 2 người',
-      en: 'Cozy atmosphere, modern design and perfect comfort for 2 guests'
+      vi: 'Không gian ấm cúng, yên tĩnh và đầy đủ tiện nghi với mức giá siêu tiết kiệm cho 1 người',
+      en: 'Cozy, quiet and fully equipped space at an ultra-budget rate for 1 guest'
     },
-    pricePerNight: 650000,
-    priceHourlyFirst2h: 150000,
+    pricePerNight: 400000,
+    priceHourlyFirst2h: 200000,
     priceHourlyExtra: 50000,
-    maxAdults: 2,
-    maxChildren: 1,
-    areaSqm: 15,
+    maxAdults: 1,
+    maxChildren: 0,
+    areaSqm: 12,
     bedType: {
-      vi: '1 Giường Đôi Queen (1.6m x 2.0m)',
-      en: '1 Queen Double Bed (1.6m x 2.0m)'
+      vi: '1 Giường Đơn Tiêu Chuẩn',
+      en: '1 Single Bed'
     },
     view: {
-      vi: 'Cửa sổ đón gió tự nhiên',
-      en: 'Natural Breeze Window'
+      vi: 'Không gian yên tĩnh trong nhà',
+      en: 'Quiet Indoor Ambience'
     },
     amenities: {
-      vi: ['Máy lạnh Inverter', 'Smart TV kết nối Youtube', 'Wifi tốc độ cao miễn phí', 'Tủ lạnh minibar', 'Phòng tắm nước nóng 24/7', 'Máy sấy tóc & Khăn tắm cao cấp'],
-      en: ['Inverter Air Conditioner', 'Smart TV with Youtube', 'Free High-Speed Wi-Fi', 'Minibar Refrigerator', '24/7 Hot Water Shower', 'Hair Dryer & Premium Towels']
+      vi: ['Máy lạnh Inverter', 'TV', 'Wifi cáp quang', 'Tủ lạnh minibar', 'Phòng tắm riêng', 'Nước nóng 24/7'],
+      en: ['Inverter AC', 'TV', 'High-Speed Wi-Fi', 'Minibar Fridge', 'Private Bathroom', '24/7 Hot Water']
     },
     images: [
       '/images/rooms/phong-a.jpg',
-      '/images/rooms/phong-ad.jpg',
-      '/images/hero-1.jpg'
+      '/images/rooms/phong-ad.jpg'
     ],
     description: {
-      vi: 'Phòng A tại Galaxy Boutique Hotel là sự lựa chọn hoàn hảo cho các cặp đôi hoặc du khách cá nhân. Phòng được trang bị đầy đủ tiện nghi hiện đại, không gian sạch sẽ thoáng mát với mức giá cực kỳ ưu đãi ngay trung tâm Quận 1.',
-      en: 'Room A at Galaxy Boutique Hotel is the perfect choice for couples or solo travelers. Fully equipped with modern amenities, clean and airy space at an attractive rate right in District 1.'
+      vi: 'Phòng Đơn Tiết Kiệm là lựa chọn kinh tế hàng đầu cho khách du lịch một mình hoặc khách đi công tác ngắn ngày ngay trung tâm Quận 1.',
+      en: 'Budget Single Room is the best economic option for solo travelers or short business trips right in central District 1.'
     },
     features: {
-      vi: ['Miễn phí nhận phòng sớm (tùy tình trạng phòng)', 'Nước suối miễn phí hàng ngày', 'Lễ tân phục vụ 24/7'],
-      en: ['Early check-in subject to availability', 'Complimentary bottled water daily', '24/7 Front desk support']
+      vi: ['Mức giá tiết kiệm nhất Quận 1', 'Yên tĩnh không tiếng ồn phố thị', 'Đầy đủ tiện nghi cơ bản'],
+      en: ['Best budget rate in District 1', 'Quiet from street noise', 'Complete essential amenities']
     },
     isPopular: true
   },
   {
-    id: 'phong-ad',
-    slug: 'phong-ad',
+    id: 'phong-doi-khong-cua-so',
+    slug: 'phong-doi-khong-cua-so',
     name: {
-      vi: 'Phòng AD (Deluxe Triple)',
-      en: 'Room AD (Deluxe Triple)'
-    },
-    subtitle: {
-      vi: 'Không gian rộng rãi, thoáng mát dành cho nhóm 3 khách hoặc gia đình nhỏ',
-      en: 'Spacious and airy room for 3 guests or small families'
-    },
-    pricePerNight: 650000,
-    priceHourlyFirst2h: 180000,
-    priceHourlyExtra: 60000,
-    maxAdults: 3,
-    maxChildren: 1,
-    areaSqm: 18,
-    bedType: {
-      vi: '1 Giường Đôi King + 1 Giường Đơn',
-      en: '1 King Bed + 1 Single Bed'
-    },
-    view: {
-      vi: 'Cửa sổ đón ánh sáng tự nhiên',
-      en: 'Daylight Window'
-    },
-    amenities: {
-      vi: ['Máy lạnh Inverter', 'Smart TV 43"', 'Wifi cáp quang riêng', 'Tủ quần áo gỗ cao cấp', 'Tủ lạnh minibar', 'Phòng tắm đứng riêng biệt'],
-      en: ['Inverter Air Conditioner', '43" Smart TV', 'Dedicated Fiber Wi-Fi', 'Wooden Wardrobe', 'Minibar Fridge', 'Private Walk-in Shower']
-    },
-    images: [
-      '/images/rooms/phong-ad.jpg',
-      '/images/rooms/phong-a.jpg',
-      '/images/rooms/phong-b.jpg'
-    ],
-    description: {
-      vi: 'Phòng AD với diện tích 18m² được bố trí hài hòa giữa 1 giường đôi và 1 giường đơn êm ái. Không gian nghỉ dưỡng ấm áp, yên tĩnh, tạo cảm giác thân thuộc như chính ngôi nhà của bạn.',
-      en: 'Room AD features an 18sqm layout with 1 comfortable double bed and 1 single bed. A warm and tranquil sanctuary making you feel right at home.'
-    },
-    features: {
-      vi: ['Dọn phòng sạch sẽ mỗi ngày', 'Hỗ trợ đặt xe & tour du lịch Sài Gòn', 'Giữ hành lý miễn phí'],
-      en: ['Daily housekeeping service', 'Tour & taxi booking assistance', 'Free luggage storage']
-    }
-  },
-  {
-    id: 'phong-b',
-    slug: 'phong-b',
-    name: {
-      vi: 'Phòng B (Superior Triple)',
-      en: 'Room B (Superior Triple)'
+      vi: 'Phòng Đôi Không Cửa Sổ',
+      en: 'Standard Double Room (No Window)'
     },
     subtitle: {
       vi: 'Thiết kế tinh tế, không gian yên tĩnh và tiện nghi hoàn hảo cho kỳ nghỉ trọn vẹn',
       en: 'Refined design, quiet space and full amenities for a complete holiday'
     },
-    pricePerNight: 650000,
-    priceHourlyFirst2h: 180000,
-    priceHourlyExtra: 60000,
-    maxAdults: 3,
-    maxChildren: 1,
-    areaSqm: 20,
-    bedType: {
-      vi: '1 Giường Đôi lớn (1.8m x 2.0m) + 1 Giường Đơn',
-      en: '1 Large King Bed (1.8m x 2.0m) + 1 Single Bed'
-    },
-    view: {
-      vi: 'Hướng phố Quận 1 thoáng đãng',
-      en: 'Open District 1 City Scenery'
-    },
-    amenities: {
-      vi: ['Máy lạnh mát sâu', 'Smart TV thế hệ mới', 'Wifi tốc độ cao', 'Ấm đun nước siêu tốc', 'Tủ lạnh minibar', 'Bàn làm việc & ghế thư giãn'],
-      en: ['Powerful Air Conditioner', 'Latest Smart TV', 'High-Speed Wi-Fi', 'Electric Kettle', 'Minibar Fridge', 'Work Desk & Lounge Chair']
-    },
-    images: [
-      '/images/rooms/phong-b.jpg',
-      '/images/hero-1.jpg',
-      '/images/rooms/phong-c.jpg'
-    ],
-    description: {
-      vi: 'Phòng B mang đến không gian rộng 20m² với đệm lò xo êm ái chuẩn khách sạn, giúp phục hồi năng lượng tối đa sau chuyến dạo chơi phố Tây Bùi Viện và chợ Bến Thành.',
-      en: 'Room B offers a 20sqm retreat with premium pocket spring mattress, perfectly rejuvenating your energy after exploring Bui Vien walking street and Ben Thanh Market.'
-    },
-    features: {
-      vi: ['Phù hợp du lịch nhóm bạn hoặc công tác', 'Khăn tắm 100% Cotton thay mới hàng ngày', 'Check-out linh hoạt'],
-      en: ['Ideal for friends or business colleagues', 'Fresh 100% cotton towels daily', 'Flexible check-out']
-    },
-    isPopular: true
-  },
-  {
-    id: 'phong-c',
-    slug: 'phong-c',
-    name: {
-      vi: 'Phòng C (Family Suite - 5 Khách)',
-      en: 'Room C (Family Suite - 5 Guests)'
-    },
-    subtitle: {
-      vi: 'Không gian gia đình rộng 25m², 2 giường đôi lớn cho tối đa 5 người lưu trú',
-      en: 'Spacious 25sqm family room with 2 large double beds accommodating up to 5 guests'
-    },
-    pricePerNight: 650000,
+    pricePerNight: 450000,
     priceHourlyFirst2h: 200000,
-    priceHourlyExtra: 70000,
-    maxAdults: 5,
-    maxChildren: 2,
-    areaSqm: 25,
-    bedType: {
-      vi: '2 Giường Đôi King Size (1.6m x 2.0m)',
-      en: '2 King Double Beds (1.6m x 2.0m)'
-    },
-    view: {
-      vi: 'Cửa sổ đón gió & ánh sáng tự nhiên',
-      en: 'Breeze & Natural Daylight Window'
-    },
-    amenities: {
-      vi: ['2 Giường đôi nệm êm ái', 'Smart TV 50 inch 4K', 'Wifi cáp quang băng thông rộng', 'Tủ lạnh lớn', 'Ấm siêu tốc & Trà/Cafe', 'Phòng tắm rộng có vòi sen đứng'],
-      en: ['2 Plush King Beds', '50" 4K Smart TV', 'High-bandwidth Wi-Fi', 'Large Refrigerator', 'Kettle & Complimentary Tea/Coffee', 'Spacious Shower Bathroom']
-    },
-    images: [
-      '/images/rooms/phong-c.jpg',
-      '/images/rooms/phong-d.jpg',
-      '/images/rooms/phong-a.jpg'
-    ],
-    description: {
-      vi: 'Phòng C là lựa chọn hàng đầu cho các gia đình đông thành viên hoặc nhóm bạn thân đi du lịch cùng nhau. Sở hữu 2 giường đôi rộng rãi, phòng mang lại sự gắn kết ấm cúng và tiết kiệm chi phí tối đa.',
-      en: 'Room C is the top recommendation for families and group vacations. Featuring 2 large double beds, it offers cozy togetherness and maximum cost-efficiency in central Saigon.'
-    },
-    features: {
-      vi: ['Sức chứa đến 5 người thoải mái', 'Trang bị nhiều ổ cắm sạc tiện dụng', 'Hỗ trợ check-in sớm linh hoạt'],
-      en: ['Accommodates up to 5 guests comfortably', 'Multiple charging outlets', 'Flexible early check-in assistance']
-    },
-    isPopular: true
-  },
-  {
-    id: 'phong-d',
-    slug: 'phong-d',
-    name: {
-      vi: 'Phòng D (Grand Family - 5 Khách)',
-      en: 'Room D (Grand Family - 5 Guests)'
-    },
-    subtitle: {
-      vi: 'Phòng lớn nhất 28m² với 2 giường đôi Queen, cửa sổ lớn view phố thoáng mát',
-      en: 'Largest 28sqm suite with 2 Queen beds and large panoramic windows'
-    },
-    pricePerNight: 650000,
-    priceHourlyFirst2h: 200000,
-    priceHourlyExtra: 70000,
-    maxAdults: 5,
-    maxChildren: 2,
-    areaSqm: 28,
-    bedType: {
-      vi: '2 Giường Queen Size (1.8m x 2.0m)',
-      en: '2 Queen Beds (1.8m x 2.0m)'
-    },
-    view: {
-      vi: 'Cửa sổ lớn toàn cảnh góc phố',
-      en: 'Large Window with Street Corner View'
-    },
-    amenities: {
-      vi: ['2 Giường lớn cao cấp', 'Smart TV 55" giải trí đa phương tiện', 'Wifi siêu tốc', 'Tủ lạnh minibar', 'Két an toàn', 'Máy sấy tóc & Đồ vệ sinh cá nhân miễn phí'],
-      en: ['2 Large Luxury Beds', '55" Smart TV Entertainment', 'Ultra-fast Wi-Fi', 'Minibar Fridge', 'Safety Box', 'Hair Dryer & Free Toiletries']
-    },
-    images: [
-      '/images/rooms/phong-d.jpg',
-      '/images/rooms/phong-b.jpg',
-      '/images/rooms/phong-ad.jpg'
-    ],
-    description: {
-      vi: 'Phòng D sở hữu không gian rộng rãi 28m² với thiết kế tràn ngập ánh sáng tự nhiên từ khung cửa sổ lớn. Rất thích hợp cho các kỳ nghỉ gia đình dài ngày cần sự thoải mái và tự do như tại nhà.',
-      en: 'Room D boasts an expansive 28sqm space flooded with natural daylight through large windows. Perfect for extended family stays seeking home-like comfort and freedom.'
-    },
-    features: {
-      vi: ['Không gian rộng rãi nhất khách sạn', 'Cửa sổ kính lớn đón gió tự nhiên', 'Dịch vụ dọn phòng 24/7'],
-      en: ['Most spacious layout in the hotel', 'Large scenic window', '24/7 Housekeeping support']
-    }
-  },
-  {
-    id: 'phong-e',
-    slug: 'phong-e',
-    name: {
-      vi: 'Phòng E (Executive King)',
-      en: 'Room E (Executive King)'
-    },
-    subtitle: {
-      vi: 'Không gian ấm cúng, sang trọng và yên tĩnh dành riêng cho giấc ngủ sâu',
-      en: 'Cozy, elegant and peaceful space dedicated to restful deep sleep'
-    },
-    pricePerNight: 650000,
-    priceHourlyFirst2h: 160000,
     priceHourlyExtra: 50000,
     maxAdults: 2,
     maxChildren: 1,
-    areaSqm: 18,
-    bedType: {
-      vi: '1 Giường King Size êm ái (1.8m x 2.0m)',
-      en: '1 Plush King Bed (1.8m x 2.0m)'
-    },
-    view: {
-      vi: 'Không gian yên tĩnh, cách âm tốt',
-      en: 'Quiet & Soundproofed Ambience'
-    },
-    amenities: {
-      vi: ['Giường King nệm cao cấp', 'Máy lạnh Inverter', 'Smart TV 43"', 'Wifi tốc độ cao', 'Tủ lạnh minibar', 'Trà & Cà phê miễn phí'],
-      en: ['Luxury King Mattress', 'Inverter Air Conditioner', '43" Smart TV', 'High-Speed Wi-Fi', 'Minibar Fridge', 'Complimentary Tea & Coffee']
-    },
-    images: [
-      '/images/rooms/phong-a.jpg',
-      '/images/hero-2.jpg',
-      '/images/hero-1.jpg'
-    ],
-    description: {
-      vi: 'Phòng E được thiết kế tối ưu cho sự riêng tư và yên tĩnh tuyệt đối. Nệm King size cao cấp cùng ánh đèn vàng ấm áp mang lại cảm giác thư thái dễ chịu sau một ngày dài năng động.',
-      en: 'Room E is crafted for supreme privacy and quiet tranquility. The luxury King mattress and warm ambient lighting create an instant sense of peace.'
-    },
-    features: {
-      vi: ['Cách âm tiêu chuẩn cao', 'Không gian ấm cúng lãng mạn', 'Lễ tân phục vụ 24/24'],
-      en: ['High-standard soundproofing', 'Romantic cozy ambiance', '24/7 Front desk assistance']
-    }
-  },
-  {
-    id: 'phong-don-tiet-kiem',
-    slug: 'phong-don-tiet-kiem',
-    name: {
-      vi: 'Phòng Đơn Tiết Kiệm (Không Cửa Sổ)',
-      en: 'Budget Single Room (No Window)'
-    },
-    subtitle: {
-      vi: 'Góc nghỉ yên tĩnh, gọn gàng và đầy đủ tiện nghi với mức giá siêu tiết kiệm',
-      en: 'Quiet, compact and fully equipped retreat at an ultra-budget rate'
-    },
-    pricePerNight: 390000,
-    priceHourlyFirst2h: 120000,
-    priceHourlyExtra: 40000,
-    maxAdults: 1,
-    maxChildren: 1,
     areaSqm: 14,
     bedType: {
-      vi: '1 Giường Đôi (1.4m x 2.0m)',
-      en: '1 Double Bed (1.4m x 2.0m)'
+      vi: '1 Giường Đôi Queen (1.6m x 2.0m)',
+      en: '1 Queen Double Bed (1.6m x 2.0m)'
     },
     view: {
       vi: 'Yên tĩnh tuyệt đối trong nhà',
       en: 'Total Indoor Tranquility'
     },
     amenities: {
-      vi: ['Máy lạnh Inverter mát lạnh', 'Smart TV', 'Wifi miễn phí', 'Nước nóng 24/7', 'Tủ lạnh mini', 'Bàn làm việc gọn'],
-      en: ['Inverter Air Conditioner', 'Smart TV', 'Free Wi-Fi', '24/7 Hot Water', 'Mini Fridge', 'Compact Work Desk']
+      vi: ['Máy lạnh Inverter', 'Smart TV', 'Wifi tốc độ cao', 'Tủ lạnh minibar', 'Phòng tắm nóng lạnh', 'Khăn tắm cao cấp'],
+      en: ['Inverter AC', 'Smart TV', 'High-Speed Wi-Fi', 'Minibar Fridge', 'Hot Shower', 'Premium Towels']
     },
     images: [
       '/images/rooms/phong-a.jpg',
       '/images/rooms/phong-ad.jpg'
     ],
     description: {
-      vi: 'Phòng Đơn Tiết Kiệm là lựa chọn kinh tế hàng đầu cho khách du lịch một mình hoặc khách đi công tác ngắn ngày. Dù không có cửa sổ nhưng phòng được thiết kế thông thoáng, sạch sẽ và yên tĩnh tuyệt đối.',
-      en: 'Budget Single Room is the best economic option for solo travelers or short business trips. Designed for freshness, cleanliness and total quietness.'
+      vi: 'Phòng Đôi Không Cửa Sổ mang lại trải nghiệm lưu trú ấm cúng cho 2 người với chi phí tối ưu, không gian yên tĩnh giúp bạn có giấc ngủ sâu.',
+      en: 'Standard Double Room offers a cozy stay for 2 at an optimized rate, ensuring deep restful sleep.'
     },
     features: {
-      vi: ['Mức giá tiết kiệm nhất Quận 1', 'Yên tĩnh không tiếng ồn phố thị', 'Đầy đủ tiện nghi cơ bản'],
-      en: ['Best budget rate in District 1', 'Quiet from street noise', 'Complete essential amenities']
+      vi: ['Giá cả hợp lý cho 2 người', 'Sạch sẽ thơm tho mỗi ngày', 'Check-in nhanh chóng'],
+      en: ['Affordable rate for 2 guests', 'Fresh & clean daily', 'Express check-in']
     }
   },
   {
-    id: 'phong-doi-tieu-chuan',
-    slug: 'phong-doi-tieu-chuan',
+    id: 'phong-doi-co-cua-so',
+    slug: 'phong-doi-co-cua-so',
     name: {
-      vi: 'Phòng Đôi Tiêu Chuẩn (Không Cửa Sổ)',
-      en: 'Standard Double Room (No Window)'
+      vi: 'Phòng Đôi Có Cửa Sổ',
+      en: 'Deluxe Double Room (With Window)'
     },
     subtitle: {
-      vi: 'Không gian ấm cúng dành cho hai người, sạch sẽ và thoải mái ngay trung tâm',
-      en: 'Cozy space for two, clean and comfortable right in downtown'
+      vi: 'Không gian sáng thoáng, cửa sổ đón ánh sáng tự nhiên và gió trời trong lành cho 2 người',
+      en: 'Bright and airy space with natural daylight and fresh breeze window for 2 guests'
     },
-    pricePerNight: 420000,
-    priceHourlyFirst2h: 140000,
-    priceHourlyExtra: 40000,
+    pricePerNight: 600000,
+    priceHourlyFirst2h: 250000,
+    priceHourlyExtra: 60000,
     maxAdults: 2,
     maxChildren: 1,
     areaSqm: 16,
@@ -349,25 +131,284 @@ export const roomsData: Room[] = [
       en: '1 Queen Double Bed (1.6m x 2.0m)'
     },
     view: {
-      vi: 'Không gian yên tĩnh',
-      en: 'Quiet Indoor Ambience'
+      vi: 'Cửa sổ đón ánh sáng tự nhiên',
+      en: 'Natural Daylight Window'
     },
     amenities: {
-      vi: ['Máy lạnh làm mát nhanh', 'Smart TV', 'Wifi cáp quang', 'Tủ lạnh minibar', 'Phòng tắm đứng riêng', 'Khăn tắm & Dép đi trong phòng'],
-      en: ['Fast-cooling Air Conditioner', 'Smart TV', 'Fiber Wi-Fi', 'Minibar Fridge', 'Private Shower', 'Towels & Indoor Slippers']
+      vi: ['Máy lạnh Inverter', 'Smart TV 43 inch', 'Wifi cáp quang', 'Tủ quần áo', 'Tủ lạnh minibar', 'Phòng tắm riêng biệt'],
+      en: ['Inverter AC', '43" Smart TV', 'Fiber Wi-Fi', 'Wardrobe', 'Minibar Fridge', 'Private Bathroom']
     },
     images: [
       '/images/rooms/phong-b.jpg',
+      '/images/rooms/phong-a.jpg'
+    ],
+    description: {
+      vi: 'Phòng Đôi Có Cửa Sổ sở hữu khung cửa sổ sáng thoáng đón nắng sáng, tạo cảm giác thư thái và dễ chịu trong suốt kỳ nghỉ tại Sài Gòn.',
+      en: 'Deluxe Double Room features natural daylight window creating a refreshing atmosphere throughout your stay.'
+    },
+    features: {
+      vi: ['Cửa sổ thoáng mát đón nắng', 'Nước suối miễn phí hàng ngày', 'Dọn phòng sạch sẽ'],
+      en: ['Airy daylight window', 'Complimentary bottled water', 'Daily housekeeping']
+    },
+    isPopular: true
+  },
+  {
+    id: 'phong-may-chieu',
+    slug: 'phong-may-chieu',
+    name: {
+      vi: 'Phòng Hạng Sang Có Máy Chiếu',
+      en: 'Cinema Projector Deluxe Suite'
+    },
+    subtitle: {
+      vi: 'Không gian lãng mạn, trang bị máy chiếu 100 inch Full HD & Netflix 4K riêng tư cho 2 người',
+      en: 'Romantic ambiance with 100-inch Full HD Projector & 4K Netflix for 2 guests'
+    },
+    pricePerNight: 700000,
+    priceHourlyFirst2h: 300000,
+    priceHourlyExtra: 70000,
+    maxAdults: 2,
+    maxChildren: 1,
+    areaSqm: 18,
+    bedType: {
+      vi: '1 Giường Đôi King Size (1.8m x 2.0m)',
+      en: '1 King Size Double Bed (1.8m x 2.0m)'
+    },
+    view: {
+      vi: 'Không gian rạp chiếu phim ấm cúng',
+      en: 'Cozy Cinema Space'
+    },
+    amenities: {
+      vi: ['Máy chiếu Full HD 100 inch', 'Netflix Premium 4K', 'Máy lạnh Inverter', 'Loa âm thanh vòm', 'Wifi tốc độ cao', 'Tủ lạnh minibar'],
+      en: ['100" Full HD Projector', 'Free Netflix 4K', 'Inverter AC', 'Surround Sound', 'High-Speed Wi-Fi', 'Minibar']
+    },
+    images: [
+      '/images/rooms/phong-may-chieu.jpg',
+      '/images/welcome-1.jpg',
+      '/images/hero-2.jpg'
+    ],
+    description: {
+      vi: 'Hạng phòng độc đáo duy nhất tại Galaxy Boutique Hotel! Máy chiếu 100 inch và âm thanh sống động mang lại trải nghiệm xem phim rạp riêng tư tuyệt hảo.',
+      en: 'Exclusive cinema room at Galaxy Boutique Hotel with 100-inch screen and surround audio for the ultimate movie night.'
+    },
+    features: {
+      vi: ['Trải nghiệm rạp chiếu phim tại phòng', 'Tài khoản Netflix có sẵn', 'Check-in riêng tư'],
+      en: ['In-room cinema experience', 'Complimentary Netflix 4K', 'Private check-in']
+    },
+    isPopular: true
+  },
+  {
+    id: 'phong-giuong-tang',
+    slug: 'phong-giuong-tang',
+    name: {
+      vi: 'Phòng Giường Tầng Tiết Kiệm',
+      en: 'Cozy Bunk Bed Room'
+    },
+    subtitle: {
+      vi: 'Thiết kế giường tầng hiện đại, không gian trẻ trung và tiện nghi cho 2 bạn',
+      en: 'Modern bunk bed design, youthful and convenient space for 2 friends'
+    },
+    pricePerNight: 450000,
+    priceHourlyFirst2h: 200000,
+    priceHourlyExtra: 50000,
+    maxAdults: 2,
+    maxChildren: 0,
+    areaSqm: 12,
+    bedType: {
+      vi: '1 Giường Tầng (2 Giường 1.0m x 2.0m)',
+      en: '1 Bunk Bed (2 Single Beds)'
+    },
+    view: {
+      vi: 'Yên tĩnh bên trong',
+      en: 'Quiet Indoor Ambience'
+    },
+    amenities: {
+      vi: ['Máy lạnh Inverter', 'Smart TV', 'Wifi tốc độ cao', 'Tủ lạnh mini', 'Phòng tắm riêng', 'Nước nóng 24/7'],
+      en: ['Inverter AC', 'Smart TV', 'High-Speed Wi-Fi', 'Mini Fridge', 'Private Bath', '24/7 Hot Water']
+    },
+    images: [
+      '/images/rooms/phong-a.jpg',
+      '/images/rooms/phong-b.jpg'
+    ],
+    description: {
+      vi: 'Phòng Giường Tầng Tiết Kiệm được thiết kế thông minh, tối ưu diện tích và cực kỳ phù hợp cho nhóm bạn 2 người muốn tiết kiệm chi phí.',
+      en: 'Smartly designed bunk bed room optimized for 2 friends traveling on a budget.'
+    },
+    features: {
+      vi: ['Tối ưu chi phí cho đôi bạn', 'Giường nệm êm ái', 'Lễ tân 24/7'],
+      en: ['Cost-effective for 2 friends', 'Comfortable mattresses', '24/7 Support']
+    }
+  },
+  {
+    id: 'phong-3-nguoi-tiet-kiem',
+    slug: 'phong-3-nguoi-tiet-kiem',
+    name: {
+      vi: 'Phòng 3 Người Tiết Kiệm',
+      en: 'Budget Triple Room'
+    },
+    subtitle: {
+      vi: 'Không gian rộng rãi, trang bị 1 giường đôi + 1 giường đơn êm ái cho 3 người',
+      en: 'Spacious layout with 1 double bed + 1 single bed for 3 guests'
+    },
+    pricePerNight: 670000,
+    priceHourlyFirst2h: 250000,
+    priceHourlyExtra: 60000,
+    maxAdults: 3,
+    maxChildren: 1,
+    areaSqm: 18,
+    bedType: {
+      vi: '1 Giường Đôi Tiêu Chuẩn + 1 Giường Đơn',
+      en: '1 Double Bed + 1 Single Bed'
+    },
+    view: {
+      vi: 'Cửa sổ thoáng mát',
+      en: 'Airy Breeze Window'
+    },
+    amenities: {
+      vi: ['Máy lạnh Inverter', 'TV', 'Wifi cáp quang', 'Tủ quần áo', 'Tủ lạnh minibar', 'Phòng tắm đứng riêng biệt', 'Két sắt'],
+      en: ['Inverter AC', 'TV', 'Fiber Wi-Fi', 'Wardrobe', 'Minibar Fridge', 'Private Shower', 'Safe Box']
+    },
+    images: [
+      '/images/rooms/phong-ad.jpg',
+      '/images/rooms/phong-a.jpg'
+    ],
+    description: {
+      vi: 'Phòng 3 Người Tiết Kiệm sở hữu không gian 18m² với 1 giường đôi và 1 giường đơn, rất phù hợp cho gia đình nhỏ hoặc nhóm 3 bạn.',
+      en: 'Budget Triple Room features 18sqm with 1 double and 1 single bed, perfect for small families or 3 friends.'
+    },
+    features: {
+      vi: ['Sức chứa 3 người thoải mái', 'Dọn phòng mỗi ngày', 'Giữ hành lý miễn phí'],
+      en: ['Comfortable for 3 guests', 'Daily housekeeping', 'Free luggage storage']
+    },
+    isPopular: true
+  },
+  {
+    id: 'phong-3-nguoi-ban-cong',
+    slug: 'phong-3-nguoi-ban-cong',
+    name: {
+      vi: 'Phòng 3 Người Có View Ban Công',
+      en: 'Triple Room with Balcony View'
+    },
+    subtitle: {
+      vi: 'Ban công thoáng mát ngắm phố Quận 1, 1 giường đôi King + 1 giường đơn cao cấp',
+      en: 'Scenic balcony overlooking District 1 streets, 1 King bed + 1 single bed'
+    },
+    pricePerNight: 750000,
+    priceHourlyFirst2h: 280000,
+    priceHourlyExtra: 60000,
+    maxAdults: 3,
+    maxChildren: 1,
+    areaSqm: 20,
+    bedType: {
+      vi: '1 Giường Đôi King + 1 Giường Đơn',
+      en: '1 King Bed + 1 Single Bed'
+    },
+    view: {
+      vi: 'Ban công ngắm phố Quận 1',
+      en: 'District 1 Street View Balcony'
+    },
+    amenities: {
+      vi: ['Ban công riêng ngắm phố', 'Máy lạnh Inverter', 'Smart TV', 'Wifi tốc độ cao', 'Tủ lạnh minibar', 'Bàn ghế ban công'],
+      en: ['Private Balcony', 'Inverter AC', 'Smart TV', 'High-Speed Wi-Fi', 'Minibar Fridge', 'Balcony Chairs']
+    },
+    images: [
+      '/images/rooms/phong-b.jpg',
+      '/images/rooms/phong-ad.jpg'
+    ],
+    description: {
+      vi: 'Phòng 3 Người Có View Ban Công mang đến góc ngắm phố Quận 1 tuyệt đẹp, không gian thoáng đãng và tiện nghi cao cấp.',
+      en: 'Triple Room with Balcony offers a scenic street view of District 1 with upscale amenities.'
+    },
+    features: {
+      vi: ['Ban công thoáng mát ngắm phố', 'Nước suối miễn phí', 'Check-in linh hoạt'],
+      en: ['Scenic private balcony', 'Complimentary bottled water', 'Flexible check-in']
+    },
+    isPopular: true
+  },
+  {
+    id: 'phong-gia-dinh-4-nguoi',
+    slug: 'phong-gia-dinh-4-nguoi',
+    name: {
+      vi: 'Phòng Gia Đình 4 Người',
+      en: 'Family Room for 4'
+    },
+    subtitle: {
+      vi: '2 giường đôi tiêu chuẩn rộng rãi, bố trí tiện nghi khoa học cho gia đình 4 người',
+      en: '2 spacious double beds thoughtfully arranged for a family of 4'
+    },
+    pricePerNight: 900000,
+    priceHourlyFirst2h: 350000,
+    priceHourlyExtra: 70000,
+    maxAdults: 4,
+    maxChildren: 1,
+    areaSqm: 22,
+    bedType: {
+      vi: '2 Giường Đôi Queen (1.6m x 2.0m)',
+      en: '2 Queen Beds (1.6m x 2.0m)'
+    },
+    view: {
+      vi: 'Cửa sổ thông gió mát mẻ',
+      en: 'Fresh Breeze Window'
+    },
+    amenities: {
+      vi: ['2 Giường đôi êm ái', 'Máy lạnh làm lạnh nhanh', 'Smart TV', 'Wifi riêng biệt', 'Tủ lạnh minibar', 'Phòng tắm đứng'],
+      en: ['2 Double Beds', 'Fast Cooling AC', 'Smart TV', 'Dedicated Wi-Fi', 'Minibar Fridge', 'Private Shower']
+    },
+    images: [
+      '/images/rooms/phong-d.jpg',
       '/images/rooms/phong-c.jpg'
     ],
     description: {
-      vi: 'Phòng Đôi Tiêu Chuẩn mang lại trải nghiệm lưu trú ấm cúng cho 2 người với chi phí tối ưu. Đầy đủ tiện ích phục vụ nhu cầu nghỉ ngơi sau một ngày vui chơi tại TP.HCM.',
-      en: 'Standard Double Room offers a cozy stay for 2 at an optimized rate. Complete amenities supporting your rest after a joyful day in Ho Chi Minh City.'
+      vi: 'Phòng Gia Đình 4 Người là lựa chọn lý tưởng cho các gia đình có con nhỏ hoặc nhóm 4 bạn du lịch cùng nhau.',
+      en: 'Family Room for 4 is the ideal choice for families with children or a group of 4 friends.'
     },
     features: {
-      vi: ['Giá cả hợp lý cho 2 người', 'Sạch sẽ thơm tho mỗi ngày', 'Check-in nhanh chóng'],
-      en: ['Affordable rate for 2 guests', 'Fresh & clean daily', 'Express check-in']
-    }
+      vi: ['Phù hợp gia đình 4 người', 'Nước suối miễn phí', 'Lễ tân 24/7'],
+      en: ['Ideal for family of 4', 'Free bottled water', '24/7 Front desk']
+    },
+    isPopular: true
+  },
+  {
+    id: 'phong-nhom-6-nguoi',
+    slug: 'phong-nhom-6-nguoi',
+    name: {
+      vi: 'Phòng Nhóm 6 Người',
+      en: 'Grand Group Suite for 6'
+    },
+    subtitle: {
+      vi: 'Không gian gia đình rộng 28m², 3 giường đôi lớn cho tối đa 6 người lưu trú',
+      en: 'Expansive 28sqm suite with 3 large double beds accommodating up to 6 guests'
+    },
+    pricePerNight: 1200000,
+    priceHourlyFirst2h: 450000,
+    priceHourlyExtra: 80000,
+    maxAdults: 6,
+    maxChildren: 2,
+    areaSqm: 28,
+    bedType: {
+      vi: '3 Giường Đôi Tiêu Chuẩn (1.6m x 2.0m)',
+      en: '3 Standard Double Beds (1.6m x 2.0m)'
+    },
+    view: {
+      vi: 'Cửa sổ lớn toàn cảnh thoáng đãng',
+      en: 'Large Scenic Panoramic Window'
+    },
+    amenities: {
+      vi: ['3 Giường đôi lớn cao cấp', 'Smart TV 55 inch 4K', 'Wifi cáp quang tốc độ cao', 'Tủ lạnh lớn', 'Ấm siêu tốc', 'Phòng tắm rộng rãi'],
+      en: ['3 Large Luxury Beds', '55" 4K Smart TV', 'Ultra-fast Wi-Fi', 'Large Refrigerator', 'Kettle', 'Spacious Bathroom']
+    },
+    images: [
+      '/images/rooms/phong-c.jpg',
+      '/images/rooms/phong-d.jpg'
+    ],
+    description: {
+      vi: 'Phòng Nhóm 6 Người sở hữu diện tích rộng 28m² với 3 giường đôi lớn, mang lại không gian quây quần ấm cúng và tiết kiệm chi phí tối đa cho đoàn đông người.',
+      en: 'Grand Group Suite features 28sqm with 3 large double beds offering cozy togetherness and maximum cost-efficiency.'
+    },
+    features: {
+      vi: ['Sức chứa lên tới 6 người lớn', 'Không gian rộng rãi nhất khách sạn', 'Hỗ trợ check-in sớm linh hoạt'],
+      en: ['Accommodates up to 6 adults', 'Most spacious layout in the hotel', 'Flexible early check-in']
+    },
+    isPopular: true
   }
 ];
 
@@ -400,103 +441,39 @@ export const servicesData: ServiceItem[] = [
       en: 'Free Luggage Storage'
     },
     description: {
-      vi: 'Quý khách có thể gửi hành lý an toàn tuyệt đối tại khách sạn trước giờ nhận phòng hoặc sau khi trả phòng để thoải mái dạo chơi Sài Gòn.',
-      en: 'Securely store your luggage for free before check-in or after check-out, so you can freely explore Saigon unburdened.'
+      vi: 'Dịch vụ giữ hành lý an toàn, tiện lợi trước giờ nhận phòng hoặc sau khi trả phòng, giúp bạn thoải mái dạo chơi Sài Gòn mà không phải mang vác nặng.',
+      en: 'Secure, complimentary luggage storage before check-in or after check-out, letting you explore the city hands-free.'
     },
     image: '/images/welcome-1.jpg',
-    hours: '24/7',
+    hours: '24/7 Miễn Phí',
     location: {
-      vi: 'Khu Vực Giữ Đồ Sảnh Lễ Tân',
+      vi: 'Khu Vực Giữ Đồ Tại Sảnh',
       en: 'Lobby Luggage Area'
     },
     highlights: {
-      vi: ['Camera an ninh giám sát 24/24', 'Thẻ gửi đồ phân loại rõ ràng', 'Hoàn toàn miễn phí cho khách lưu trú'],
-      en: ['24/7 CCTV Security Monitoring', 'Numbered Luggage Tag System', '100% Free for Guests']
+      vi: ['Miễn phí 100% cho mọi khách lưu trú', 'Camera an ninh giám sát 24/24', 'Thẻ gửi đồ có mã số riêng biệt'],
+      en: ['100% Free for all staying guests', '24/7 CCTV surveillance', 'Numbered luggage tags']
     }
   },
   {
-    id: 'service-housekeeping',
+    id: 'service-cleaning',
     title: {
-      vi: 'Dọn Phòng & Thay Khăn Hàng Ngày',
-      en: 'Daily Housekeeping & Fresh Linen'
+      vi: 'Dọn Phòng & Khử Khuẩn Chuẩn',
+      en: 'Daily Housekeeping & Sanitization'
     },
     description: {
-      vi: 'Quy trình vệ sinh khử khuẩn nghiêm ngặt, thay mới ga trải giường, vỏ gối và khăn tắm 100% cotton để quý khách luôn tận hưởng không gian sạch sẽ thơm tho.',
-      en: 'Strict sanitization process with daily fresh bed linens, pillowcases, and 100% cotton towels ensuring a pristine living space.'
+      vi: 'Phòng nghỉ luôn được dọn dẹp sạch sẽ, thay mới ga trải giường, vỏ gối và khăn tắm 100% cotton mỗi ngày, đảm bảo vệ sinh tuyệt đối.',
+      en: 'Rooms are thoroughly cleaned daily with fresh linens, pillowcases, and 100% cotton towels replaced, ensuring pristine hygiene.'
     },
     image: '/images/welcome-2.jpg',
-    hours: '08:00 - 17:00',
+    hours: '08:00 - 17:00 Hàng Ngày',
     location: {
-      vi: 'Tất cả các phòng',
-      en: 'All Guest Rooms'
+      vi: 'Tất Cả Các Tầng Phòng',
+      en: 'All Guest Floors'
     },
     highlights: {
-      vi: ['Khăn tắm & Ga gối giặt sấy thơm tho', 'Bổ sung nước khoáng & đồ dùng miễn phí', 'Khử khuẩn theo tiêu chuẩn an toàn'],
-      en: ['Fragrant clean towels & sheets', 'Replenished bottled water & toiletries', 'Safe hygiene standards']
+      vi: ['Thay mới khăn tắm & drap giường', 'Khử khuẩn phòng tắm sạch bóng', 'Bổ sung nước suối & đồ amenities'],
+      en: ['Fresh towels & bedsheets daily', 'Deep sanitized bathrooms', 'Complimentary water & amenities refill']
     }
-  },
-  {
-    id: 'service-booking-flexible',
-    title: {
-      vi: 'Đặt Phòng Theo Giờ & Theo Ngày',
-      en: 'Hourly & Daily Flexible Booking'
-    },
-    description: {
-      vi: 'Linh hoạt lựa chọn thuê phòng theo giờ để nghỉ ngơi ngắn hạn, chờ chuyến bay hoặc thuê theo ngày với mức giá cam kết tốt nhất khu vực trung tâm Quận 1.',
-      en: 'Flexible booking options by the hour for short rests and transit, or by the night with the best price guarantee in District 1.'
-    },
-    image: '/images/facility-1.jpg',
-    hours: '24/7',
-    location: {
-      vi: 'Trực tuyến & Tại quầy',
-      en: 'Online & At Front Desk'
-    },
-    highlights: {
-      vi: ['Thuê 2 giờ đầu chỉ từ 120.000 VNĐ', 'Thuê qua đêm chỉ từ 390.000 VNĐ', 'Xác nhận đặt phòng tức thì'],
-      en: ['First 2 hours from only 120,000 VND', 'Overnight from 390,000 VND', 'Instant confirmation']
-    }
-  }
-];
-
-export const galleryImages = [
-  { id: '1', category: 'rooms', url: '/images/rooms/phong-a.jpg', title: 'Phòng A - Standard Deluxe' },
-  { id: '2', category: 'rooms', url: '/images/rooms/phong-ad.jpg', title: 'Phòng AD - Deluxe Triple' },
-  { id: '3', category: 'rooms', url: '/images/rooms/phong-b.jpg', title: 'Phòng B - Superior Triple' },
-  { id: '4', category: 'rooms', url: '/images/rooms/phong-c.jpg', title: 'Phòng C - Family Suite' },
-  { id: '5', category: 'rooms', url: '/images/rooms/phong-d.jpg', title: 'Phòng D - Grand Family' },
-  { id: '6', category: 'facilities', url: '/images/hero-1.jpg', title: 'Không gian phòng nghỉ sang trọng' },
-  { id: '7', category: 'facilities', url: '/images/hero-2.jpg', title: 'Nội thất gỗ ấm cúng' },
-  { id: '8', category: 'facilities', url: '/images/welcome-1.jpg', title: 'Khu vực lưu trú tiện nghi' },
-  { id: '9', category: 'facilities', url: '/images/facility-1.jpg', title: 'Sảnh đón tiếp & Hành lang' }
-];
-
-export const reviewsData = [
-  {
-    name: 'Anh Trần Minh Quân',
-    location: 'Hà Nội, Việt Nam',
-    rating: 5,
-    date: 'Tháng 8, 2026',
-    comment: 'Khách sạn Galaxy nằm ngay trung tâm Quận 1, đi bộ vài bước là ra phố Tây Bùi Viện và chợ Bến Thành. Phòng sạch sẽ, nước nóng mạnh, lễ tân nhiệt tình 24/24. Giá cả rất hợp lý so với vị trí.',
-  },
-  {
-    name: 'Mr. David Harrison',
-    location: 'Sydney, Australia',
-    rating: 5,
-    date: 'August 2026',
-    comment: 'Great location right in the heart of District 1! Extremely friendly staff, clean and cozy room with strong AC and hot shower. Excellent value for money in Saigon.',
-  },
-  {
-    name: 'Chị Lê Ngọc Thảo',
-    location: 'Đà Nẵng, Việt Nam',
-    rating: 5,
-    date: 'Tháng 8, 2026',
-    comment: 'Tính năng đặt phòng theo giờ rất tiện lợi cho gia đình tôi trong thời gian chờ chuyến bay đêm. Phòng êm ái, yên tĩnh dù ở ngay khu trung tâm sầm uất.',
-  },
-  {
-    name: 'Nguyễn Văn Hùng',
-    location: 'TP. Hồ Chí Minh',
-    rating: 5,
-    date: 'Tháng 8, 2026',
-    comment: 'Khách sạn sạch sẽ, nhân viên thân thiện, giá phòng tốt nhất khu vực Đề Thám. Đã ghé nhiều lần và luôn hài lòng!',
   }
 ];
