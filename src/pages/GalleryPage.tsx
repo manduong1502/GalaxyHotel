@@ -60,6 +60,8 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onNavigate }) => {
       .catch(() => {});
   }, []);
 
+  const [visibleCount, setVisibleCount] = useState<number>(9);
+
   const filteredItems = galleryItems.filter(item => {
     if (selectedFilter === 'all') return true;
     if (selectedFilter === 'spaces' || selectedFilter === 'facilities') {
@@ -67,6 +69,14 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onNavigate }) => {
     }
     return item.category === selectedFilter;
   });
+
+  const displayedItems = filteredItems.slice(0, visibleCount);
+  const hasMore = filteredItems.length > visibleCount;
+
+  const handleFilterChange = (filter: string) => {
+    setSelectedFilter(filter);
+    setVisibleCount(9);
+  };
 
   const openLightbox = (index: number) => {
     setLightboxIndex(index);
@@ -78,13 +88,13 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onNavigate }) => {
 
   const nextImage = () => {
     if (lightboxIndex !== null) {
-      setLightboxIndex((lightboxIndex + 1) % filteredItems.length);
+      setLightboxIndex((lightboxIndex + 1) % displayedItems.length);
     }
   };
 
   const prevImage = () => {
     if (lightboxIndex !== null) {
-      setLightboxIndex((lightboxIndex - 1 + filteredItems.length) % filteredItems.length);
+      setLightboxIndex((lightboxIndex - 1 + displayedItems.length) % displayedItems.length);
     }
   };
 
@@ -133,19 +143,8 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onNavigate }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 relative z-20">
         <div className="bg-white p-3 sm:p-4 rounded-2xl shadow-lg border border-neutral-200 flex flex-wrap gap-2 justify-center">
           <button
-            onClick={() => setSelectedFilter('all')}
-            className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-bold transition-all ${
-              selectedFilter === 'all'
-                ? 'bg-neutral-900 text-white shadow-sm'
-                : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-            }`}
-          >
-            {lang === 'vi' ? 'Tất cả ảnh' : 'All Photos'}
-          </button>
-          
-          <button
-            onClick={() => setSelectedFilter('checkin')}
-            className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-bold transition-all ${
+            onClick={() => handleFilterChange('checkin')}
+            className={`px-5 sm:px-6 py-2 rounded-xl text-xs font-bold transition-all ${
               selectedFilter === 'checkin'
                 ? 'bg-neutral-900 text-white shadow-sm'
                 : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
@@ -155,9 +154,9 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onNavigate }) => {
           </button>
 
           <button
-            onClick={() => setSelectedFilter('spaces')}
-            className={`px-4 sm:px-5 py-2 rounded-xl text-xs font-bold transition-all ${
-              selectedFilter === 'spaces'
+            onClick={() => handleFilterChange('spaces')}
+            className={`px-5 sm:px-6 py-2 rounded-xl text-xs font-bold transition-all ${
+              selectedFilter === 'spaces' || selectedFilter === 'facilities'
                 ? 'bg-neutral-900 text-white shadow-sm'
                 : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
             }`}
@@ -170,7 +169,7 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onNavigate }) => {
       {/* Gallery Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredItems.map((item, index) => (
+          {displayedItems.map((item, index) => (
             <div
               key={item.id}
               onClick={() => openLightbox(index)}
@@ -179,6 +178,7 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onNavigate }) => {
               <img
                 src={item.src}
                 alt={item.title}
+                onError={(e) => { e.currentTarget.src = '/images/checkin-1.jpg'; }}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 loading="lazy"
               />
@@ -200,6 +200,23 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onNavigate }) => {
             </div>
           ))}
         </div>
+
+        {/* Load More Button */}
+        {hasMore && (
+          <div className="mt-12 text-center">
+            <button
+              onClick={() => setVisibleCount(prev => prev + 9)}
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-neutral-900 hover:bg-neutral-800 text-white font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-md hover:shadow-lg active:scale-95"
+            >
+              <Camera className="w-4 h-4 text-[#E8DCB9]" />
+              <span>
+                {lang === 'vi' 
+                  ? `Xem Thêm Ảnh (${filteredItems.length - visibleCount} ảnh còn lại)` 
+                  : `Load More Photos (${filteredItems.length - visibleCount} remaining)`}
+              </span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Lightbox Modal */}

@@ -340,16 +340,11 @@ export const RoomsManager: React.FC = () => {
                 {/* Amenities pills summary */}
                 {room.amenities?.vi && room.amenities.vi.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-3">
-                    {room.amenities.vi.slice(0, 3).map((item, idx) => (
+                    {room.amenities.vi.map((item, idx) => (
                       <span key={idx} className="text-[10px] bg-neutral-100 text-neutral-700 px-2 py-0.5 rounded-md font-medium">
                         ✓ {item}
                       </span>
                     ))}
-                    {room.amenities.vi.length > 3 && (
-                      <span className="text-[10px] text-neutral-400 font-bold self-center">
-                        +{room.amenities.vi.length - 3} tiện ích
-                      </span>
-                    )}
                   </div>
                 )}
 

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useScrollReveal } from '../hooks/useScrollReveal';
-import { Eye, X, Camera, Heart } from 'lucide-react';
+import { Eye, X, Camera, Heart, ChevronDown } from 'lucide-react';
 
 interface GalleryItem {
   id: string;
@@ -22,8 +22,9 @@ const initialGallery: GalleryItem[] = [
 export const GallerySection: React.FC = () => {
   const { t, lang } = useLanguage();
   const { ref: sectionRef, isVisible } = useScrollReveal<HTMLElement>(0.1);
-  const [activeTab, setActiveTab] = useState<'all' | 'checkin' | 'facilities'>('all');
+  const [activeTab, setActiveTab] = useState<'checkin' | 'facilities' | 'all'>('checkin');
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState<number>(9);
 
   const [photos, setPhotos] = useState<GalleryItem[]>(() => {
     try {
@@ -38,7 +39,7 @@ export const GallerySection: React.FC = () => {
   });
 
   // Fetch live photos from server
-  React.useEffect(() => {
+  useEffect(() => {
     fetch('/api/gallery.php')
       .then(res => res.json())
       .then(res => {
@@ -50,10 +51,18 @@ export const GallerySection: React.FC = () => {
       .catch(() => {});
   }, []);
 
+  const handleTabChange = (tab: 'checkin' | 'facilities' | 'all') => {
+    setActiveTab(tab);
+    setVisibleCount(9);
+  };
+
   const filteredImages = photos.filter((img) => {
     if (activeTab === 'all') return true;
     return img.category === activeTab;
   });
+
+  const displayedImages = filteredImages.slice(0, visibleCount);
+  const hasMore = filteredImages.length > visibleCount;
 
   return (
     <section 
@@ -79,17 +88,16 @@ export const GallerySection: React.FC = () => {
               : 'Cherishing memorable moments and cheerful smiles of our beloved travelers at Galaxy Boutique Hotel.'}
           </p>
 
-          {/* Category Tabs: All, Check-in photos, Common spaces (Removed Room & Service tabs) */}
+          {/* Category Tabs: Check-in photos & Common spaces */}
           <div className="inline-flex p-1 bg-[#F4F1EA] rounded-xl border border-neutral-200/70 mt-6 gap-1">
             {[
-              { key: 'all', label: t('gallery.tab_all') },
               { key: 'checkin', label: t('gallery.tab_checkin') },
               { key: 'facilities', label: t('gallery.tab_facilities') },
             ].map((tab) => (
               <button
                 key={tab.key}
-                onClick={() => setActiveTab(tab.key as any)}
-                className={`px-4 sm:px-5 py-2 rounded-lg text-xs font-bold transition-all duration-200 ${
+                onClick={() => handleTabChange(tab.key as any)}
+                className={`px-5 sm:px-6 py-2 rounded-lg text-xs font-bold transition-all duration-200 ${
                   activeTab === tab.key
                     ? 'bg-neutral-900 text-white shadow-sm'
                     : 'text-neutral-600 hover:text-neutral-900'
@@ -101,13 +109,13 @@ export const GallerySection: React.FC = () => {
           </div>
         </div>
 
-        {/* Gallery Grid */}
+        {/* Gallery Grid (Shows 9 items by default) */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-          {filteredImages.map((item, idx) => (
+          {displayedImages.map((item, idx) => (
             <div
               key={item.id}
               onClick={() => setLightboxImage(item.url)}
-              style={{ animationDelay: `${idx * 50}ms` }}
+              style={{ animationDelay: `${idx * 40}ms` }}
               className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-sm group cursor-pointer border border-neutral-200/80 bg-neutral-100"
             >
               <img
@@ -129,6 +137,24 @@ export const GallerySection: React.FC = () => {
             </div>
           ))}
         </div>
+
+        {/* Load More Button (Loads next 9 images) */}
+        {hasMore && (
+          <div className="mt-12 text-center">
+            <button
+              onClick={() => setVisibleCount(prev => prev + 9)}
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-neutral-900 hover:bg-neutral-800 text-white font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-md hover:shadow-lg active:scale-95"
+            >
+              <Camera className="w-4 h-4 text-[#E8DCB9]" />
+              <span>
+                {lang === 'vi' 
+                  ? `Xem Thêm Ảnh (${filteredImages.length - visibleCount} ảnh còn lại)` 
+                  : `Load More Photos (${filteredImages.length - visibleCount} remaining)`}
+              </span>
+              <ChevronDown className="w-4 h-4 text-[#E8DCB9]" />
+            </button>
+          </div>
+        )}
 
       </div>
 

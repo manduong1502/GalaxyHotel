@@ -24,19 +24,15 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({
   const [pricingMode, setPricingMode] = useState<'nightly' | 'hourly'>('nightly');
 
   const categories = [
-    { id: 'all', label: lang === 'vi' ? 'Tất Cả Phòng (8)' : 'All Rooms (8)' },
-    { id: 'double', label: lang === 'vi' ? 'Phòng Đôi 2 Khách' : 'Double / Queen' },
-    { id: 'triple', label: lang === 'vi' ? 'Phòng 3 Khách' : 'Triple Rooms' },
-    { id: 'family', label: lang === 'vi' ? 'Phòng Gia Đình 4-5 Khách' : 'Family Suites' },
-    { id: 'vip', label: lang === 'vi' ? 'VIP Có Ban Công' : 'VIP Balcony' },
+    { id: 'all', label: lang === 'vi' ? 'Tất cả phòng' : 'All Rooms' },
+    { id: 'single_double', label: lang === 'vi' ? 'Phòng đơn & đôi ( 1-2 khách )' : 'Single & Double ( 1-2 Guests )' },
+    { id: 'group_family', label: lang === 'vi' ? 'Phòng nhóm & gia đình ( 3-6 khách )' : 'Group & Family ( 3-6 Guests )' },
   ];
 
   const filteredRooms = rooms.filter((room) => {
     if (selectedCategory === 'all') return true;
-    if (selectedCategory === 'double') return room.maxAdults === 2 && room.id !== 'phong-vip';
-    if (selectedCategory === 'triple') return room.maxAdults === 3;
-    if (selectedCategory === 'family') return room.maxAdults >= 4;
-    if (selectedCategory === 'vip') return room.id === 'phong-vip' || room.id === 'phong-e';
+    if (selectedCategory === 'single_double') return room.maxAdults <= 2;
+    if (selectedCategory === 'group_family') return room.maxAdults >= 3;
     return true;
   });
 
@@ -203,7 +199,7 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({
 
                   {/* Amenities Highlights */}
                   <div className="flex flex-wrap gap-1.5 mb-2">
-                    {(room.amenities?.[lang] || room.amenities?.vi || (Array.isArray(room.amenities) ? room.amenities : [])).slice(0, 4).map((item: string, i: number) => (
+                    {(room.amenities?.[lang] || room.amenities?.vi || (Array.isArray(room.amenities) ? room.amenities : [])).map((item: string, i: number) => (
                       <span
                         key={i}
                         className="text-[11px] bg-[#FAF9F5] text-neutral-700 px-2.5 py-1 rounded border border-neutral-200/70 flex items-center gap-1"

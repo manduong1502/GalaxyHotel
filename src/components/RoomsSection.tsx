@@ -14,15 +14,15 @@ interface RoomsSectionProps {
 export const RoomsSection: React.FC<RoomsSectionProps> = ({ onSelectRoom, onBookRoom }) => {
   const { lang, t } = useLanguage();
   const { rooms } = useBookings();
-  const [filter, setFilter] = useState<'all' | 'suite' | 'deluxe'>('all');
+  const [filter, setFilter] = useState<'all' | 'single_double' | 'group_family'>('all');
   const { ref: sectionRef, isVisible } = useScrollReveal<HTMLElement>(0.05);
 
   const displayRooms = (rooms && rooms.length > 0) ? rooms : roomsData;
 
   const filteredRooms = displayRooms.filter((room) => {
     if (filter === 'all') return true;
-    if (filter === 'suite') return room.maxAdults >= 4 || room.slug.includes('suite') || room.slug.includes('phong-c') || room.slug.includes('phong-d');
-    if (filter === 'deluxe') return room.maxAdults <= 3 && !room.slug.includes('phong-c') && !room.slug.includes('phong-d');
+    if (filter === 'single_double') return room.maxAdults <= 2;
+    if (filter === 'group_family') return room.maxAdults >= 3;
     return true;
   });
 
@@ -55,7 +55,7 @@ export const RoomsSection: React.FC<RoomsSectionProps> = ({ onSelectRoom, onBook
           </p>
 
           {/* Minimalist Tab Filter */}
-          <div className="inline-flex p-1 rounded-xl bg-[#EFECE6] border border-neutral-300/60 mt-8 gap-1">
+          <div className="inline-flex p-1 rounded-xl bg-[#EFECE6] border border-neutral-300/60 mt-8 gap-1 flex-wrap justify-center">
             <button
               onClick={() => setFilter('all')}
               className={`px-4 sm:px-6 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
@@ -67,24 +67,24 @@ export const RoomsSection: React.FC<RoomsSectionProps> = ({ onSelectRoom, onBook
               {lang === 'vi' ? 'Tất cả phòng' : 'All Rooms'} ({displayRooms.length})
             </button>
             <button
-              onClick={() => setFilter('deluxe')}
+              onClick={() => setFilter('single_double')}
               className={`px-4 sm:px-6 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
-                filter === 'deluxe'
+                filter === 'single_double'
                   ? 'bg-white text-neutral-900 shadow-sm'
                   : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
-              {lang === 'vi' ? 'Phòng Đôi & 3 Khách' : 'Double & Triple'}
+              {lang === 'vi' ? 'Phòng đơn & đôi ( 1-2 khách )' : 'Single & Double ( 1-2 Guests )'}
             </button>
             <button
-              onClick={() => setFilter('suite')}
+              onClick={() => setFilter('group_family')}
               className={`px-4 sm:px-6 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
-                filter === 'suite'
+                filter === 'group_family'
                   ? 'bg-white text-neutral-900 shadow-sm'
                   : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
-              {lang === 'vi' ? 'Phòng Gia Đình (5 Khách)' : 'Family Suites'}
+              {lang === 'vi' ? 'Phòng nhóm & gia đình ( 3-6 khách )' : 'Group & Family ( 3-6 Guests )'}
             </button>
           </div>
         </div>
@@ -164,11 +164,11 @@ export const RoomsSection: React.FC<RoomsSectionProps> = ({ onSelectRoom, onBook
                   </div>
 
                   {/* Amenities highlights */}
-                  <div className="flex flex-wrap gap-1.5 mt-3.5">
-                    {(room.amenities?.[lang] || room.amenities?.vi || (Array.isArray(room.amenities) ? room.amenities : [])).slice(0, 3).map((amenity: string, i: number) => (
+                  <div className="flex flex-wrap gap-1.5 mt-3.5 pt-3 border-t border-neutral-100">
+                    {(room.amenities?.[lang] || room.amenities?.vi || (Array.isArray(room.amenities) ? room.amenities : [])).map((amenity: string, i: number) => (
                       <span
                         key={i}
-                        className="inline-flex items-center gap-1 text-[11px] bg-[#F4F1EA] text-neutral-700 px-2 py-0.5 rounded font-medium"
+                        className="inline-flex items-center gap-1 text-[11px] bg-[#FAF9F5] text-neutral-700 px-2 py-0.5 rounded border border-neutral-200/70 font-medium"
                       >
                         <Check className="w-3 h-3 text-[#8A6943]" />
                         <span>{amenity}</span>
