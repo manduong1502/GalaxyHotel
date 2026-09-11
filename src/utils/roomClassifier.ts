@@ -2,54 +2,144 @@ import { Room } from '../types';
 
 /**
  * Checks if a room belongs to "Phòng đơn & đôi ( 1-2 khách )"
+ * Strict rule: ONLY 1-2 guests (maxAdults === 1 or 2, single/double/projector/bunk bed rooms).
+ * NEVER includes triple (3 guests), family (4 guests), or group (6 guests).
  */
 export function isSingleOrDoubleRoom(room: Room): boolean {
+  if (!room) return false;
+
+  // 1. Primary rule: maxAdults capacity check
+  const maxAdults = typeof room.maxAdults === 'number' ? room.maxAdults : parseInt(String(room.maxAdults || 0), 10);
+  if (maxAdults > 0) {
+    if (maxAdults <= 2) {
+      return true;
+    }
+    if (maxAdults >= 3) {
+      return false;
+    }
+  }
+
+  // 2. Secondary rule: check room id / slug / name (NOT subtitle)
+  const id = (room.id || '').toLowerCase();
+  const slug = (room.slug || '').toLowerCase();
   const nameVi = (room.name?.vi || '').toLowerCase();
   const nameEn = (room.name?.en || '').toLowerCase();
-  const subtitleVi = (room.subtitle?.vi || '').toLowerCase();
-  const combinedText = `${nameVi} ${nameEn} ${subtitleVi}`;
+  const idAndName = `${id} ${slug} ${nameVi} ${nameEn}`;
 
-  // Explicit family / group / triple patterns that should NEVER be in single/double
-  const isTripleOrFamily = 
-    combinedText.includes('3 người') ||
-    combinedText.includes('3 khách') ||
-    combinedText.includes('4 người') ||
-    combinedText.includes('4 khách') ||
-    combinedText.includes('5 người') ||
-    combinedText.includes('5 khách') ||
-    combinedText.includes('6 người') ||
-    combinedText.includes('6 khách') ||
-    combinedText.includes('gia đình') ||
-    combinedText.includes('nhóm') ||
-    combinedText.includes('triple') ||
-    combinedText.includes('family') ||
-    combinedText.includes('quadruple') ||
-    (room.maxAdults !== undefined && room.maxAdults >= 3);
-
-  if (isTripleOrFamily) {
+  // If name or ID indicates 3+ guests -> NEVER single/double
+  if (
+    idAndName.includes('3 người') ||
+    idAndName.includes('3-nguoi') ||
+    idAndName.includes('3 khách') ||
+    idAndName.includes('gia đình') ||
+    idAndName.includes('gia-dinh') ||
+    idAndName.includes('nhóm') ||
+    idAndName.includes('nhom') ||
+    idAndName.includes('4 người') ||
+    idAndName.includes('4-nguoi') ||
+    idAndName.includes('5 người') ||
+    idAndName.includes('5-nguoi') ||
+    idAndName.includes('6 người') ||
+    idAndName.includes('6-nguoi') ||
+    idAndName.includes('triple') ||
+    idAndName.includes('family') ||
+    idAndName.includes('quadruple') ||
+    idAndName.includes('ban công') ||
+    idAndName.includes('ban-cong')
+  ) {
     return false;
   }
 
-  // Explicit 1-2 guests patterns
-  const is1or2 = 
-    combinedText.includes('đơn') ||
-    combinedText.includes('1 khách') ||
-    combinedText.includes('1 người') ||
-    combinedText.includes('phòng đôi') ||
-    combinedText.includes('2 khách') ||
-    combinedText.includes('2 người') ||
-    combinedText.includes('máy chiếu') ||
-    combinedText.includes('giường tầng') ||
-    combinedText.includes('single') ||
-    combinedText.includes('double') ||
-    (room.maxAdults !== undefined && room.maxAdults <= 2);
+  // If name or ID indicates 1-2 guests
+  if (
+    idAndName.includes('đơn') ||
+    idAndName.includes('don') ||
+    idAndName.includes('đôi') ||
+    idAndName.includes('doi') ||
+    idAndName.includes('máy chiếu') ||
+    idAndName.includes('may-chieu') ||
+    idAndName.includes('giường tầng') ||
+    idAndName.includes('giuong-tang') ||
+    idAndName.includes('single') ||
+    idAndName.includes('double') ||
+    idAndName.includes('phong-a')
+  ) {
+    return true;
+  }
 
-  return is1or2;
+  return false;
 }
 
 /**
  * Checks if a room belongs to "Phòng nhóm & gia đình ( 3-6 khách )"
+ * Strict rule: ONLY 3-6 guests (maxAdults >= 3, triple/family/group rooms).
+ * NEVER includes single (1 guest) or double (2 guests).
  */
 export function isGroupOrFamilyRoom(room: Room): boolean {
-  return !isSingleOrDoubleRoom(room);
+  if (!room) return false;
+
+  // 1. Primary rule: maxAdults capacity check
+  const maxAdults = typeof room.maxAdults === 'number' ? room.maxAdults : parseInt(String(room.maxAdults || 0), 10);
+  if (maxAdults > 0) {
+    if (maxAdults >= 3) {
+      return true;
+    }
+    if (maxAdults <= 2) {
+      return false;
+    }
+  }
+
+  // 2. Secondary rule: check room id / slug / name (NOT subtitle)
+  const id = (room.id || '').toLowerCase();
+  const slug = (room.slug || '').toLowerCase();
+  const nameVi = (room.name?.vi || '').toLowerCase();
+  const nameEn = (room.name?.en || '').toLowerCase();
+  const idAndName = `${id} ${slug} ${nameVi} ${nameEn}`;
+
+  // If name or ID indicates 1-2 guests -> NEVER family/group
+  if (
+    idAndName.includes('đơn') ||
+    idAndName.includes('don') ||
+    idAndName.includes('đôi') ||
+    idAndName.includes('doi') ||
+    idAndName.includes('máy chiếu') ||
+    idAndName.includes('may-chieu') ||
+    idAndName.includes('giường tầng') ||
+    idAndName.includes('giuong-tang') ||
+    idAndName.includes('single') ||
+    idAndName.includes('double') ||
+    idAndName.includes('phong-a')
+  ) {
+    return false;
+  }
+
+  // If name or ID indicates 3+ guests
+  if (
+    idAndName.includes('3 người') ||
+    idAndName.includes('3-nguoi') ||
+    idAndName.includes('3 khách') ||
+    idAndName.includes('gia đình') ||
+    idAndName.includes('gia-dinh') ||
+    idAndName.includes('nhóm') ||
+    idAndName.includes('nhom') ||
+    idAndName.includes('4 người') ||
+    idAndName.includes('4-nguoi') ||
+    idAndName.includes('5 người') ||
+    idAndName.includes('5-nguoi') ||
+    idAndName.includes('6 người') ||
+    idAndName.includes('6-nguoi') ||
+    idAndName.includes('triple') ||
+    idAndName.includes('family') ||
+    idAndName.includes('quadruple') ||
+    idAndName.includes('ban công') ||
+    idAndName.includes('ban-cong') ||
+    idAndName.includes('phong-c') ||
+    idAndName.includes('phong-d') ||
+    idAndName.includes('phong-ad') ||
+    idAndName.includes('phong-b')
+  ) {
+    return true;
+  }
+
+  return false;
 }
