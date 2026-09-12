@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { Compass, Shirt, MapPin, Clock, Check, Sparkles } from 'lucide-react';
+import { getBilingualText, getBilingualList } from '../utils/bilingual';
 
 export const GymFacilitySection: React.FC = () => {
   const { t, lang } = useLanguage();
@@ -38,7 +39,7 @@ export const GymFacilitySection: React.FC = () => {
       desc: t('facilities.gym_desc'),
       image: '/images/tour-mekong.jpg',
       tag: t('facilities.gym_tag'),
-      hours: '24/7 Hỗ trợ',
+      hours: lang === 'vi' ? '24/7 Hỗ trợ' : '24/7 Support',
       highlights: [t('facilities.gym_hl1'), t('facilities.gym_hl2'), t('facilities.gym_hl3')]
     },
     {
@@ -47,7 +48,7 @@ export const GymFacilitySection: React.FC = () => {
       desc: t('facilities.spa_desc'),
       image: '/images/towels.png',
       tag: t('facilities.spa_tag'),
-      hours: 'Lấy trong ngày',
+      hours: lang === 'vi' ? 'Lấy trong ngày' : 'Same day',
       highlights: [t('facilities.spa_hl1'), t('facilities.spa_hl2'), t('facilities.spa_hl3')]
     },
     {
@@ -56,7 +57,7 @@ export const GymFacilitySection: React.FC = () => {
       desc: t('facilities.pool_desc'),
       image: '/images/bui-vien-night.jpg',
       tag: t('facilities.pool_tag'),
-      hours: 'Vị trí đắc địa',
+      hours: lang === 'vi' ? 'Vị trí đắc địa' : 'Prime location',
       highlights: [t('facilities.pool_hl1'), t('facilities.pool_hl2'), t('facilities.pool_hl3')]
     }
   ];
@@ -64,30 +65,30 @@ export const GymFacilitySection: React.FC = () => {
   const services = customBoxes ? [
     {
       icon: Compass,
-      title: customBoxes[0]?.title || t('facilities.gym_title'),
-      desc: customBoxes[0]?.desc || t('facilities.gym_desc'),
+      title: customBoxes[0]?.title ? getBilingualText(customBoxes[0].title, lang) : t('facilities.gym_title'),
+      desc: customBoxes[0]?.desc ? getBilingualText(customBoxes[0].desc, lang) : t('facilities.gym_desc'),
       image: customBoxes[0]?.image || '/images/tour-mekong.jpg',
-      tag: customBoxes[0]?.tag || t('facilities.gym_tag'),
-      hours: customBoxes[0]?.hours || '24/7 Hỗ trợ',
-      highlights: customBoxes[0]?.items || [t('facilities.gym_hl1'), t('facilities.gym_hl2'), t('facilities.gym_hl3')]
+      tag: customBoxes[0]?.tag ? getBilingualText(customBoxes[0].tag, lang) : t('facilities.gym_tag'),
+      hours: customBoxes[0]?.hours ? getBilingualText(customBoxes[0].hours, lang) : (lang === 'vi' ? '24/7 Hỗ trợ' : '24/7 Support'),
+      highlights: customBoxes[0]?.items ? getBilingualList(customBoxes[0].items, lang) : [t('facilities.gym_hl1'), t('facilities.gym_hl2'), t('facilities.gym_hl3')]
     },
     {
       icon: Shirt,
-      title: customBoxes[1]?.title || t('facilities.spa_title'),
-      desc: customBoxes[1]?.desc || t('facilities.spa_desc'),
+      title: customBoxes[1]?.title ? getBilingualText(customBoxes[1].title, lang) : t('facilities.spa_title'),
+      desc: customBoxes[1]?.desc ? getBilingualText(customBoxes[1].desc, lang) : t('facilities.spa_desc'),
       image: customBoxes[1]?.image || '/images/towels.png',
-      tag: customBoxes[1]?.tag || t('facilities.spa_tag'),
-      hours: customBoxes[1]?.hours || 'Lấy trong ngày',
-      highlights: customBoxes[1]?.items || [t('facilities.spa_hl1'), t('facilities.spa_hl2'), t('facilities.spa_hl3')]
+      tag: customBoxes[1]?.tag ? getBilingualText(customBoxes[1].tag, lang) : t('facilities.spa_tag'),
+      hours: customBoxes[1]?.hours ? getBilingualText(customBoxes[1].hours, lang) : (lang === 'vi' ? 'Lấy trong ngày' : 'Same day'),
+      highlights: customBoxes[1]?.items ? getBilingualList(customBoxes[1].items, lang) : [t('facilities.spa_hl1'), t('facilities.spa_hl2'), t('facilities.spa_hl3')]
     },
     {
       icon: MapPin,
-      title: customBoxes[2]?.title || t('facilities.pool_title'),
-      desc: customBoxes[2]?.desc || t('facilities.pool_desc'),
+      title: customBoxes[2]?.title ? getBilingualText(customBoxes[2].title, lang) : t('facilities.pool_title'),
+      desc: customBoxes[2]?.desc ? getBilingualText(customBoxes[2].desc, lang) : t('facilities.pool_desc'),
       image: customBoxes[2]?.image || '/images/bui-vien-night.jpg',
-      tag: customBoxes[2]?.tag || t('facilities.pool_tag'),
-      hours: customBoxes[2]?.hours || 'Vị trí đắc địa',
-      highlights: customBoxes[2]?.items || [t('facilities.pool_hl1'), t('facilities.pool_hl2'), t('facilities.pool_hl3')]
+      tag: customBoxes[2]?.tag ? getBilingualText(customBoxes[2].tag, lang) : t('facilities.pool_tag'),
+      hours: customBoxes[2]?.hours ? getBilingualText(customBoxes[2].hours, lang) : (lang === 'vi' ? 'Vị trí đắc địa' : 'Prime location'),
+      highlights: customBoxes[2]?.items ? getBilingualList(customBoxes[2].items, lang) : [t('facilities.pool_hl1'), t('facilities.pool_hl2'), t('facilities.pool_hl3')]
     }
   ] : defaultServices;
 

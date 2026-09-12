@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { ChevronLeft, ChevronRight, ArrowRight, Calendar } from 'lucide-react';
 
+import { getBilingualText } from '../utils/bilingual';
+
 interface HeroSliderProps {
   onOpenBooking: () => void;
 }
 
 export const HeroSlider: React.FC<HeroSliderProps> = ({ onOpenBooking }) => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const defaultSlides = [
@@ -15,19 +17,19 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ onOpenBooking }) => {
       image: '/images/hero-1.jpg',
       subtitle: t('hero.slide1.subtitle'),
       title: t('hero.slide1.title'),
-      highlight: 'SẠCH SẼ & ẤM CÚNG',
+      highlight: lang === 'vi' ? 'SẠCH SẼ & ẤM CÚNG' : 'CLEAN & COZY',
     },
     {
       image: '/images/hero-2.jpg',
       subtitle: t('hero.slide2.subtitle'),
       title: t('hero.slide2.title'),
-      highlight: 'TIỆN NGHI HOÀN HẢO',
+      highlight: lang === 'vi' ? 'TIỆN NGHI HOÀN HẢO' : 'PERFECT AMENITIES',
     },
     {
       image: '/images/facility-1.jpg',
       subtitle: t('hero.slide3.subtitle'),
       title: t('hero.slide3.title'),
-      highlight: 'TÂM ĐIỂM QUẬN 1',
+      highlight: lang === 'vi' ? 'TÂM ĐIỂM QUẬN 1' : 'DISTRICT 1 HEART',
     }
   ];
 
@@ -61,9 +63,9 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ onOpenBooking }) => {
 
   const slides = customSlides ? customSlides.map((s, idx) => ({
     image: s.image || defaultSlides[idx % defaultSlides.length].image,
-    title: s.title || defaultSlides[idx % defaultSlides.length].title,
-    subtitle: s.subtitle || defaultSlides[idx % defaultSlides.length].subtitle,
-    highlight: s.highlight || defaultSlides[idx % defaultSlides.length].highlight
+    title: getBilingualText(s.title, lang, defaultSlides[idx % defaultSlides.length].title),
+    subtitle: getBilingualText(s.subtitle, lang, defaultSlides[idx % defaultSlides.length].subtitle),
+    highlight: getBilingualText(s.highlight, lang, defaultSlides[idx % defaultSlides.length].highlight)
   })) : defaultSlides;
 
   useEffect(() => {

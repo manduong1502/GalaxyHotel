@@ -45,6 +45,42 @@ export interface Room {
   totalInventory?: number; // Total physical rooms of this type (default 1)
 }
 
+export interface HeroSlideData {
+  id: string;
+  image: string;
+  title: string | { vi: string; en: string };
+  subtitle: string | { vi: string; en: string };
+  highlight: string | { vi: string; en: string };
+}
+
+export interface WelcomeImagesData {
+  mainImage: string;
+  secondaryImage: string;
+}
+
+export interface BannersConfig {
+  heroSlides: HeroSlideData[];
+  welcomeImages: WelcomeImagesData;
+}
+
+export interface GalleryPhoto {
+  id: string;
+  url: string;
+  title: string | { vi: string; en: string };
+  category: 'checkin' | 'facilities';
+  date?: string;
+}
+
+export interface ServiceBox {
+  id: string;
+  tag: string | { vi: string; en: string };
+  title: string | { vi: string; en: string };
+  desc: string | { vi: string; en: string };
+  items: string[] | { vi: string[]; en: string[] };
+  image: string;
+  hours?: string | { vi: string; en: string };
+}
+
 export interface ServiceItem {
   id: string;
   title: {
@@ -153,4 +189,3 @@ export interface DashboardStats {
   estimatedRevenue: number;
   occupancyRate: number;
 }
-

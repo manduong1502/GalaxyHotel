@@ -2,21 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { Eye, X, Camera, Heart, ChevronDown } from 'lucide-react';
+import { getBilingualText } from '../utils/bilingual';
 
 interface GalleryItem {
   id: string;
   url: string;
-  title: string;
+  title: string | { vi: string; en: string };
   category: 'checkin' | 'facilities';
 }
 
 const initialGallery: GalleryItem[] = [
-  { id: '1', url: '/images/checkin-1.jpg', title: 'Check-in nụ cười du khách tại sảnh', category: 'checkin' },
-  { id: '2', url: '/images/welcome-1.jpg', title: 'Phòng Hạng Sang Máy Chiếu ấm cúng', category: 'checkin' },
-  { id: '3', url: '/images/hero-1.jpg', title: 'Sảnh đón tiếp & Quầy thông tin Tour', category: 'facilities' },
-  { id: '4', url: '/images/facility-1.jpg', title: 'Khu vực tiếp khách & thư giãn', category: 'facilities' },
-  { id: '5', url: '/images/welcome-2.jpg', title: 'Góc phòng xinh xắn đón nắng sáng', category: 'checkin' },
-  { id: '6', url: '/images/hero-2.jpg', title: 'Không gian ấm cúng Galaxy Boutique', category: 'facilities' },
+  { id: '1', url: '/images/checkin-1.jpg', title: { vi: 'Check-in nụ cười du khách tại sảnh', en: 'Guest check-in smile at the lobby' }, category: 'checkin' },
+  { id: '2', url: '/images/welcome-1.jpg', title: { vi: 'Phòng Hạng Sang Máy Chiếu ấm cúng', en: 'Cozy Deluxe Room with Projector' }, category: 'checkin' },
+  { id: '3', url: '/images/hero-1.jpg', title: { vi: 'Sảnh đón tiếp & Quầy thông tin Tour', en: 'Reception Lobby & Tour Desk' }, category: 'facilities' },
+  { id: '4', url: '/images/facility-1.jpg', title: { vi: 'Khu vực tiếp khách & thư giãn', en: 'Lounge & Relaxation Area' }, category: 'facilities' },
+  { id: '5', url: '/images/welcome-2.jpg', title: { vi: 'Góc phòng xinh xắn đón nắng sáng', en: 'Charming room corner bathed in morning sun' }, category: 'checkin' },
+  { id: '6', url: '/images/hero-2.jpg', title: { vi: 'Không gian ấm cúng Galaxy Boutique', en: 'Cozy Atmosphere at Galaxy Boutique' }, category: 'facilities' },
 ];
 
 export const GallerySection: React.FC = () => {
@@ -111,31 +112,34 @@ export const GallerySection: React.FC = () => {
 
         {/* Gallery Grid (Shows 9 items by default) */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-          {displayedImages.map((item, idx) => (
-            <div
-              key={item.id}
-              onClick={() => setLightboxImage(item.url)}
-              style={{ animationDelay: `${idx * 40}ms` }}
-              className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-sm group cursor-pointer border border-neutral-200/80 bg-neutral-100"
-            >
-              <img
-                src={item.url}
-                alt={item.title}
-                onError={(e) => { e.currentTarget.src = '/images/checkin-1.jpg'; }}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center text-white p-4 text-center">
-                <Camera className="w-6 h-6 text-[#E8DCB9] mb-2 transform -translate-y-1 group-hover:translate-y-0 transition-transform duration-300" />
-                <span className="font-bold text-sm leading-snug">
-                  {item.title}
-                </span>
-                <span className="text-[10px] uppercase font-semibold text-neutral-300 mt-1.5 px-2.5 py-0.5 rounded-full bg-white/20">
-                  Phóng to ảnh
-                </span>
+          {displayedImages.map((item, idx) => {
+            const itemTitle = getBilingualText(item.title, lang);
+            return (
+              <div
+                key={item.id}
+                onClick={() => setLightboxImage(item.url)}
+                style={{ animationDelay: `${idx * 40}ms` }}
+                className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-sm group cursor-pointer border border-neutral-200/80 bg-neutral-100"
+              >
+                <img
+                  src={item.url}
+                  alt={itemTitle}
+                  onError={(e) => { e.currentTarget.src = '/images/checkin-1.jpg'; }}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-neutral-950/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center text-white p-4 text-center">
+                  <Camera className="w-6 h-6 text-[#E8DCB9] mb-2 transform -translate-y-1 group-hover:translate-y-0 transition-transform duration-300" />
+                  <span className="font-bold text-sm leading-snug">
+                    {itemTitle}
+                  </span>
+                  <span className="text-[10px] uppercase font-semibold text-neutral-300 mt-1.5 px-2.5 py-0.5 rounded-full bg-white/20">
+                    {lang === 'vi' ? 'Phóng to ảnh' : 'Enlarge photo'}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Load More Button (Loads next 9 images) */}

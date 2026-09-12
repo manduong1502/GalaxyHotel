@@ -1,23 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Trash2, Plus, Image as ImageIcon, CheckCircle, Heart, Eye, Loader2, Sparkles, FolderOpen } from 'lucide-react';
+import { Upload, Trash2, Plus, CheckCircle, Heart, Loader2, Sparkles, FolderOpen } from 'lucide-react';
 import { compressImage } from '../../utils/imageCompressor';
 import { MediaLibraryModal } from './MediaLibraryModal';
-
-interface GalleryPhoto {
-  id: string;
-  url: string;
-  title: string;
-  category: 'checkin' | 'facilities';
-  date?: string;
-}
+import { GalleryPhoto } from '../../types';
+import { getBilingualText } from '../../utils/bilingual';
 
 const defaultPhotos: GalleryPhoto[] = [
-  { id: '1', url: '/images/checkin-1.jpg', title: 'Check-in nụ cười du khách tại sảnh', category: 'checkin', date: '2026-08-30' },
-  { id: '2', url: '/images/welcome-1.jpg', title: 'Phòng Hạng Sang Máy Chiếu ấm cúng', category: 'checkin', date: '2026-08-28' },
-  { id: '3', url: '/images/hero-1.jpg', title: 'Sảnh đón tiếp & Quầy thông tin Tour', category: 'facilities', date: '2026-08-25' },
-  { id: '4', url: '/images/facility-1.jpg', title: 'Khu vực tiếp khách & thư giãn', category: 'facilities', date: '2026-08-20' },
-  { id: '5', url: '/images/welcome-2.jpg', title: 'Góc phòng xinh xắn đón nắng sáng', category: 'checkin', date: '2026-08-15' },
-  { id: '6', url: '/images/hero-2.jpg', title: 'Không gian ấm cúng Galaxy Boutique', category: 'facilities', date: '2026-08-10' },
+  { id: '1', url: '/images/checkin-1.jpg', title: { vi: 'Check-in nụ cười du khách tại sảnh', en: 'Guest check-in smile at the lobby' }, category: 'checkin', date: '2026-08-30' },
+  { id: '2', url: '/images/welcome-1.jpg', title: { vi: 'Phòng Hạng Sang Máy Chiếu ấm cúng', en: 'Cozy Deluxe Room with Projector' }, category: 'checkin', date: '2026-08-28' },
+  { id: '3', url: '/images/hero-1.jpg', title: { vi: 'Sảnh đón tiếp & Quầy thông tin Tour', en: 'Reception Lobby & Tour Desk' }, category: 'facilities', date: '2026-08-25' },
+  { id: '4', url: '/images/facility-1.jpg', title: { vi: 'Khu vực tiếp khách & thư giãn', en: 'Lounge & Relaxation Area' }, category: 'facilities', date: '2026-08-20' },
+  { id: '5', url: '/images/welcome-2.jpg', title: { vi: 'Góc phòng xinh xắn đón nắng sáng', en: 'Charming room corner bathed in morning sun' }, category: 'checkin', date: '2026-08-15' },
+  { id: '6', url: '/images/hero-2.jpg', title: { vi: 'Không gian ấm cúng Galaxy Boutique', en: 'Cozy Atmosphere at Galaxy Boutique' }, category: 'facilities', date: '2026-08-10' },
 ];
 
 export const GalleryManager: React.FC = () => {
@@ -31,11 +25,13 @@ export const GalleryManager: React.FC = () => {
     return defaultPhotos;
   });
 
+  const [activeLang, setActiveLang] = useState<'vi' | 'en'>('vi');
   const [isCompressing, setIsCompressing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
+  const [newTitleVi, setNewTitleVi] = useState('');
+  const [newTitleEn, setNewTitleEn] = useState('');
   const [newCategory, setNewCategory] = useState<'checkin' | 'facilities'>('checkin');
   const [previewUrl, setPreviewUrl] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -78,7 +74,6 @@ export const GalleryManager: React.FC = () => {
     if (!file) return;
     setIsCompressing(true);
     try {
-      // Compress file client-side to ~200KB-300KB
       const result = await compressImage(file, 1600, 1600, 0.82);
       setSelectedFile(result.compressedFile);
       setFallbackBase64(result.base64);
@@ -143,12 +138,19 @@ export const GalleryManager: React.FC = () => {
         const data = await res.json();
         const finalUrl = (data && data.success && data.url) ? data.url : compressed.base64;
 
+        const defaultTitleVi = newCategory === 'checkin' ? 'Khoảnh khắc khách hàng check-in' : 'Không gian khách sạn';
+        const defaultTitleEn = newCategory === 'checkin' ? 'Guest check-in moments' : 'Hotel ambiance & spaces';
+        
+        const viTitle = newTitleVi.trim() ? (files.length > 1 ? `${newTitleVi.trim()} (${i + 1})` : newTitleVi.trim()) : defaultTitleVi;
+        const enTitle = newTitleEn.trim() ? (files.length > 1 ? `${newTitleEn.trim()} (${i + 1})` : newTitleEn.trim()) : defaultTitleEn;
+
         newPhotosToAdd.push({
           id: 'gal-' + (Date.now() + i),
           url: finalUrl,
-          title: newTitle.trim() 
-            ? (files.length > 1 ? `${newTitle.trim()} (${i + 1})` : newTitle.trim())
-            : (newCategory === 'checkin' ? 'Khoảnh khắc khách hàng check-in' : 'Không gian khách sạn'),
+          title: {
+            vi: viTitle,
+            en: enTitle
+          },
           category: newCategory,
           date: new Date().toISOString().split('T')[0]
         });
@@ -162,7 +164,8 @@ export const GalleryManager: React.FC = () => {
       await savePhotos(updated);
       setSuccessMsg(`Đã tải lên và thêm thành công ${newPhotosToAdd.length} ảnh vào "Góc nhỏ yêu thương"!`);
       setTimeout(() => setSuccessMsg(''), 5000);
-      setNewTitle('');
+      setNewTitleVi('');
+      setNewTitleEn('');
     }
     setIsUploading(false);
   };
@@ -170,12 +173,16 @@ export const GalleryManager: React.FC = () => {
   const handleBatchAddFromLibrary = async (urls: string[]) => {
     if (urls.length === 0) return;
     setIsUploading(true);
+    const defaultTitleVi = newCategory === 'checkin' ? 'Khoảnh khắc du khách check-in' : 'Không gian Galaxy Boutique Hotel';
+    const defaultTitleEn = newCategory === 'checkin' ? 'Guest check-in moments' : 'Galaxy Boutique Hotel spaces';
+
     const newPhotosToAdd: GalleryPhoto[] = urls.map((url, idx) => ({
       id: 'gal-' + (Date.now() + idx),
       url,
-      title: newTitle.trim() 
-        ? (urls.length > 1 ? `${newTitle.trim()} (${idx + 1})` : newTitle.trim())
-        : (newCategory === 'checkin' ? 'Khoảnh khắc du khách check-in' : 'Không gian Galaxy Boutique Hotel'),
+      title: {
+        vi: newTitleVi.trim() ? (urls.length > 1 ? `${newTitleVi.trim()} (${idx + 1})` : newTitleVi.trim()) : defaultTitleVi,
+        en: newTitleEn.trim() ? (urls.length > 1 ? `${newTitleEn.trim()} (${idx + 1})` : newTitleEn.trim()) : defaultTitleEn,
+      },
       category: newCategory,
       date: new Date().toISOString().split('T')[0]
     }));
@@ -183,7 +190,8 @@ export const GalleryManager: React.FC = () => {
     const updated = [...newPhotosToAdd, ...photos];
     await savePhotos(updated);
     setIsUploading(false);
-    setNewTitle('');
+    setNewTitleVi('');
+    setNewTitleEn('');
     setSuccessMsg(`Đã thêm thành công ${urls.length} ảnh từ Kho Upload vào "Góc nhỏ yêu thương" và lưu lên website!`);
     setTimeout(() => setSuccessMsg(''), 5000);
   };
@@ -198,7 +206,6 @@ export const GalleryManager: React.FC = () => {
     setIsUploading(true);
     let finalUrl = '';
 
-    // 1. Upload to persistent server directory (/uploads/)
     if (selectedFile) {
       try {
         const formData = new FormData();
@@ -221,10 +228,16 @@ export const GalleryManager: React.FC = () => {
       finalUrl = fallbackBase64 || previewUrl;
     }
 
+    const defaultTitleVi = newCategory === 'checkin' ? 'Khoảnh khắc khách hàng check-in' : 'Không gian khách sạn';
+    const defaultTitleEn = newCategory === 'checkin' ? 'Guest check-in moments' : 'Hotel ambiance & spaces';
+
     const newPhoto: GalleryPhoto = {
       id: 'gal-' + Date.now(),
       url: finalUrl,
-      title: newTitle.trim() || (newCategory === 'checkin' ? 'Khoảnh khắc khách hàng check-in' : 'Không gian khách sạn'),
+      title: {
+        vi: newTitleVi.trim() || defaultTitleVi,
+        en: newTitleEn.trim() || defaultTitleEn
+      },
       category: newCategory,
       date: new Date().toISOString().split('T')[0]
     };
@@ -236,7 +249,8 @@ export const GalleryManager: React.FC = () => {
     setPreviewUrl('');
     setFallbackBase64('');
     setSizeInfo(null);
-    setNewTitle('');
+    setNewTitleVi('');
+    setNewTitleEn('');
     setIsUploading(false);
     setSuccessMsg('Đã lưu ảnh mới vào "Góc nhỏ yêu thương" và hiển thị lên website thành công!');
     setTimeout(() => setSuccessMsg(''), 5000);
@@ -263,15 +277,45 @@ export const GalleryManager: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <Heart className="w-5 h-5 text-rose-500 fill-rose-500" />
-            <h2 className="text-xl font-bold text-neutral-900">Quản Lý "Góc Nhỏ Yêu Thương"</h2>
+            <h2 className="text-xl font-bold text-neutral-900">Quản Lý "Góc Nhỏ Yêu Thương" (Thư Viện Ảnh)</h2>
           </div>
           <p className="text-xs text-neutral-500 mt-1">
-            Đăng ảnh khách chụp check-in thực tế và hình ảnh không gian khách sạn trực tiếp lên website
+            Đăng ảnh khách chụp check-in thực tế và hình ảnh không gian khách sạn với lời tựa song ngữ (Việt - Anh)
           </p>
         </div>
 
-        <div className="px-4 py-2 rounded-xl bg-neutral-100 border border-neutral-200 text-xs font-bold text-neutral-700">
-          Tổng số ảnh: <span className="text-neutral-950 font-extrabold">{photos.length}</span>
+        <div className="flex items-center gap-3">
+          {/* Language Tabs */}
+          <div className="flex bg-neutral-100 p-1 rounded-xl border border-neutral-200">
+            <button
+              type="button"
+              onClick={() => setActiveLang('vi')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                activeLang === 'vi'
+                  ? 'bg-white text-neutral-900 shadow-sm'
+                  : 'text-neutral-500 hover:text-neutral-900'
+              }`}
+            >
+              <span>🇻🇳</span>
+              <span>VIE</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveLang('en')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                activeLang === 'en'
+                  ? 'bg-amber-600 text-white shadow-sm'
+                  : 'text-neutral-500 hover:text-neutral-900'
+              }`}
+            >
+              <span>🇬🇧</span>
+              <span>EN</span>
+            </button>
+          </div>
+
+          <div className="px-4 py-2 rounded-xl bg-neutral-100 border border-neutral-200 text-xs font-bold text-neutral-700">
+            Tổng số ảnh: <span className="text-neutral-950 font-extrabold">{photos.length}</span>
+          </div>
         </div>
       </div>
 
@@ -284,10 +328,19 @@ export const GalleryManager: React.FC = () => {
 
       {/* Upload New Photo Form */}
       <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm">
-        <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wider mb-4 flex items-center gap-2">
-          <Plus className="w-4 h-4 text-[#8A6943]" />
-          <span>Đăng Ảnh Check-in / Không Gian Mới</span>
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wider flex items-center gap-2">
+            <Plus className="w-4 h-4 text-[#8A6943]" />
+            <span>Đăng Ảnh Check-in / Không Gian Mới</span>
+          </h3>
+
+          {/* Lang badge indicator */}
+          <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+            activeLang === 'vi' ? 'bg-neutral-100 text-neutral-700' : 'bg-amber-100 text-amber-800'
+          }`}>
+            Đang nhập: {activeLang === 'vi' ? 'Tiếng Việt 🇻🇳' : 'English 🇬🇧'}
+          </span>
+        </div>
 
         <form onSubmit={handleUploadNewPhoto} className="grid grid-cols-1 md:grid-cols-12 gap-5">
           
@@ -361,16 +414,45 @@ export const GalleryManager: React.FC = () => {
           {/* Form details */}
           <div className="md:col-span-7 space-y-4 flex flex-col justify-between">
             <div>
-              <label className="block text-xs font-bold text-neutral-700 mb-1.5">
-                Tiêu đề / Lời tựa cho bức ảnh
-              </label>
-              <input
-                type="text"
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                placeholder="VD: Gia đình anh Tuấn check-in vui vẻ tại sảnh..."
-                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs focus:outline-none focus:ring-2 focus:ring-neutral-900"
-              />
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-bold text-neutral-700">
+                  {activeLang === 'vi' ? 'Tiêu đề / Lời tựa cho bức ảnh (Tiếng Việt)' : 'Photo Title / Caption (English)'}
+                </label>
+                <div className="flex gap-1 text-[10px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setActiveLang('vi')}
+                    className={`px-2 py-0.5 rounded ${activeLang === 'vi' ? 'bg-neutral-900 text-white' : 'bg-neutral-100 text-neutral-600'}`}
+                  >
+                    VIE
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveLang('en')}
+                    className={`px-2 py-0.5 rounded ${activeLang === 'en' ? 'bg-amber-600 text-white' : 'bg-neutral-100 text-neutral-600'}`}
+                  >
+                    EN
+                  </button>
+                </div>
+              </div>
+
+              {activeLang === 'vi' ? (
+                <input
+                  type="text"
+                  value={newTitleVi}
+                  onChange={(e) => setNewTitleVi(e.target.value)}
+                  placeholder="VD: Gia đình anh Tuấn check-in vui vẻ tại sảnh..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                />
+              ) : (
+                <input
+                  type="text"
+                  value={newTitleEn}
+                  onChange={(e) => setNewTitleEn(e.target.value)}
+                  placeholder="E.g. Joyful guest check-in moment at lobby..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-amber-300 bg-amber-50/20 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              )}
             </div>
 
             <div>
@@ -387,7 +469,7 @@ export const GalleryManager: React.FC = () => {
                       : 'bg-neutral-50 text-neutral-700 border-neutral-200 hover:bg-neutral-100'
                   }`}
                 >
-                  📸 Ảnh khách check-in
+                  📸 {activeLang === 'vi' ? 'Ảnh khách check-in' : 'Guest check-in photo'}
                 </button>
                 <button
                   type="button"
@@ -398,7 +480,7 @@ export const GalleryManager: React.FC = () => {
                       : 'bg-neutral-50 text-neutral-700 border-neutral-200 hover:bg-neutral-100'
                   }`}
                 >
-                  🏨 Không gian chung
+                  🏨 {activeLang === 'vi' ? 'Không gian chung' : 'Facilities & Spaces'}
                 </button>
               </div>
             </div>
@@ -440,7 +522,7 @@ export const GalleryManager: React.FC = () => {
               <div className="relative aspect-[4/3] w-full overflow-hidden bg-neutral-200">
                 <img
                   src={photo.url}
-                  alt={photo.title}
+                  alt={getBilingualText(photo.title, 'vi')}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <span className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded shadow text-white ${
@@ -450,13 +532,20 @@ export const GalleryManager: React.FC = () => {
                 </span>
               </div>
 
-              <div className="p-3 flex items-center justify-between">
-                <p className="text-xs font-semibold text-neutral-800 line-clamp-1 flex-1 pr-2">
-                  {photo.title}
-                </p>
+              <div className="p-3 flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-neutral-800 line-clamp-1">
+                    <span className="text-[10px] text-neutral-400 font-bold mr-1">VI:</span>
+                    {getBilingualText(photo.title, 'vi')}
+                  </p>
+                  <p className="text-[11px] text-amber-800 line-clamp-1">
+                    <span className="text-[10px] text-amber-500 font-bold mr-1">EN:</span>
+                    {getBilingualText(photo.title, 'en')}
+                  </p>
+                </div>
                 <button
                   onClick={() => handleDeletePhoto(photo.id)}
-                  className="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-600 text-red-600 hover:text-white flex items-center justify-center transition-colors flex-shrink-0"
+                  className="w-7 h-7 rounded-lg bg-red-50 hover:bg-red-600 text-red-600 hover:text-white flex items-center justify-center transition-colors flex-shrink-0 mt-0.5"
                   title="Xóa ảnh"
                 >
                   <Trash2 className="w-3.5 h-3.5" />

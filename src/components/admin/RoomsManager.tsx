@@ -4,10 +4,12 @@ import { Room, RoomStatus } from '../../types';
 import { 
   BedDouble, DollarSign, Clock, Users, Maximize2, 
   Edit, Check, X, AlertCircle, Plus, Trash2, Upload, Image as ImageIcon, Sparkles,
-  Star, ChevronLeft, ChevronRight, CheckCircle2, ArrowLeft, ArrowRight, FolderOpen
+  Star, ChevronLeft, ChevronRight, CheckCircle2, ArrowLeft, ArrowRight, FolderOpen,
+  Languages, Globe
 } from 'lucide-react';
 import { compressImage } from '../../utils/imageCompressor';
 import { MediaLibraryModal } from './MediaLibraryModal';
+import { getBilingualText, getBilingualList } from '../../utils/bilingual';
 
 export const RoomsManager: React.FC = () => {
   const { rooms, updateRoom, addNewRoom, deleteRoom } = useBookings();
@@ -15,24 +17,35 @@ export const RoomsManager: React.FC = () => {
   const [isAddingRoom, setIsAddingRoom] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
+  const [activeLangTab, setActiveLangTab] = useState<'vi' | 'en'>('vi');
 
-  // Edit form state
+  // Edit form state - Shared fields
   const [editPriceNight, setEditPriceNight] = useState<number>(650000);
   const [editPriceFirst2h, setEditPriceFirst2h] = useState<number>(150000);
   const [editPriceExtra, setEditPriceExtra] = useState<number>(50000);
   const [editStatus, setEditStatus] = useState<RoomStatus>('available');
-  const [editNameVi, setEditNameVi] = useState('');
-  const [editSubtitleVi, setEditSubtitleVi] = useState('');
-  const [editDescVi, setEditDescVi] = useState('');
   const [editAreaSqm, setEditAreaSqm] = useState(18);
-  const [editBedVi, setEditBedVi] = useState('1 Giường Đôi King');
-  const [editViewVi, setEditViewVi] = useState('Cửa sổ đón gió tự nhiên');
-  const [editAmenitiesVi, setEditAmenitiesVi] = useState('Smart TV 50 inch 4K, 2 Giường đôi nệm êm ái, Wifi cáp quang băng thông rộng, Máy lạnh Inverter siêu êm, Phòng tắm nóng lạnh 24/7, Bàn làm việc & Minibar');
   const [editMaxAdults, setEditMaxAdults] = useState(2);
   const [editMaxChildren, setEditMaxChildren] = useState(1);
   const [editTotalInventory, setEditTotalInventory] = useState<number>(4);
   const [editImages, setEditImages] = useState<string[]>([]);
   const [editIsPopular, setEditIsPopular] = useState(false);
+
+  // Edit form state - Vietnamese (VI)
+  const [editNameVi, setEditNameVi] = useState('');
+  const [editSubtitleVi, setEditSubtitleVi] = useState('');
+  const [editDescVi, setEditDescVi] = useState('');
+  const [editBedVi, setEditBedVi] = useState('1 Giường Đôi King');
+  const [editViewVi, setEditViewVi] = useState('Cửa sổ đón gió tự nhiên');
+  const [editAmenitiesVi, setEditAmenitiesVi] = useState('Smart TV 50 inch 4K, 2 Giường đôi nệm êm ái, Wifi cáp quang băng thông rộng, Máy lạnh Inverter siêu êm, Phòng tắm nóng lạnh 24/7, Bàn làm việc & Minibar');
+
+  // Edit form state - English (EN)
+  const [editNameEn, setEditNameEn] = useState('');
+  const [editSubtitleEn, setEditSubtitleEn] = useState('');
+  const [editDescEn, setEditDescEn] = useState('');
+  const [editBedEn, setEditBedEn] = useState('1 King Double Bed');
+  const [editViewEn, setEditViewEn] = useState('Natural Breeze & Light Window');
+  const [editAmenitiesEn, setEditAmenitiesEn] = useState('Smart TV 50 inch 4K, High-speed Wi-Fi, Inverter AC, 24/7 Hot Water Shower, Work Desk & Minibar');
 
   const formatVND = (num: number) => {
     return new Intl.NumberFormat('vi-VN').format(num) + ' ₫';
@@ -41,43 +54,69 @@ export const RoomsManager: React.FC = () => {
   const handleOpenEdit = (room: Room) => {
     setEditingRoom(room);
     setIsAddingRoom(false);
+    setActiveLangTab('vi');
+
+    // Shared
     setEditPriceNight(room.pricePerNight);
     setEditPriceFirst2h(room.priceHourlyFirst2h);
     setEditPriceExtra(room.priceHourlyExtra);
     setEditStatus(room.status || 'available');
-    setEditNameVi(room.name.vi);
-    setEditSubtitleVi(room.subtitle?.vi || '');
-    setEditDescVi(room.description?.vi || '');
     setEditAreaSqm(room.areaSqm);
-    setEditBedVi(room.bedType?.vi || '1 Giường Đôi King');
-    setEditViewVi(room.view?.vi || 'Cửa sổ đón gió tự nhiên');
-    setEditAmenitiesVi(room.amenities?.vi ? room.amenities.vi.join(', ') : 'Máy lạnh Inverter, Smart TV, Wifi riêng, Minibar, Nước nóng 24/7');
     setEditMaxAdults(room.maxAdults);
     setEditMaxChildren(room.maxChildren);
     setEditTotalInventory(room.totalInventory ?? 4);
     setEditImages([...room.images]);
     setEditIsPopular(!!room.isPopular);
+
+    // Vietnamese
+    setEditNameVi(room.name?.vi || (typeof room.name === 'string' ? room.name : ''));
+    setEditSubtitleVi(room.subtitle?.vi || (typeof room.subtitle === 'string' ? room.subtitle : ''));
+    setEditDescVi(room.description?.vi || (typeof room.description === 'string' ? room.description : ''));
+    setEditBedVi(room.bedType?.vi || (typeof room.bedType === 'string' ? room.bedType : '1 Giường Đôi King'));
+    setEditViewVi(room.view?.vi || (typeof room.view === 'string' ? room.view : 'Cửa sổ đón gió tự nhiên'));
+    setEditAmenitiesVi(room.amenities?.vi ? room.amenities.vi.join(', ') : 'Máy lạnh Inverter, Smart TV, Wifi riêng, Minibar, Nước nóng 24/7');
+
+    // English
+    setEditNameEn(room.name?.en || '');
+    setEditSubtitleEn(room.subtitle?.en || '');
+    setEditDescEn(room.description?.en || '');
+    setEditBedEn(room.bedType?.en || '1 King Double Bed');
+    setEditViewEn(room.view?.en || 'Natural Breeze & Light Window');
+    setEditAmenitiesEn(room.amenities?.en ? room.amenities.en.join(', ') : 'Smart TV 50 inch 4K, High-speed Wi-Fi, Inverter AC, 24/7 Hot Water Shower, Minibar');
   };
 
   const handleOpenAdd = () => {
     setIsAddingRoom(true);
     setEditingRoom(null);
-    setEditNameVi('Phòng Mới (VIP Projector)');
-    setEditSubtitleVi('Không gian hiện đại, trang bị máy chiếu xem phim cao cấp');
-    setEditDescVi('Phòng nghỉ sang trọng đầy đủ tiện nghi ngay trung tâm Quận 1.');
+    setActiveLangTab('vi');
+
+    // Shared
     setEditPriceNight(750000);
     setEditPriceFirst2h(180000);
     setEditPriceExtra(60000);
     setEditAreaSqm(20);
-    setEditBedVi('1 Giường Đôi King Size (1.8m x 2.0m)');
-    setEditViewVi('Cửa sổ đón ánh sáng & gió tự nhiên');
-    setEditAmenitiesVi('Smart TV 50 inch 4K, 2 Giường đôi nệm êm ái, Wifi cáp quang băng thông rộng, Máy lạnh Inverter siêu êm, Phòng tắm nóng lạnh 24/7, Bàn làm việc & Minibar');
     setEditMaxAdults(2);
     setEditMaxChildren(1);
     setEditTotalInventory(4);
     setEditStatus('available');
     setEditImages(['/images/rooms/phong-may-chieu.jpg']);
     setEditIsPopular(false);
+
+    // Vietnamese
+    setEditNameVi('Phòng Mới (VIP Projector)');
+    setEditSubtitleVi('Không gian hiện đại, trang bị máy chiếu xem phim cao cấp');
+    setEditDescVi('Phòng nghỉ sang trọng đầy đủ tiện nghi ngay trung tâm Quận 1.');
+    setEditBedVi('1 Giường Đôi King Size (1.8m x 2.0m)');
+    setEditViewVi('Cửa sổ đón ánh sáng & gió tự nhiên');
+    setEditAmenitiesVi('Smart TV 50 inch 4K, 2 Giường đôi nệm êm ái, Wifi cáp quang băng thông rộng, Máy lạnh Inverter siêu êm, Phòng tắm nóng lạnh 24/7, Bàn làm việc & Minibar');
+
+    // English
+    setEditNameEn('New VIP Room (Projector Cinema)');
+    setEditSubtitleEn('Modern private suite equipped with premium cinema projector');
+    setEditDescEn('Luxury room with full modern amenities in District 1 center.');
+    setEditBedEn('1 King Size Bed (1.8m x 2.0m)');
+    setEditViewEn('Natural daylight and breeze window');
+    setEditAmenitiesEn('Smart TV 50 inch 4K, High-speed Wi-Fi, Inverter AC, 24/7 Hot Water Shower, Work Desk & Minibar');
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,10 +128,7 @@ export const RoomsManager: React.FC = () => {
 
     for (const file of files) {
       try {
-        // 1. Client-side compress to ~200KB-300KB HD
         const compressed = await compressImage(file, 1600, 1600, 0.82);
-
-        // 2. Upload compressed file to persistent /uploads/
         const formData = new FormData();
         formData.append('image', compressed.compressedFile);
         const res = await fetch('/api/upload_image.php', {
@@ -155,40 +191,55 @@ export const RoomsManager: React.FC = () => {
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editNameVi.trim()) {
-      alert('Vui lòng nhập tên phòng');
+      alert('Vui lòng nhập tên phòng (Tiếng Việt)');
       return;
     }
 
-    const parsedAmenities = editAmenitiesVi
+    const parsedAmenitiesVi = editAmenitiesVi
       .split(',')
       .map(s => s.trim())
       .filter(Boolean);
 
-    const finalAmenitiesVi = parsedAmenities.length > 0 
-      ? parsedAmenities 
+    const finalAmenitiesVi = parsedAmenitiesVi.length > 0 
+      ? parsedAmenitiesVi 
       : ['Máy lạnh Inverter', 'Smart TV', 'Wifi tốc độ cao', 'Phòng tắm nước nóng 24/7', 'Tủ lạnh minibar'];
+
+    const parsedAmenitiesEn = editAmenitiesEn
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    const finalAmenitiesEn = parsedAmenitiesEn.length > 0
+      ? parsedAmenitiesEn
+      : finalAmenitiesVi;
+
+    const finalNameEn = editNameEn.trim() || editNameVi.trim();
+    const finalSubtitleEn = editSubtitleEn.trim() || editSubtitleVi.trim();
+    const finalDescEn = editDescEn.trim() || editDescVi.trim();
+    const finalBedEn = editBedEn.trim() || editBedVi.trim();
+    const finalViewEn = editViewEn.trim() || editViewVi.trim();
 
     if (isAddingRoom) {
       const newId = 'phong-' + Date.now();
       const newRoom: Room = {
         id: newId,
         slug: newId,
-        name: { vi: editNameVi, en: editNameVi },
-        subtitle: { vi: editSubtitleVi, en: editSubtitleVi },
-        description: { vi: editDescVi, en: editDescVi },
+        name: { vi: editNameVi.trim(), en: finalNameEn },
+        subtitle: { vi: editSubtitleVi.trim(), en: finalSubtitleEn },
+        description: { vi: editDescVi.trim(), en: finalDescEn },
         pricePerNight: Number(editPriceNight),
         priceHourlyFirst2h: Number(editPriceFirst2h),
         priceHourlyExtra: Number(editPriceExtra),
         status: editStatus,
         areaSqm: Number(editAreaSqm),
-        bedType: { vi: editBedVi, en: editBedVi },
-        view: { vi: editViewVi, en: editViewVi },
+        bedType: { vi: editBedVi.trim(), en: finalBedEn },
+        view: { vi: editViewVi.trim(), en: finalViewEn },
         maxAdults: Number(editMaxAdults),
         maxChildren: Number(editMaxChildren),
         totalInventory: Number(editTotalInventory) || 4,
         amenities: {
           vi: finalAmenitiesVi,
-          en: finalAmenitiesVi
+          en: finalAmenitiesEn
         },
         features: {
           vi: ['Miễn phí nước suối hàng ngày', 'Lễ tân phục vụ 24/7', 'Dọn phòng hàng ngày'],
@@ -200,24 +251,24 @@ export const RoomsManager: React.FC = () => {
 
       addNewRoom(newRoom);
       setIsAddingRoom(false);
-      alert('Đã thêm phòng mới thành công và đồng bộ lên website!');
+      alert('Đã thêm phòng mới song ngữ (VIE & EN) thành công!');
     } else if (editingRoom) {
       const updated: Room = {
         ...editingRoom,
-        name: { ...editingRoom.name, vi: editNameVi, en: editingRoom.name?.en || editNameVi },
-        subtitle: { ...editingRoom.subtitle, vi: editSubtitleVi, en: editingRoom.subtitle?.en || editSubtitleVi },
-        description: { ...editingRoom.description, vi: editDescVi, en: editingRoom.description?.en || editDescVi },
+        name: { vi: editNameVi.trim(), en: finalNameEn },
+        subtitle: { vi: editSubtitleVi.trim(), en: finalSubtitleEn },
+        description: { vi: editDescVi.trim(), en: finalDescEn },
         pricePerNight: Number(editPriceNight),
         priceHourlyFirst2h: Number(editPriceFirst2h),
         priceHourlyExtra: Number(editPriceExtra),
         status: editStatus,
         areaSqm: Number(editAreaSqm),
-        bedType: { vi: editBedVi, en: editingRoom.bedType?.en || editBedVi },
-        view: { vi: editViewVi, en: editingRoom.view?.en || editViewVi },
+        bedType: { vi: editBedVi.trim(), en: finalBedEn },
+        view: { vi: editViewVi.trim(), en: finalViewEn },
         totalInventory: Number(editTotalInventory) || 4,
         amenities: {
           vi: finalAmenitiesVi,
-          en: finalAmenitiesVi
+          en: finalAmenitiesEn
         },
         maxAdults: Number(editMaxAdults),
         maxChildren: Number(editMaxChildren),
@@ -227,7 +278,7 @@ export const RoomsManager: React.FC = () => {
 
       updateRoom(updated);
       setEditingRoom(null);
-      alert(`Đã cập nhật thông tin, tiện nghi và hình ảnh cho ${updated.name.vi}!`);
+      alert(`Đã cập nhật thông tin song ngữ cho ${updated.name.vi}!`);
     }
   };
 
@@ -253,11 +304,9 @@ export const RoomsManager: React.FC = () => {
     }
   };
 
-  // Preview amenities array from live input string
-  const currentAmenitiesPreview = editAmenitiesVi
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean);
+  const currentAmenitiesPreview = activeLangTab === 'vi'
+    ? editAmenitiesVi.split(',').map(s => s.trim()).filter(Boolean)
+    : editAmenitiesEn.split(',').map(s => s.trim()).filter(Boolean);
 
   return (
     <div className="space-y-6 animate-fade-in font-sans">
@@ -265,11 +314,15 @@ export const RoomsManager: React.FC = () => {
       {/* Header with Add Room CTA */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm">
         <div>
+          <div className="flex items-center gap-2 text-xs font-bold text-[#8A6943] uppercase tracking-wider mb-1">
+            <Globe className="w-4 h-4" />
+            <span>Hỗ Trợ Quản Lý Song Ngữ (VIE & EN)</span>
+          </div>
           <h2 className="font-sans font-bold text-2xl text-neutral-900 tracking-tight">
             Quản Lý Hạng Phòng, Bảng Giá & Hình Ảnh
           </h2>
           <p className="text-xs text-neutral-500 mt-0.5">
-            Tải ảnh thực tế từ máy tính, chỉnh sửa loại giường, tiện nghi nổi bật, giá theo đêm/theo giờ và trạng thái phòng tức thì
+            Tùy chỉnh thông tin Tiếng Việt & Tiếng Anh, tải ảnh thực tế, cài đặt giá theo đêm/giờ và trạng thái phòng tức thì
           </p>
         </div>
 
@@ -299,7 +352,7 @@ export const RoomsManager: React.FC = () => {
               <div className="relative h-48 w-full overflow-hidden bg-neutral-100">
                 <img
                   src={room.images[0]}
-                  alt={room.name.vi}
+                  alt={room.name?.vi || 'Room photo'}
                   onError={(e) => { e.currentTarget.src = '/images/rooms/phong-a.jpg'; }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
@@ -319,11 +372,18 @@ export const RoomsManager: React.FC = () => {
 
               {/* Content */}
               <div className="p-5">
-                <h3 className="font-sans font-bold text-lg text-neutral-900 mb-1 tracking-tight">
-                  {room.name.vi}
-                </h3>
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <h3 className="font-sans font-bold text-lg text-neutral-900 tracking-tight">
+                    {getBilingualText(room.name, 'vi')}
+                  </h3>
+                  {getBilingualText(room.name, 'en') && (
+                    <span className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 font-bold px-1.5 py-0.5 rounded flex-shrink-0">
+                      EN: {getBilingualText(room.name, 'en')}
+                    </span>
+                  )}
+                </div>
                 <p className="text-gray-500 text-xs line-clamp-1 mb-3">
-                  {room.subtitle?.vi || room.subtitle?.en}
+                  {getBilingualText(room.subtitle, 'vi') || getBilingualText(room.subtitle, 'en')}
                 </p>
 
                 {/* Specs */}
@@ -338,7 +398,7 @@ export const RoomsManager: React.FC = () => {
                   </div>
                   <div>
                     <span className="text-gray-400 block text-[10px]">Giường</span>
-                    <strong className="line-clamp-1 text-[10px]">{room.bedType?.vi}</strong>
+                    <strong className="line-clamp-1 text-[10px]">{getBilingualText(room.bedType, 'vi')}</strong>
                   </div>
                   <div>
                     <span className="text-amber-700 block text-[10px] font-bold">Số Lượng</span>
@@ -347,15 +407,24 @@ export const RoomsManager: React.FC = () => {
                 </div>
 
                 {/* Amenities pills summary */}
-                {room.amenities?.vi && room.amenities.vi.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {room.amenities.vi.map((item, idx) => (
-                      <span key={idx} className="text-[10px] bg-neutral-100 text-neutral-700 px-2 py-0.5 rounded-md font-medium">
-                        ✓ {item}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                {(() => {
+                  const ams = getBilingualList(room.amenities, 'vi');
+                  if (ams.length === 0) return null;
+                  return (
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {ams.slice(0, 4).map((item, idx) => (
+                        <span key={idx} className="text-[10px] bg-neutral-100 text-neutral-700 px-2 py-0.5 rounded-md font-medium">
+                          ✓ {item}
+                        </span>
+                      ))}
+                      {ams.length > 4 && (
+                        <span className="text-[10px] bg-neutral-100 text-neutral-500 px-1.5 py-0.5 rounded-md font-medium">
+                          +{ams.length - 4}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Pricing Badges */}
                 <div className="space-y-1.5 bg-[#FAF9F5] p-3 rounded-xl border border-neutral-100 text-xs">
@@ -382,11 +451,11 @@ export const RoomsManager: React.FC = () => {
                 className="flex-1 py-2.5 px-4 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm"
               >
                 <Edit className="w-3.5 h-3.5 text-[#E8DCB9]" />
-                <span>Sửa Giá, Tiện Nghi & Ảnh</span>
+                <span>Sửa Song Ngữ, Giá & Ảnh</span>
               </button>
 
               <button
-                onClick={() => handleDeleteRoom(room.id, room.name.vi)}
+                onClick={() => handleDeleteRoom(room.id, room.name?.vi || 'Room')}
                 className="p-2.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl transition-colors border border-red-200"
                 title="Xóa phòng này"
               >
@@ -397,7 +466,7 @@ export const RoomsManager: React.FC = () => {
         ))}
       </div>
 
-      {/* Edit / Add Room Modal with Full Customization */}
+      {/* Edit / Add Room Modal with Bilingual Tab Switcher */}
       {(editingRoom || isAddingRoom) && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-backdrop">
           <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-neutral-200 my-4 sm:my-8 animate-modal-pop max-h-[90vh] flex flex-col overflow-hidden">
@@ -406,27 +475,58 @@ export const RoomsManager: React.FC = () => {
             <div className="flex justify-between items-center px-6 sm:px-8 py-5 border-b border-neutral-100 bg-white flex-shrink-0">
               <div>
                 <h3 className="font-sans font-bold text-xl text-neutral-900">
-                  {isAddingRoom ? 'Thêm Hạng Phòng Mới' : `Chỉnh Sửa: ${editingRoom?.name.vi}`}
+                  {isAddingRoom ? 'Thêm Hạng Phòng Mới' : `Chỉnh Sửa: ${editingRoom?.name?.vi || 'Phòng'}`}
                 </h3>
                 <p className="text-xs text-neutral-500 mt-0.5">
-                  Cập nhật ảnh thực tế, tiện nghi, loại giường và bảng giá linh hoạt
+                  Cập nhật song ngữ Tiếng Việt & Tiếng Anh, tiện nghi và bảng giá linh hoạt
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setEditingRoom(null);
-                  setIsAddingRoom(false);
-                }}
-                className="p-2 rounded-full hover:bg-neutral-100 text-neutral-400 hover:text-neutral-700 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+
+              {/* Language Switcher Tabs in Modal Header */}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 p-1 bg-neutral-100 rounded-xl border border-neutral-200">
+                  <button
+                    type="button"
+                    onClick={() => setActiveLangTab('vi')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                      activeLangTab === 'vi'
+                        ? 'bg-white text-neutral-900 shadow-sm border border-neutral-200/80'
+                        : 'text-neutral-500 hover:text-neutral-900'
+                    }`}
+                  >
+                    <span>🇻🇳</span>
+                    <span>VIE</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveLangTab('en')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                      activeLangTab === 'en'
+                        ? 'bg-white text-neutral-900 shadow-sm border border-neutral-200/80'
+                        : 'text-neutral-500 hover:text-neutral-900'
+                    }`}
+                  >
+                    <span>🇬🇧</span>
+                    <span>EN</span>
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingRoom(null);
+                    setIsAddingRoom(false);
+                  }}
+                  className="p-2 rounded-full hover:bg-neutral-100 text-neutral-400 hover:text-neutral-700 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5">
               
-              {/* Photo Upload Section */}
+              {/* Photo Upload Section (Shared for both languages) */}
               <div className="p-4 sm:p-5 rounded-2xl bg-neutral-50 border border-neutral-200 space-y-3.5">
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                   <div>
@@ -547,112 +647,201 @@ export const RoomsManager: React.FC = () => {
                 </div>
               </div>
 
-              {/* Basic Info */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-neutral-700 mb-1">Tên Hạng Phòng *</label>
-                  <input
-                    type="text"
-                    required
-                    value={editNameVi}
-                    onChange={(e) => setEditNameVi(e.target.value)}
-                    placeholder="VD: Phòng Hạng Sang Máy Chiếu VIP"
-                    className="w-full px-3.5 py-2 rounded-xl border border-neutral-300 text-xs font-semibold focus:ring-2 focus:ring-neutral-900"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-neutral-700 mb-1">Trạng Thái Phòng</label>
-                  <select
-                    value={editStatus}
-                    onChange={(e) => setEditStatus(e.target.value as RoomStatus)}
-                    className="w-full px-3.5 py-2 rounded-xl border border-neutral-300 text-xs font-semibold focus:ring-2 focus:ring-neutral-900"
-                  >
-                    <option value="available">● Sẵn sàng (Trống)</option>
-                    <option value="occupied">● Đang có khách</option>
-                    <option value="cleaning">● Đang dọn phòng</option>
-                    <option value="maintenance">● Bảo trì / Khóa</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Subtitle & Bed Type & View */}
-              <div>
-                <label className="block text-xs font-bold text-neutral-700 mb-1">Mô tả ngắn gọn</label>
-                <input
-                  type="text"
-                  value={editSubtitleVi}
-                  onChange={(e) => setEditSubtitleVi(e.target.value)}
-                  placeholder="VD: Không gian ấm cúng, thiết kế hiện đại và tiện nghi hoàn hảo cho 2 người"
-                  className="w-full px-3.5 py-2 rounded-xl border border-neutral-300 text-xs focus:ring-2 focus:ring-neutral-900"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-neutral-700 mb-1">
-                    Loại Giường (Hiển thị thẻ phòng) *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={editBedVi}
-                    onChange={(e) => setEditBedVi(e.target.value)}
-                    placeholder="VD: 2 Giường đôi nệm êm ái hoặc 1 Giường Đôi King"
-                    className="w-full px-3.5 py-2 rounded-xl border border-neutral-300 text-xs font-semibold focus:ring-2 focus:ring-neutral-900"
-                  />
-                  <span className="text-[10px] text-neutral-500 mt-0.5 block">
-                    Khách có thể tùy chỉnh: 1 Giường Đôi, 2 Giường Đôi, 1 King + 1 Đơn, v.v.
+              {/* BILINGUAL LANGUAGE CONTENT AREA */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-white border-2 border-neutral-200 space-y-4 shadow-sm">
+                <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">{activeLangTab === 'vi' ? '🇻🇳' : '🇬🇧'}</span>
+                    <span className="font-bold text-xs uppercase tracking-wider text-neutral-800">
+                      {activeLangTab === 'vi' ? 'Nội Dung Tiếng Việt (VIE)' : 'English Content (EN)'}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-neutral-500 font-medium">
+                    {activeLangTab === 'vi' ? 'Hiển thị khi khách chọn Tiếng Việt' : 'Displayed when guest selects English'}
                   </span>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-neutral-700 mb-1">
-                    Cửa Sổ / Hướng Nhìn
-                  </label>
-                  <input
-                    type="text"
-                    value={editViewVi}
-                    onChange={(e) => setEditViewVi(e.target.value)}
-                    placeholder="VD: Cửa sổ đón gió tự nhiên / Ban công thoáng mát"
-                    className="w-full px-3.5 py-2 rounded-xl border border-neutral-300 text-xs font-semibold focus:ring-2 focus:ring-neutral-900"
-                  />
-                </div>
-              </div>
+                {activeLangTab === 'vi' ? (
+                  /* --- VIETNAMESE FIELDS --- */
+                  <div className="space-y-4 animate-fade-in">
+                    <div>
+                      <label className="block text-xs font-bold text-neutral-700 mb-1">
+                        Tên Hạng Phòng (Tiếng Việt) *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={editNameVi}
+                        onChange={(e) => setEditNameVi(e.target.value)}
+                        placeholder="VD: PHÒNG HẠNG SANG CÓ MÁY CHIẾU"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-semibold focus:ring-2 focus:ring-neutral-900"
+                      />
+                    </div>
 
-              {/* Amenities Section with Real-Time Pill Customization */}
-              <div className="p-4 rounded-2xl bg-[#FAF9F5] border border-neutral-200 space-y-3">
-                <div className="flex justify-between items-center">
-                  <label className="block text-xs font-bold text-neutral-900 uppercase tracking-wider">
-                    Tiện Nghi Nổi Bật Của Phòng (Các Thẻ Tiện Ích)
-                  </label>
-                  <span className="text-[10px] text-[#8A6943] font-bold">
-                    {currentAmenitiesPreview.length} tiện ích
-                  </span>
-                </div>
-                
-                <p className="text-[11px] text-neutral-600">
-                  Nhập các tiện nghi cách nhau bằng dấu phẩy (<strong className="text-neutral-900">,</strong>). Các tiện nghi này sẽ xuất hiện trực tiếp thành các thẻ nổi bật trên website.
-                </p>
+                    <div>
+                      <label className="block text-xs font-bold text-neutral-700 mb-1">
+                        Mô tả ngắn gọn (Tiếng Việt)
+                      </label>
+                      <input
+                        type="text"
+                        value={editSubtitleVi}
+                        onChange={(e) => setEditSubtitleVi(e.target.value)}
+                        placeholder="VD: Không gian ấm cúng, thiết kế hiện đại và tiện nghi hoàn hảo cho 2 người lớn"
+                        className="w-full px-3.5 py-2 rounded-xl border border-neutral-300 text-xs focus:ring-2 focus:ring-neutral-900"
+                      />
+                    </div>
 
-                <textarea
-                  rows={3}
-                  value={editAmenitiesVi}
-                  onChange={(e) => setEditAmenitiesVi(e.target.value)}
-                  placeholder="Smart TV 50 inch 4K, 2 Giường đôi nệm êm ái, Wifi cáp quang băng thông rộng, Máy lạnh Inverter siêu êm, Phòng tắm nóng lạnh 24/7, Bàn làm việc & Minibar"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-medium focus:ring-2 focus:ring-neutral-900 leading-relaxed"
-                />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-700 mb-1">
+                          Loại Giường (Tiếng Việt) *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={editBedVi}
+                          onChange={(e) => setEditBedVi(e.target.value)}
+                          placeholder="VD: 1 Giường Đôi Queen (1.4m x 2.0m)"
+                          className="w-full px-3.5 py-2 rounded-xl border border-neutral-300 text-xs font-semibold focus:ring-2 focus:ring-neutral-900"
+                        />
+                      </div>
 
-                {/* Live Pill Preview */}
-                <div>
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-700 mb-1">
+                          Cửa Sổ / Hướng Nhìn (Tiếng Việt)
+                        </label>
+                        <input
+                          type="text"
+                          value={editViewVi}
+                          onChange={(e) => setEditViewVi(e.target.value)}
+                          placeholder="VD: Cửa sổ đón gió tự nhiên"
+                          className="w-full px-3.5 py-2 rounded-xl border border-neutral-300 text-xs font-semibold focus:ring-2 focus:ring-neutral-900"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-neutral-700 mb-1">
+                        Tiện Nghi Nổi Bật (Tiếng Việt, cách nhau bởi dấu phẩy)
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={editAmenitiesVi}
+                        onChange={(e) => setEditAmenitiesVi(e.target.value)}
+                        placeholder="Smart TV 50 inch 4K, Máy chiếu phim, Wifi riêng, Máy lạnh Inverter, Nước nóng 24/7, Minibar"
+                        className="w-full px-3.5 py-2 rounded-xl border border-neutral-300 text-xs focus:ring-2 focus:ring-neutral-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-neutral-700 mb-1">
+                        Mô tả chi tiết phòng (Tiếng Việt)
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={editDescVi}
+                        onChange={(e) => setEditDescVi(e.target.value)}
+                        placeholder="Mô tả không gian, nội thất, ánh sáng và trải nghiệm nghỉ dưỡng..."
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs focus:ring-2 focus:ring-neutral-900"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  /* --- ENGLISH FIELDS --- */
+                  <div className="space-y-4 animate-fade-in">
+                    <div>
+                      <label className="block text-xs font-bold text-blue-900 mb-1 flex items-center justify-between">
+                        <span>Room Type Name (English) *</span>
+                        <span className="text-[10px] font-normal text-neutral-500">Auto fallback to VIE if blank</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={editNameEn}
+                        onChange={(e) => setEditNameEn(e.target.value)}
+                        placeholder="e.g. Superior Double Room with Projector"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-blue-200 bg-blue-50/30 text-xs font-semibold focus:ring-2 focus:ring-blue-600 focus:bg-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-blue-900 mb-1">
+                        Short Subtitle / Tagline (English)
+                      </label>
+                      <input
+                        type="text"
+                        value={editSubtitleEn}
+                        onChange={(e) => setEditSubtitleEn(e.target.value)}
+                        placeholder="e.g. Cozy space with modern private cinema projector for 2 adults"
+                        className="w-full px-3.5 py-2 rounded-xl border border-blue-200 bg-blue-50/30 text-xs focus:ring-2 focus:ring-blue-600 focus:bg-white"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-blue-900 mb-1">
+                          Bed Type (English)
+                        </label>
+                        <input
+                          type="text"
+                          value={editBedEn}
+                          onChange={(e) => setEditBedEn(e.target.value)}
+                          placeholder="e.g. 1 Queen Double Bed (1.6m x 2.0m)"
+                          className="w-full px-3.5 py-2 rounded-xl border border-blue-200 bg-blue-50/30 text-xs font-semibold focus:ring-2 focus:ring-blue-600 focus:bg-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-blue-900 mb-1">
+                          Window / View (English)
+                        </label>
+                        <input
+                          type="text"
+                          value={editViewEn}
+                          onChange={(e) => setEditViewEn(e.target.value)}
+                          placeholder="e.g. Natural Daylight & Breeze Window"
+                          className="w-full px-3.5 py-2 rounded-xl border border-blue-200 bg-blue-50/30 text-xs font-semibold focus:ring-2 focus:ring-blue-600 focus:bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-blue-900 mb-1">
+                        Key Amenities (English, comma separated)
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={editAmenitiesEn}
+                        onChange={(e) => setEditAmenitiesEn(e.target.value)}
+                        placeholder="Smart TV 50 inch 4K, Home Projector, High-Speed Wi-Fi, Inverter AC, 24/7 Hot Water, Minibar"
+                        className="w-full px-3.5 py-2 rounded-xl border border-blue-200 bg-blue-50/30 text-xs focus:ring-2 focus:ring-blue-600 focus:bg-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-blue-900 mb-1">
+                        Detailed Description (English)
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={editDescEn}
+                        onChange={(e) => setEditDescEn(e.target.value)}
+                        placeholder="Detailed room ambiance, comfort features, interior lighting and hospitality perks..."
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-blue-200 bg-blue-50/30 text-xs focus:ring-2 focus:ring-blue-600 focus:bg-white"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Live Pill Preview for Active Language */}
+                <div className="pt-2 border-t border-neutral-100">
                   <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block mb-1.5">
-                    Xem trước hiển thị trên thẻ phòng:
+                    Xem trước thẻ tiện ích ({activeLangTab.toUpperCase()}):
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {currentAmenitiesPreview.map((item, idx) => (
                       <span
                         key={idx}
-                        className="inline-flex items-center gap-1 text-[11px] bg-white border border-neutral-300 text-neutral-800 px-2.5 py-1 rounded-lg font-medium shadow-xs"
+                        className="inline-flex items-center gap-1 text-[11px] bg-neutral-100 border border-neutral-200 text-neutral-800 px-2.5 py-1 rounded-lg font-medium shadow-2xs"
                       >
                         <Check className="w-3 h-3 text-[#8A6943]" />
                         <span>{item}</span>
@@ -662,23 +851,27 @@ export const RoomsManager: React.FC = () => {
                 </div>
               </div>
 
-              {/* Detailed Description */}
-              <div>
-                <label className="block text-xs font-bold text-neutral-700 mb-1">Mô tả chi tiết phòng</label>
-                <textarea
-                  rows={3}
-                  value={editDescVi}
-                  onChange={(e) => setEditDescVi(e.target.value)}
-                  placeholder="Mô tả không gian, nội thất, ánh sáng và trải nghiệm nghỉ dưỡng..."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs focus:ring-2 focus:ring-neutral-900"
-                />
-              </div>
+              {/* SHARED FIELDS SECTION: Pricing, Specs, Inventory & Status */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#FAF9F5] border border-neutral-200 space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-neutral-200/70">
+                  <span className="font-bold text-xs uppercase tracking-wider text-neutral-800">
+                    ⚙️ Thông Số Chung & Bảng Giá (Dùng Chung Cho Cả 2 Ngôn Ngữ)
+                  </span>
+                  <div className="w-48">
+                    <select
+                      value={editStatus}
+                      onChange={(e) => setEditStatus(e.target.value as RoomStatus)}
+                      className="w-full px-3 py-1.5 rounded-xl border border-neutral-300 text-xs font-bold focus:ring-2 focus:ring-neutral-900"
+                    >
+                      <option value="available">● Sẵn sàng (Trống)</option>
+                      <option value="occupied">● Đang có khách</option>
+                      <option value="cleaning">● Đang dọn phòng</option>
+                      <option value="maintenance">● Bảo trì / Khóa</option>
+                    </select>
+                  </div>
+                </div>
 
-              {/* Pricing section */}
-              <div className="p-4 rounded-2xl bg-[#FAF9F5] border border-neutral-200 space-y-3">
-                <h4 className="text-xs font-bold text-neutral-900 uppercase tracking-wider">
-                  Cấu Hình Bảng Giá (VNĐ)
-                </h4>
+                {/* Pricing section */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="block text-[11px] font-bold text-neutral-600 mb-1">Giá Theo Đêm</label>
@@ -719,11 +912,9 @@ export const RoomsManager: React.FC = () => {
                     />
                   </div>
                 </div>
-              </div>
 
-              {/* Specs: Area, Bed, Guests, Total Inventory */}
-              <div className="space-y-2">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {/* Specs: Area, Bed, Guests, Total Inventory */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
                   <div>
                     <label className="block text-[11px] font-bold text-neutral-700 mb-1.5 truncate">
                       Diện Tích (m²)
@@ -773,23 +964,18 @@ export const RoomsManager: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="text-[10px] text-neutral-500 bg-[#FAF9F5] p-2.5 rounded-xl border border-neutral-200/70 flex items-center gap-1.5">
-                  <span className="text-[#8A6943] font-bold">💡 Lưu ý tồn phòng:</span>
-                  <span>Để tăng/giảm số phòng mở bán hoặc khóa phòng theo từng ngày, hãy vào menu <strong>Sơ Đồ Lịch & Khóa Phòng</strong>.</span>
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="popularCheck"
+                    checked={editIsPopular}
+                    onChange={(e) => setEditIsPopular(e.target.checked)}
+                    className="w-4 h-4 rounded text-neutral-900"
+                  />
+                  <label htmlFor="popularCheck" className="text-xs font-bold text-neutral-800 cursor-pointer">
+                    Đánh dấu là "Hạng Phòng Phổ Biến Nhất"
+                  </label>
                 </div>
-              </div>
-
-              <div className="flex items-center gap-2 pt-2">
-                <input
-                  type="checkbox"
-                  id="popularCheck"
-                  checked={editIsPopular}
-                  onChange={(e) => setEditIsPopular(e.target.checked)}
-                  className="w-4 h-4 rounded text-neutral-900"
-                />
-                <label htmlFor="popularCheck" className="text-xs font-bold text-neutral-800 cursor-pointer">
-                  Đánh dấu là "Hạng Phòng Phổ Biến Nhất"
-                </label>
               </div>
 
               {/* Buttons */}
@@ -809,7 +995,7 @@ export const RoomsManager: React.FC = () => {
                   className="flex-1 py-3 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow"
                 >
                   <Check className="w-4 h-4 text-[#E8DCB9]" />
-                  <span>{isAddingRoom ? 'Lưu & Thêm Phòng Mới' : 'Lưu Thay Đổi Ngay'}</span>
+                  <span>{isAddingRoom ? 'Lưu & Thêm Phòng Mới' : 'Lưu Thay Đổi Song Ngữ'}</span>
                 </button>
               </div>
 
@@ -834,4 +1020,3 @@ export const RoomsManager: React.FC = () => {
     </div>
   );
 };
-

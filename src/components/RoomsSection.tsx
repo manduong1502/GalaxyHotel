@@ -6,6 +6,7 @@ import { Room } from '../types';
 import { roomsData } from '../data/mockData';
 import { isSingleOrDoubleRoom, isGroupOrFamilyRoom } from '../utils/roomClassifier';
 import { Maximize2, Users, Bed, Eye, ArrowUpRight, Check } from 'lucide-react';
+import { getBilingualText, getBilingualList } from '../utils/bilingual';
 
 interface RoomsSectionProps {
   onSelectRoom: (room: Room) => void;
@@ -92,92 +93,98 @@ export const RoomsSection: React.FC<RoomsSectionProps> = ({ onSelectRoom, onBook
 
         {/* Room Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-          {filteredRooms.map((room, idx) => (
-            <div
-              key={room.id}
-              style={{ animationDelay: `${idx * 60}ms` }}
-              className="bg-white rounded-2xl overflow-hidden border border-neutral-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.1)] hover:border-neutral-400/80 transition-all duration-400 flex flex-col justify-between group"
-            >
-              <div>
-                {/* Room Image Container */}
-                <div 
-                  className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-100 cursor-pointer"
-                  onClick={() => onSelectRoom(room)}
-                >
-                  <img
-                    src={(room.images && room.images.length > 0) ? room.images[0] : '/images/rooms/phong-a.jpg'}
-                    alt={room.name?.[lang] || room.name?.vi || 'Phòng Khách Sạn'}
-                    onError={(e) => { e.currentTarget.src = '/images/rooms/phong-a.jpg'; }}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                    loading="lazy"
-                  />
-                  
-                  {/* Subtle Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+          {filteredRooms.map((room, idx) => {
+            const roomName = getBilingualText(room.name, lang);
+            const roomSubtitle = getBilingualText(room.subtitle, lang);
+            const roomBedType = getBilingualText(room.bedType, lang);
+            const roomAmenities = getBilingualList(room.amenities, lang);
 
-                  {/* Badges */}
-                  <div className="absolute top-3.5 left-3.5 flex items-center gap-2">
-                    {room.isPopular && (
-                      <span className="bg-neutral-900 text-white text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded shadow-sm">
-                        {lang === 'vi' ? 'Phổ biến' : 'Popular'}
-                      </span>
-                    )}
+            return (
+              <div
+                key={room.id}
+                style={{ animationDelay: `${idx * 60}ms` }}
+                className="bg-white rounded-2xl overflow-hidden border border-neutral-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.1)] hover:border-neutral-400/80 transition-all duration-400 flex flex-col justify-between group"
+              >
+                <div>
+                  {/* Room Image Container */}
+                  <div 
+                    className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-100 cursor-pointer"
+                    onClick={() => onSelectRoom(room)}
+                  >
+                    <img
+                      src={(room.images && room.images.length > 0) ? room.images[0] : '/images/rooms/phong-a.jpg'}
+                      alt={roomName}
+                      onError={(e) => { e.currentTarget.src = '/images/rooms/phong-a.jpg'; }}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                      loading="lazy"
+                    />
+                    
+                    {/* Subtle Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+
+                    {/* Badges */}
+                    <div className="absolute top-3.5 left-3.5 flex items-center gap-2">
+                      {room.isPopular && (
+                        <span className="bg-neutral-900 text-white text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded shadow-sm">
+                          {lang === 'vi' ? 'Phổ biến' : 'Popular'}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Photo count indicator */}
+                    <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white text-[11px] px-2.5 py-1 rounded font-medium flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
+                      <Eye className="w-3.5 h-3.5 text-[#E8DCB9]" />
+                      <span>{room.images?.length || 1} {lang === 'vi' ? 'ảnh' : 'photos'}</span>
+                    </div>
                   </div>
 
-                  {/* Photo count indicator */}
-                  <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white text-[11px] px-2.5 py-1 rounded font-medium flex items-center gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
-                    <Eye className="w-3.5 h-3.5 text-[#E8DCB9]" />
-                    <span>{room.images?.length || 1} {lang === 'vi' ? 'ảnh' : 'photos'}</span>
-                  </div>
-                </div>
-
-                {/* Content Section */}
-                <div className="p-6">
-                  <div className="flex items-start justify-between gap-2 mb-1.5">
-                    <h3
-                      onClick={() => onSelectRoom(room)}
-                      className="font-serif font-bold text-xl text-neutral-900 hover:text-[#8A6943] transition-colors cursor-pointer leading-tight"
-                    >
-                      {room.name?.[lang] || room.name?.vi}
-                    </h3>
-                  </div>
-
-                  <p className="text-neutral-500 text-xs line-clamp-2 leading-relaxed mb-4">
-                    {room.subtitle?.[lang] || room.subtitle?.vi || ''}
-                  </p>
-
-                  {/* Meta Specs Row */}
-                  <div className="flex flex-wrap items-center gap-y-1.5 gap-x-3 text-xs text-neutral-600 py-3 border-y border-neutral-100 font-medium">
-                    <span className="flex items-center gap-1">
-                      <Maximize2 className="w-3.5 h-3.5 text-[#8A6943]" />
-                      <span>{room.areaSqm} m²</span>
-                    </span>
-                    <span className="text-neutral-300">•</span>
-                    <span className="flex items-center gap-1">
-                      <Users className="w-3.5 h-3.5 text-[#8A6943]" />
-                      <span>{room.maxAdults} {t('rooms.adults_short')}{room.maxChildren > 0 ? `, ${room.maxChildren} ${t('rooms.children_short')}` : ''}</span>
-                    </span>
-                    <span className="text-neutral-300">•</span>
-                    <span className="flex items-center gap-1">
-                      <Bed className="w-3.5 h-3.5 text-[#8A6943]" />
-                      <span className="truncate max-w-[120px]">{(room.bedType?.[lang] || room.bedType?.vi || '1 Giường Đôi').split('(')[0]}</span>
-                    </span>
-                  </div>
-
-                  {/* Amenities highlights */}
-                  <div className="flex flex-wrap gap-1.5 mt-3.5 pt-3 border-t border-neutral-100">
-                    {(room.amenities?.[lang] || room.amenities?.vi || (Array.isArray(room.amenities) ? room.amenities : [])).map((amenity: string, i: number) => (
-                      <span
-                        key={i}
-                        className="inline-flex items-center gap-1 text-[11px] bg-[#FAF9F5] text-neutral-700 px-2 py-0.5 rounded border border-neutral-200/70 font-medium"
+                  {/* Content Section */}
+                  <div className="p-6">
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <h3
+                        onClick={() => onSelectRoom(room)}
+                        className="font-serif font-bold text-xl text-neutral-900 hover:text-[#8A6943] transition-colors cursor-pointer leading-tight"
                       >
-                        <Check className="w-3 h-3 text-[#8A6943]" />
-                        <span>{amenity}</span>
+                        {roomName}
+                      </h3>
+                    </div>
+
+                    <p className="text-neutral-500 text-xs line-clamp-2 leading-relaxed mb-4">
+                      {roomSubtitle}
+                    </p>
+
+                    {/* Meta Specs Row */}
+                    <div className="flex flex-wrap items-center gap-y-1.5 gap-x-3 text-xs text-neutral-600 py-3 border-y border-neutral-100 font-medium">
+                      <span className="flex items-center gap-1">
+                        <Maximize2 className="w-3.5 h-3.5 text-[#8A6943]" />
+                        <span>{room.areaSqm} m²</span>
                       </span>
-                    ))}
+                      <span className="text-neutral-300">•</span>
+                      <span className="flex items-center gap-1">
+                        <Users className="w-3.5 h-3.5 text-[#8A6943]" />
+                        <span>{room.maxAdults} {t('rooms.adults_short')}{room.maxChildren > 0 ? `, ${room.maxChildren} ${t('rooms.children_short')}` : ''}</span>
+                      </span>
+                      <span className="text-neutral-300">•</span>
+                      <span className="flex items-center gap-1">
+                        <Bed className="w-3.5 h-3.5 text-[#8A6943]" />
+                        <span className="truncate max-w-[120px]">{(roomBedType || '1 Giường Đôi').split('(')[0]}</span>
+                      </span>
+                    </div>
+
+                    {/* Amenities highlights */}
+                    <div className="flex flex-wrap gap-1.5 mt-3.5 pt-3 border-t border-neutral-100">
+                      {roomAmenities.map((amenity: string, i: number) => (
+                        <span
+                          key={i}
+                          className="inline-flex items-center gap-1 text-[11px] bg-[#FAF9F5] text-neutral-700 px-2 py-0.5 rounded border border-neutral-200/70 font-medium"
+                        >
+                          <Check className="w-3 h-3 text-[#8A6943]" />
+                          <span>{amenity}</span>
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
 
               {/* Pricing & CTA Buttons */}
               <div className="p-6 pt-0">
@@ -224,8 +231,9 @@ export const RoomsSection: React.FC<RoomsSectionProps> = ({ onSelectRoom, onBook
               </div>
 
             </div>
-          ))}
-        </div>
+          );
+        })}
+      </div>
 
       </div>
     </section>

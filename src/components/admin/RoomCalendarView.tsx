@@ -514,7 +514,7 @@ export const RoomCalendarView: React.FC = () => {
                       {/* Room title & badges */}
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <div className="font-bold text-neutral-900">{room.name.vi}</div>
+                          <div className="font-bold text-neutral-900">{typeof room.name === 'string' ? room.name : (room.name?.vi || room.name?.en || '')}</div>
                           <div className="text-[10px] text-neutral-500">
                             Mặc định: <strong>{defaultTotal} phòng</strong>
                           </div>

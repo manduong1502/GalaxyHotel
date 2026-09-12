@@ -5,6 +5,7 @@ import { Room } from '../types';
 import { roomsData } from '../data/mockData';
 import { X, Calendar as CalendarIcon, Clock, Check, Phone, ArrowRight } from 'lucide-react';
 import { getLocalDateStr, getTomorrowDateStr } from '../utils/dateUtils';
+import { getBilingualText } from '../utils/bilingual';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -251,9 +252,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, selectedRoom
                     ? ` — [${lang === 'vi' ? 'Hết phòng' : 'Full'}]`
                     : ` — [${lang === 'vi' ? `Còn ${avail} phòng` : `${avail} left`}]`;
 
+                  const rName = getBilingualText(room.name, lang);
                   return (
                     <option key={room.id} value={room.id}>
-                      {room.name[lang]} {statusNote} — {formatCurrency(room.pricePerNight)}/đêm
+                      {rName} {statusNote} — {formatCurrency(room.pricePerNight)}/đêm
                     </option>
                   );
                 })}

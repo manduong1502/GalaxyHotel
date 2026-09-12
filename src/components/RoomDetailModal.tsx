@@ -7,6 +7,7 @@ import {
   Maximize2, ShieldCheck, Sparkles, Calendar as CalendarIcon, Lock 
 } from 'lucide-react';
 import { getLocalDateStr } from '../utils/dateUtils';
+import { getBilingualText, getBilingualList } from '../utils/bilingual';
 
 interface RoomDetailModalProps {
   room: Room | null;
@@ -31,6 +32,14 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
   });
 
   if (!room) return null;
+
+  const roomName = getBilingualText(room.name, lang);
+  const roomSubtitle = getBilingualText(room.subtitle, lang);
+  const roomBedType = getBilingualText(room.bedType, lang);
+  const roomView = getBilingualText(room.view, lang);
+  const roomDescription = getBilingualText(room.description, lang);
+  const roomAmenities = getBilingualList(room.amenities, lang);
+  const roomFeatures = getBilingualList(room.features, lang);
 
   const activeSetting = roomLocks.find(
     l => l.roomId === room.id && selectedDateStr >= l.startDate && selectedDateStr <= l.endDate
@@ -94,7 +103,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
         <div className="relative h-72 sm:h-96 w-full bg-neutral-900 overflow-hidden flex-shrink-0">
           <img
             src={room.images[activeImageIndex]}
-            alt={room.name[lang] || room.name.vi}
+            alt={roomName}
             onError={(e) => { e.currentTarget.src = '/images/rooms/phong-a.jpg'; }}
             className="w-full h-full object-cover transition-all duration-500 ease-out"
           />
@@ -157,10 +166,10 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
               </div>
 
               <h2 className="font-serif font-bold text-2xl sm:text-3xl text-neutral-900 mt-1">
-                {room.name?.[lang] || room.name?.vi}
+                {roomName}
               </h2>
               <p className="text-xs sm:text-sm text-neutral-500 mt-1 font-sans">
-                {room.subtitle?.[lang] || room.subtitle?.vi || ''}
+                {roomSubtitle}
               </p>
             </div>
 
@@ -201,14 +210,14 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
               <Bed className="w-4 h-4 text-neutral-700" />
               <div>
                 <span className="text-[10px] text-neutral-400 uppercase block font-semibold">{t('rooms.bed')}</span>
-                <span className="text-xs font-semibold text-neutral-900 truncate">{room.bedType?.[lang] || room.bedType?.vi || '1 Giường Đôi'}</span>
+                <span className="text-xs font-semibold text-neutral-900 truncate">{roomBedType || '1 Giường Đôi'}</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-neutral-700" />
               <div>
                 <span className="text-[10px] text-neutral-400 uppercase block font-semibold">{t('rooms.view')}</span>
-                <span className="text-xs font-semibold text-neutral-900">{room.view?.[lang] || room.view?.vi || 'Cửa sổ tự nhiên'}</span>
+                <span className="text-xs font-semibold text-neutral-900">{roomView || 'Cửa sổ tự nhiên'}</span>
               </div>
             </div>
           </div>
@@ -219,7 +228,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
               {lang === 'vi' ? 'Mô Tả Chi Tiết' : 'Detailed Description'}
             </h3>
             <p className="text-neutral-600 text-xs sm:text-sm leading-relaxed font-sans">
-              {room.description?.[lang] || room.description?.vi || ''}
+              {roomDescription}
             </p>
           </div>
 
@@ -230,7 +239,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
                 {lang === 'vi' ? 'Tiện Nghi Phòng' : 'Room Amenities'}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {(room.amenities?.[lang] || room.amenities?.vi || (Array.isArray(room.amenities) ? room.amenities : [])).map((amenity: string, idx: number) => (
+                {roomAmenities.map((amenity: string, idx: number) => (
                   <div key={idx} className="flex items-center gap-2 text-xs text-neutral-700">
                     <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
                     <span>{amenity}</span>
@@ -244,7 +253,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
                 {lang === 'vi' ? 'Dịch Vụ Kèm Theo' : 'Included Services'}
               </h3>
               <div className="space-y-2">
-                {(room.features?.[lang] || room.features?.vi || ['Miễn phí nước suối hàng ngày', 'Lễ tân 24/7', 'Dọn phòng hàng ngày']).map((feature: string, idx: number) => (
+                {(roomFeatures.length > 0 ? roomFeatures : (lang === 'vi' ? ['Miễn phí nước suối hàng ngày', 'Lễ tân 24/7', 'Dọn phòng hàng ngày'] : ['Free bottled water daily', '24/7 Front Desk', 'Daily housekeeping'])).map((feature: string, idx: number) => (
                   <div key={idx} className="flex items-center gap-2 text-xs text-neutral-800 font-medium bg-[#FAF9F5] p-2.5 rounded-lg border border-neutral-200/60">
                     <span className="text-[#8A6943] font-bold">✓</span>
                     <span>{feature}</span>

@@ -4,6 +4,7 @@ import { useBookings } from '../context/BookingContext';
 import { roomsData } from '../data/mockData';
 import { Calendar as CalendarIcon, Clock, Users, Search, ArrowRight } from 'lucide-react';
 import { getLocalDateStr, getTomorrowDateStr } from '../utils/dateUtils';
+import { getBilingualText } from '../utils/bilingual';
 
 interface BookingBarProps {
   onSearch: (params: {
@@ -187,7 +188,7 @@ export const BookingBar: React.FC<BookingBarProps> = ({ onSearch }) => {
               <option value="all">{lang === 'vi' ? 'Tất cả các hạng phòng' : 'All Room Types'}</option>
               {displayRooms.map((room) => (
                 <option key={room.id} value={room.id}>
-                  {room.name[lang]}
+                  {getBilingualText(room.name, lang)}
                 </option>
               ))}
             </select>

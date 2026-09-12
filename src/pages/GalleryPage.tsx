@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { Home, ChevronRight, Maximize2, X, ChevronLeft, ChevronRight as RightIcon, Heart, Camera } from 'lucide-react';
+import { getBilingualText } from '../utils/bilingual';
 
 interface GalleryPageProps {
   onNavigate: (page: string) => void;
@@ -12,17 +13,17 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onNavigate }) => {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const initialItems = [
-    { id: 1, category: 'checkin', title: 'Check-in nụ cười du khách tại sảnh lễ tân', src: '/images/checkin-1.jpg' },
-    { id: 2, category: 'checkin', title: 'Phòng Hạng Sang Máy Chiếu ấm cúng', src: '/images/welcome-1.jpg' },
-    { id: 3, category: 'spaces', title: 'Sảnh Đón Tiếp & Quầy Thông Tin Tour', src: '/images/hero-1.jpg' },
-    { id: 4, category: 'spaces', title: 'Khu Vực Tiếp Khách & Thư Giãn', src: '/images/facility-1.jpg' },
-    { id: 5, category: 'checkin', title: 'Góc phòng xinh xắn đón nắng sớm', src: '/images/welcome-2.jpg' },
-    { id: 6, category: 'spaces', title: 'Không gian khách sạn ấm cúng về đêm', src: '/images/hero-2.jpg' },
-    { id: 7, category: 'spaces', title: 'Mặt tiền Galaxy Boutique Hotel hẻm 269 Đề Thám', src: '/images/hero-1.jpg' },
-    { id: 8, category: 'checkin', title: 'Khăn tắm & Tiện nghi thơm tho', src: '/images/towels.png' },
+    { id: 1, category: 'checkin', title: { vi: 'Check-in nụ cười du khách tại sảnh lễ tân', en: 'Guest check-in smile at reception' }, src: '/images/checkin-1.jpg' },
+    { id: 2, category: 'checkin', title: { vi: 'Phòng Hạng Sang Máy Chiếu ấm cúng', en: 'Cozy Deluxe Room with Projector' }, src: '/images/welcome-1.jpg' },
+    { id: 3, category: 'spaces', title: { vi: 'Sảnh Đón Tiếp & Quầy Thông Tin Tour', en: 'Reception Lobby & Tour Desk' }, src: '/images/hero-1.jpg' },
+    { id: 4, category: 'spaces', title: { vi: 'Khu Vực Tiếp Khách & Thư Giãn', en: 'Lounge & Relaxation Area' }, src: '/images/facility-1.jpg' },
+    { id: 5, category: 'checkin', title: { vi: 'Góc phòng xinh xắn đón nắng sớm', en: 'Charming room corner bathed in morning sun' }, src: '/images/welcome-2.jpg' },
+    { id: 6, category: 'spaces', title: { vi: 'Không gian khách sạn ấm cúng về đêm', en: 'Cozy Hotel Ambience at Night' }, src: '/images/hero-2.jpg' },
+    { id: 7, category: 'spaces', title: { vi: 'Mặt tiền Galaxy Boutique Hotel hẻm 269 Đề Thám', en: 'Galaxy Boutique Hotel facade on 269 De Tham alley' }, src: '/images/hero-1.jpg' },
+    { id: 8, category: 'checkin', title: { vi: 'Khăn tắm & Tiện nghi thơm tho', en: 'Fresh Towels & Quality Amenities' }, src: '/images/towels.png' },
   ];
 
-  const [galleryItems, setGalleryItems] = useState<{ id: string | number; category: string; title: string; src: string }[]>(() => {
+  const [galleryItems, setGalleryItems] = useState<{ id: string | number; category: string; title: string | { vi: string; en: string }; src: string }[]>(() => {
     try {
       const saved = localStorage.getItem('galaxy_hotel_gallery_photos');
       if (saved) {
@@ -169,36 +170,39 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onNavigate }) => {
       {/* Gallery Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {displayedItems.map((item, index) => (
-            <div
-              key={item.id}
-              onClick={() => openLightbox(index)}
-              className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-neutral-100 shadow-sm hover:shadow-xl border border-neutral-200 transition-all duration-300 cursor-pointer"
-            >
-              <img
-                src={item.src}
-                alt={item.title}
-                onError={(e) => { e.currentTarget.src = '/images/checkin-1.jpg'; }}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5 text-white">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#E8DCB9] block mb-1">
-                      {item.category === 'checkin' ? 'KHOẢNH KHẮC CHECK-IN' : 'KHÔNG GIAN KHÁCH SẠN'}
-                    </span>
-                    <h3 className="font-bold text-sm leading-snug">
-                      {item.title}
-                    </h3>
-                  </div>
-                  <div className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
-                    <Maximize2 className="w-4 h-4 text-white" />
+          {displayedItems.map((item, index) => {
+            const itemTitle = getBilingualText(item.title, lang);
+            return (
+              <div
+                key={item.id}
+                onClick={() => openLightbox(index)}
+                className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-neutral-100 shadow-sm hover:shadow-xl border border-neutral-200 transition-all duration-300 cursor-pointer"
+              >
+                <img
+                  src={item.src}
+                  alt={itemTitle}
+                  onError={(e) => { e.currentTarget.src = '/images/checkin-1.jpg'; }}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5 text-white">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#E8DCB9] block mb-1">
+                        {item.category === 'checkin' ? (lang === 'vi' ? 'KHOẢNH KHẮC CHECK-IN' : 'GUEST CHECK-IN') : (lang === 'vi' ? 'KHÔNG GIAN KHÁCH SẠN' : 'HOTEL SPACES')}
+                      </span>
+                      <h3 className="font-bold text-sm leading-snug">
+                        {itemTitle}
+                      </h3>
+                    </div>
+                    <div className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
+                      <Maximize2 className="w-4 h-4 text-white" />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Load More Button */}
@@ -246,11 +250,11 @@ export const GalleryPage: React.FC<GalleryPageProps> = ({ onNavigate }) => {
           <div className="max-w-4xl max-h-[80vh] flex flex-col items-center">
             <img
               src={filteredItems[lightboxIndex]?.src}
-              alt={filteredItems[lightboxIndex]?.title}
+              alt={getBilingualText(filteredItems[lightboxIndex]?.title, lang)}
               className="max-w-full max-h-[75vh] object-contain rounded-xl shadow-2xl border border-white/10"
             />
             <p className="text-white text-sm font-semibold mt-4 text-center">
-              {filteredItems[lightboxIndex]?.title}
+              {getBilingualText(filteredItems[lightboxIndex]?.title, lang)}
             </p>
           </div>
         </div>

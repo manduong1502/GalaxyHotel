@@ -7,6 +7,7 @@ import {
   Bed, Users, Maximize2, Check, ArrowRight, Calendar, 
   Clock, ShieldCheck, Sparkles, ChevronRight, Home, Filter 
 } from 'lucide-react';
+import { getBilingualText, getBilingualList } from '../utils/bilingual';
 
 interface RoomsPageProps {
   onSelectRoomForDetail: (room: Room) => void;
@@ -134,84 +135,90 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({
       {/* Rooms Catalog Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredRooms.map((room) => (
-            <div
-              key={room.id}
-              className="bg-white rounded-2xl overflow-hidden border border-neutral-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between group"
-            >
-              <div>
-                {/* Photo Image */}
-                <div 
-                  className="relative aspect-[16/10] overflow-hidden bg-neutral-100 cursor-pointer"
-                  onClick={() => onSelectRoomForDetail(room)}
-                >
-                  <img
-                    src={(room.images && room.images.length > 0) ? room.images[0] : '/images/rooms/phong-a.jpg'}
-                    alt={room.name?.[lang] || room.name?.vi || 'Phòng Khách Sạn'}
-                    onError={(e) => { e.currentTarget.src = '/images/rooms/phong-a.jpg'; }}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+          {filteredRooms.map((room) => {
+            const roomName = getBilingualText(room.name, lang);
+            const roomSubtitle = getBilingualText(room.subtitle, lang);
+            const roomBedType = getBilingualText(room.bedType, lang);
+            const roomAmenities = getBilingualList(room.amenities, lang);
 
-                  {/* Badge */}
-                  {room.isPopular && (
-                    <div className="absolute top-3 left-3 bg-neutral-900 text-[#E8DCB9] text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded shadow-sm">
-                      {lang === 'vi' ? 'Phổ Biến Nhất' : 'Most Popular'}
-                    </div>
-                  )}
+            return (
+              <div
+                key={room.id}
+                className="bg-white rounded-2xl overflow-hidden border border-neutral-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between group"
+              >
+                <div>
+                  {/* Photo Image */}
+                  <div 
+                    className="relative aspect-[16/10] overflow-hidden bg-neutral-100 cursor-pointer"
+                    onClick={() => onSelectRoomForDetail(room)}
+                  >
+                    <img
+                      src={(room.images && room.images.length > 0) ? room.images[0] : '/images/rooms/phong-a.jpg'}
+                      alt={roomName}
+                      onError={(e) => { e.currentTarget.src = '/images/rooms/phong-a.jpg'; }}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
 
-                  {/* Quick specs pill on photo */}
-                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs">
-                    <span className="font-semibold">{room.areaSqm} m² • {room.maxAdults} {lang === 'vi' ? 'Khách' : 'Guests'}</span>
-                    <span className="text-[11px] bg-white/20 backdrop-blur-md px-2 py-0.5 rounded font-medium">
-                      {room.images?.length || 1} {lang === 'vi' ? 'ảnh' : 'photos'}
-                    </span>
-                  </div>
-                </div>
+                    {/* Badge */}
+                    {room.isPopular && (
+                      <div className="absolute top-3 left-3 bg-neutral-900 text-[#E8DCB9] text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded shadow-sm">
+                        {lang === 'vi' ? 'Phổ Biến Nhất' : 'Most Popular'}
+                      </div>
+                    )}
 
-                {/* Content */}
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h3 
-                        onClick={() => onSelectRoomForDetail(room)}
-                        className="font-serif font-bold text-xl text-neutral-900 hover:text-[#8A6943] transition-colors cursor-pointer"
-                      >
-                        {room.name?.[lang] || room.name?.vi}
-                      </h3>
-                      <p className="text-xs text-neutral-500 line-clamp-1 mt-0.5">
-                        {room.subtitle?.[lang] || room.subtitle?.vi || ''}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Bed & Capacity Spec */}
-                  <div className="flex items-center gap-4 py-3 border-y border-neutral-100 text-xs text-neutral-600 my-4">
-                    <span className="flex items-center gap-1.5">
-                      <Bed className="w-4 h-4 text-[#8A6943]" />
-                      <span className="truncate max-w-[130px]">{(room.bedType?.[lang] || room.bedType?.vi || '1 Giường Đôi').split('(')[0]}</span>
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <Users className="w-4 h-4 text-[#8A6943]" />
-                      <span>{room.maxAdults} {lang === 'vi' ? 'người lớn' : 'adults'}</span>
-                    </span>
-                  </div>
-
-                  {/* Amenities Highlights */}
-                  <div className="flex flex-wrap gap-1.5 mb-2">
-                    {(room.amenities?.[lang] || room.amenities?.vi || (Array.isArray(room.amenities) ? room.amenities : [])).map((item: string, i: number) => (
-                      <span
-                        key={i}
-                        className="text-[11px] bg-[#FAF9F5] text-neutral-700 px-2.5 py-1 rounded border border-neutral-200/70 flex items-center gap-1"
-                      >
-                        <Check className="w-3 h-3 text-[#8A6943]" />
-                        <span>{item}</span>
+                    {/* Quick specs pill on photo */}
+                    <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs">
+                      <span className="font-semibold">{room.areaSqm} m² • {room.maxAdults} {lang === 'vi' ? 'Khách' : 'Guests'}</span>
+                      <span className="text-[11px] bg-white/20 backdrop-blur-md px-2 py-0.5 rounded font-medium">
+                        {room.images?.length || 1} {lang === 'vi' ? 'ảnh' : 'photos'}
                       </span>
-                    ))}
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h3 
+                          onClick={() => onSelectRoomForDetail(room)}
+                          className="font-serif font-bold text-xl text-neutral-900 hover:text-[#8A6943] transition-colors cursor-pointer"
+                        >
+                          {roomName}
+                        </h3>
+                        <p className="text-xs text-neutral-500 line-clamp-1 mt-0.5">
+                          {roomSubtitle}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Bed & Capacity Spec */}
+                    <div className="flex items-center gap-4 py-3 border-y border-neutral-100 text-xs text-neutral-600 my-4">
+                      <span className="flex items-center gap-1.5">
+                        <Bed className="w-4 h-4 text-[#8A6943]" />
+                        <span className="truncate max-w-[130px]">{(roomBedType || '1 Giường Đôi').split('(')[0]}</span>
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Users className="w-4 h-4 text-[#8A6943]" />
+                        <span>{room.maxAdults} {lang === 'vi' ? 'người lớn' : 'adults'}</span>
+                      </span>
+                    </div>
+
+                    {/* Amenities Highlights */}
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {roomAmenities.map((item: string, i: number) => (
+                        <span
+                          key={i}
+                          className="text-[11px] bg-[#FAF9F5] text-neutral-700 px-2.5 py-1 rounded border border-neutral-200/70 flex items-center gap-1"
+                        >
+                          <Check className="w-3 h-3 text-[#8A6943]" />
+                          <span>{item}</span>
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
 
               {/* Price & Action Bottom */}
               <div className="p-6 pt-0">
@@ -259,8 +266,9 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({
               </div>
 
             </div>
-          ))}
-        </div>
+          );
+        })}
+      </div>
       </div>
 
       {/* Hotel Stay Policies Banner */}
