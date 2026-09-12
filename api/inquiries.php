@@ -20,32 +20,51 @@ $dataDir = __DIR__ . '/data';
 if (!is_dir($dataDir)) {
     @mkdir($dataDir, 0777, true);
 }
-$inquiriesFile = $dataDir . '/inquiries.json';
 
-function loadInquiries($filePath) {
-    if (file_exists($filePath)) {
-        $content = @file_get_contents($filePath);
-        if ($content) {
-            $data = json_decode($content, true);
-            if (is_array($data)) return $data;
+function getPossibleInquiriesFiles() {
+    $webRoot = dirname(__DIR__);
+    return [
+        __DIR__ . '/data/inquiries.json',
+        $webRoot . '/uploads/inquiries.json',
+        __DIR__ . '/inquiries.json'
+    ];
+}
+
+function loadInquiries() {
+    foreach (getPossibleInquiriesFiles() as $filePath) {
+        if (file_exists($filePath)) {
+            $content = @file_get_contents($filePath);
+            if ($content) {
+                $data = json_decode($content, true);
+                if (is_array($data) && count($data) > 0) {
+                    return $data;
+                }
+            }
         }
     }
     return [];
 }
 
-function saveInquiries($filePath, $items) {
-    $dir = dirname($filePath);
-    if (!is_dir($dir)) {
-        @mkdir($dir, 0777, true);
+function saveInquiries($items) {
+    $encoded = json_encode(array_values($items), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    $saved = false;
+    foreach (getPossibleInquiriesFiles() as $filePath) {
+        $dir = dirname($filePath);
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0777, true);
+        }
+        if (@file_put_contents($filePath, $encoded, LOCK_EX) !== false) {
+            $saved = true;
+        }
     }
-    return @file_put_contents($filePath, json_encode(array_values($items), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), LOCK_EX) !== false;
+    return $saved;
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        $inquiries = loadInquiries($inquiriesFile);
+        $inquiries = loadInquiries();
         echo json_encode(['success' => true, 'data' => $inquiries]);
         break;
 
@@ -87,9 +106,9 @@ switch ($method) {
             'createdAt' => $createdAt
         ];
 
-        $inquiries = loadInquiries($inquiriesFile);
+        $inquiries = loadInquiries();
         array_unshift($inquiries, $inquiryItem);
-        saveInquiries($inquiriesFile, $inquiries);
+        saveInquiries($inquiries);
 
         // Gửi email thông báo cho Lễ tân / Admin
         try {
@@ -117,7 +136,7 @@ switch ($method) {
         $status = $input['status'] ?? 'new';
         $notes = isset($input['notes']) ? trim($input['notes']) : null;
 
-        $inquiries = loadInquiries($inquiriesFile);
+        $inquiries = loadInquiries();
         $found = false;
         foreach ($inquiries as &$item) {
             if ($item['id'] === $id) {
@@ -131,7 +150,7 @@ switch ($method) {
         }
 
         if ($found) {
-            saveInquiries($inquiriesFile, $inquiries);
+            saveInquiries($inquiries);
             echo json_encode(['success' => true, 'message' => 'Đã cập nhật trạng thái yêu cầu']);
         } else {
             http_response_code(404);
@@ -153,12 +172,12 @@ switch ($method) {
             exit();
         }
 
-        $inquiries = loadInquiries($inquiriesFile);
-        $filtered = array_filter($inquiries, function($i) use ($id) {
+        $inquiries = loadInquiries();
+        $filtered = array_values(array_filter($inquiries, function($i) use ($id) {
             return $i['id'] !== $id;
-        });
+        }));
 
-        saveInquiries($inquiriesFile, $filtered);
+        saveInquiries($filtered);
         echo json_encode(['success' => true, 'message' => 'Đã xóa yêu cầu thành công']);
         break;
 
