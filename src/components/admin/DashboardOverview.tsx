@@ -1,18 +1,19 @@
 import React from 'react';
 import { useBookings } from '../../context/BookingContext';
 import { BookingRecord } from '../../types';
-import { CalendarCheck, DollarSign, Clock, Users, BedDouble, AlertCircle, ArrowUpRight, CheckCircle2, XCircle } from 'lucide-react';
+import { CalendarCheck, DollarSign, Clock, Users, BedDouble, AlertCircle, ArrowUpRight, CheckCircle2, XCircle, Inbox } from 'lucide-react';
 
 interface DashboardOverviewProps {
   onNavigateToTab: (tab: string) => void;
 }
 
 export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onNavigateToTab }) => {
-  const { bookings, rooms } = useBookings();
+  const { bookings, rooms, inquiries } = useBookings();
 
   // Calculations
   const totalBookings = bookings.length;
   const pendingCount = bookings.filter(b => b.status === 'pending').length;
+  const newInquiriesCount = inquiries ? inquiries.filter(i => i.status === 'new').length : 0;
   const confirmedCount = bookings.filter(b => b.status === 'confirmed' || b.status === 'checked_in').length;
   const today = new Date().toISOString().split('T')[0];
   const todayCheckIns = bookings.filter(b => b.checkInDate === today && b.status !== 'cancelled').length;
@@ -52,30 +53,56 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onNavigate
   return (
     <div className="space-y-8 animate-fade-in">
       
-      {/* Top Banner Alert if pending bookings */}
-      {pendingCount > 0 && (
-        <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold">
-              <AlertCircle className="w-6 h-6" />
+      {/* Top Banner Alert if pending bookings or new inquiries */}
+      <div className="space-y-3">
+        {pendingCount > 0 && (
+          <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold shrink-0">
+                <AlertCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="font-bold text-amber-900 text-sm">
+                  Có {pendingCount} đơn đặt phòng mới đang chờ duyệt!
+                </h4>
+                <p className="text-xs text-amber-800">
+                  Vui lòng kiểm tra và gọi điện xác nhận cho khách hàng sớm nhất.
+                </p>
+              </div>
             </div>
-            <div>
-              <h4 className="font-bold text-amber-900 text-sm">
-                Có {pendingCount} đơn đặt phòng mới đang chờ duyệt!
-              </h4>
-              <p className="text-xs text-amber-800">
-                Vui lòng kiểm tra và gọi điện xác nhận cho khách hàng sớm nhất.
-              </p>
-            </div>
+            <button
+              onClick={() => onNavigateToTab('bookings')}
+              className="btn-magnetic px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider shrink-0"
+            >
+              Duyệt đơn ngay →
+            </button>
           </div>
-          <button
-            onClick={() => onNavigateToTab('bookings')}
-            className="btn-magnetic px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider"
-          >
-            Duyệt ngay →
-          </button>
-        </div>
-      )}
+        )}
+
+        {newInquiriesCount > 0 && (
+          <div className="p-4 rounded-2xl bg-blue-500/15 border border-blue-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shrink-0">
+                <Inbox className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="font-bold text-blue-900 text-sm">
+                  Có {newInquiriesCount} yêu cầu tư vấn đặt phòng mới!
+                </h4>
+                <p className="text-xs text-blue-800">
+                  Khách hàng vừa gửi lời nhắn từ trang web và đang chờ phản hồi.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => onNavigateToTab('inquiries')}
+              className="btn-magnetic px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider shrink-0"
+            >
+              Xem yêu cầu ngay →
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
