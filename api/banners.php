@@ -1,6 +1,7 @@
 <?php
 // =========================================================================
-// GALAXY BOUTIQUE HOTEL - BANNERS & HOMEPAGE VISUALS REST API
+// GALAXY BOUTIQUE HOTEL - BANNERS & HOMEPAGE VISUALS REST API (PURE JSON ENGINE)
+// Lưu trữ độc lập 100% bằng JSON, không phụ thuộc MySQL
 // =========================================================================
 
 header('Access-Control-Allow-Origin: *');
@@ -13,14 +14,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-require_once __DIR__ . '/db.php';
+$dataDir = __DIR__ . '/data';
+if (!is_dir($dataDir)) {
+    @mkdir($dataDir, 0777, true);
+}
 
 // Multi-location persistence paths
 function getPossibleBannersFiles() {
     $webRoot = dirname(__DIR__);
     return [
-        $webRoot . '/uploads/banners.json',
         __DIR__ . '/data/banners.json',
+        $webRoot . '/uploads/banners.json',
         __DIR__ . '/banners.json'
     ];
 }
@@ -32,7 +36,7 @@ function saveBannersJson($data) {
         if (!is_dir($dir)) {
             @mkdir($dir, 0777, true);
         }
-        @file_put_contents($path, $encoded);
+        @file_put_contents($path, $encoded, LOCK_EX);
     }
 }
 
@@ -49,22 +53,6 @@ function loadBannersJson() {
         }
     }
     return null;
-}
-
-// Auto create banners table in MySQL if connected
-if (isset($pdo) && $pdo) {
-    try {
-        $pdo->exec("CREATE TABLE IF NOT EXISTS `homepage_banners` (
-            `id` VARCHAR(50) PRIMARY KEY,
-            `type` VARCHAR(50) NOT NULL DEFAULT 'hero_slide',
-            `image` MEDIUMTEXT NOT NULL,
-            `title` VARCHAR(255),
-            `subtitle` TEXT,
-            `highlight` VARCHAR(100),
-            `sort_order` INT DEFAULT 0,
-            `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
-    } catch (Exception $e) {}
 }
 
 $defaultData = [
@@ -109,35 +97,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     saveBannersJson($data);
-
-    // Save to MySQL if connected
-    if (isset($pdo) && $pdo && isset($data['heroSlides']) && is_array($data['heroSlides'])) {
-        try {
-            $stmt = $pdo->prepare("INSERT INTO `homepage_banners` (`id`, `type`, `image`, `title`, `subtitle`, `highlight`, `sort_order`) 
-                VALUES (:id, :type, :image, :title, :subtitle, :highlight, :sort_order)
-                ON DUPLICATE KEY UPDATE 
-                `type` = VALUES(`type`), 
-                `image` = VALUES(`image`), 
-                `title` = VALUES(`title`), 
-                `subtitle` = VALUES(`subtitle`), 
-                `highlight` = VALUES(`highlight`), 
-                `sort_order` = VALUES(`sort_order`)");
-
-            foreach ($data['heroSlides'] as $idx => $s) {
-                $stmt->execute([
-                    ':id' => $s['id'] ?? ('hero-' . ($idx + 1)),
-                    ':type' => 'hero_slide',
-                    ':image' => $s['image'] ?? '',
-                    ':title' => $s['title'] ?? '',
-                    ':subtitle' => $s['subtitle'] ?? '',
-                    ':highlight' => $s['highlight'] ?? '',
-                    ':sort_order' => $idx
-                ]);
-            }
-        } catch (Exception $e) {
-            error_log('MySQL Banner save error: ' . $e->getMessage());
-        }
-    }
 
     echo json_encode([
         'success' => true,

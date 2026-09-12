@@ -387,7 +387,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     setBookings(prev => [newRecord, ...prev]);
 
-    // 1. Gửi dữ liệu tới PHP REST API (Lưu MySQL và tự động gửi Email qua Gmail SMTP)
+    // 1. Gửi dữ liệu tới PHP REST API (Lưu JSON Flat-File và tự động gửi Email qua Gmail SMTP)
     try {
       fetch('/api/bookings.php', {
         method: 'POST',

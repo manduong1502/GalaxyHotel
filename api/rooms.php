@@ -1,6 +1,7 @@
 <?php
 // =========================================================================
-// GALAXY BOUTIQUE HOTEL - ROOMS & PRICING REST API (FULL CRUD & DUAL-ENGINE)
+// GALAXY BOUTIQUE HOTEL - ROOMS REST API (PURE JSON ENGINE)
+// Lưu trữ và quản lý danh sách phòng độc lập 100% bằng JSON
 // =========================================================================
 
 header('Access-Control-Allow-Origin: *');
@@ -13,65 +14,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-require_once __DIR__ . '/db.php';
-
 $dataDir = __DIR__ . '/data';
 if (!is_dir($dataDir)) {
     @mkdir($dataDir, 0777, true);
-}
-$jsonBackupFile = $dataDir . '/rooms.json';
-
-// Auto create rooms table in MySQL if connected
-if (isset($pdo) && $pdo) {
-    try {
-        $pdo->exec("CREATE TABLE IF NOT EXISTS `rooms` (
-            `id` VARCHAR(50) PRIMARY KEY,
-            `name_vi` VARCHAR(150) NOT NULL,
-            `name_en` VARCHAR(150) DEFAULT '',
-            `slug` VARCHAR(100) NOT NULL,
-            `subtitle_vi` VARCHAR(255) DEFAULT '',
-            `subtitle_en` VARCHAR(255) DEFAULT '',
-            `price_per_night` DECIMAL(12,2) NOT NULL DEFAULT 650000.00,
-            `price_hourly_first2h` DECIMAL(12,2) NOT NULL DEFAULT 150000.00,
-            `price_hourly_extra` DECIMAL(12,2) NOT NULL DEFAULT 50000.00,
-            `max_adults` INT NOT NULL DEFAULT 2,
-            `max_children` INT NOT NULL DEFAULT 1,
-            `area_sqm` INT NOT NULL DEFAULT 18,
-            `bed_type_vi` VARCHAR(150) DEFAULT '1 Giường Đôi',
-            `bed_type_en` VARCHAR(150) DEFAULT '1 Double Bed',
-            `view_vi` VARCHAR(150) DEFAULT '',
-            `view_en` VARCHAR(150) DEFAULT '',
-            `amenities_json` MEDIUMTEXT,
-            `images_json` MEDIUMTEXT,
-            `description_vi` TEXT,
-            `description_en` TEXT,
-            `status` ENUM('available', 'occupied', 'cleaning', 'maintenance') DEFAULT 'available',
-            `is_popular` TINYINT(1) DEFAULT 0,
-            `total_inventory` INT NOT NULL DEFAULT 4,
-            `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
-
-        // Safe auto-migration for existing tables across all MySQL / MariaDB versions
-        $safeAdd = function($col, $def) use ($pdo) {
-            try {
-                $check = $pdo->query("SHOW COLUMNS FROM `rooms` LIKE '$col'");
-                if ($check && $check->rowCount() == 0) {
-                    $pdo->exec("ALTER TABLE `rooms` ADD COLUMN `$col` $def");
-                }
-            } catch (Exception $e) {}
-        };
-
-        $safeAdd('bed_type_vi', "VARCHAR(150) DEFAULT '1 Giường Đôi'");
-        $safeAdd('bed_type_en', "VARCHAR(150) DEFAULT '1 Double Bed'");
-        $safeAdd('view_vi', "VARCHAR(150) DEFAULT ''");
-        $safeAdd('view_en', "VARCHAR(150) DEFAULT ''");
-        $safeAdd('amenities_json', "MEDIUMTEXT");
-        $safeAdd('images_json', "MEDIUMTEXT");
-        $safeAdd('total_inventory', "INT NOT NULL DEFAULT 4");
-
-        try { $pdo->exec("ALTER TABLE `rooms` MODIFY COLUMN `images_json` MEDIUMTEXT"); } catch (Exception $e) {}
-        try { $pdo->exec("ALTER TABLE `rooms` MODIFY COLUMN `amenities_json` MEDIUMTEXT"); } catch (Exception $e) {}
-    } catch (Exception $e) {}
 }
 
 function getPossibleRoomsFiles() {
@@ -84,13 +29,13 @@ function getPossibleRoomsFiles() {
 }
 
 function saveRoomsBackup($roomsList) {
-    $encoded = json_encode($roomsList, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    $encoded = json_encode(array_values($roomsList), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     foreach (getPossibleRoomsFiles() as $path) {
         $dir = dirname($path);
         if (!is_dir($dir)) {
             @mkdir($dir, 0777, true);
         }
-        @file_put_contents($path, $encoded);
+        @file_put_contents($path, $encoded, LOCK_EX);
     }
 }
 
@@ -109,71 +54,7 @@ function loadRoomsBackup() {
     return null;
 }
 
-// Helper: Format MySQL row into full Room object matching TypeScript interface
-function formatRoomRow($row) {
-    $images = !empty($row['images_json']) ? json_decode($row['images_json'], true) : [];
-    if (!is_array($images) || count($images) === 0) {
-        $images = ['/images/rooms/' . $row['id'] . '.jpg'];
-    }
-
-    $amenitiesVi = ['Máy chiếu/Smart TV', 'Máy lạnh Inverter', 'Wifi tốc độ cao', 'Tủ lạnh minibar', 'Nước nóng 24/7', 'Khăn tắm cao cấp'];
-    $amenitiesEn = ['Smart TV/Projector', 'Inverter AC', 'High-Speed Wi-Fi', 'Minibar Fridge', '24/7 Hot Water', 'Premium Towels'];
-    if (!empty($row['amenities_json'])) {
-        $am = json_decode($row['amenities_json'], true);
-        if (isset($am['vi']) && is_array($am['vi'])) {
-            $amenitiesVi = $am['vi'];
-            $amenitiesEn = $am['en'] ?? $am['vi'];
-        } else if (is_array($am)) {
-            $amenitiesVi = $am;
-            $amenitiesEn = $am;
-        }
-    }
-
-    return [
-        'id' => $row['id'],
-        'slug' => $row['slug'] ?? $row['id'],
-        'name' => [
-            'vi' => $row['name_vi'] ?? 'Phòng Khách Sạn Galaxy',
-            'en' => $row['name_en'] ?? ($row['name_vi'] ?? 'Galaxy Boutique Room')
-        ],
-        'subtitle' => [
-            'vi' => $row['subtitle_vi'] ?? '',
-            'en' => $row['subtitle_en'] ?? ($row['subtitle_vi'] ?? '')
-        ],
-        'description' => [
-            'vi' => $row['description_vi'] ?? '',
-            'en' => $row['description_en'] ?? ($row['description_vi'] ?? '')
-        ],
-        'pricePerNight' => (float)($row['price_per_night'] ?? 650000),
-        'priceHourlyFirst2h' => (float)($row['price_hourly_first2h'] ?? 150000),
-        'priceHourlyExtra' => (float)($row['price_hourly_extra'] ?? 50000),
-        'maxAdults' => (int)($row['max_adults'] ?? 2),
-        'maxChildren' => (int)($row['max_children'] ?? 1),
-        'areaSqm' => (int)($row['area_sqm'] ?? 18),
-        'bedType' => [
-            'vi' => $row['bed_type_vi'] ?? '1 Giường Đôi King Size',
-            'en' => $row['bed_type_en'] ?? '1 King Size Double Bed'
-        ],
-        'view' => [
-            'vi' => $row['view_vi'] ?? 'Cửa sổ đón ánh sáng & gió tự nhiên',
-            'en' => $row['view_en'] ?? 'Natural Breeze & Daylight Window'
-        ],
-        'amenities' => [
-            'vi' => $amenitiesVi,
-            'en' => $amenitiesEn
-        ],
-        'features' => [
-            'vi' => ['Nước suối miễn phí mỗi ngày', 'Lễ tân phục vụ 24/7', 'Dọn phòng hàng ngày'],
-            'en' => ['Complimentary bottled water', '24/7 Front desk support', 'Daily housekeeping']
-        ],
-        'images' => array_values($images),
-        'status' => $row['status'] ?? 'available',
-        'isPopular' => !empty($row['is_popular']),
-        'totalInventory' => isset($row['total_inventory']) ? (int)$row['total_inventory'] : 4
-    ];
-}
-
-// Default initial seed rooms (9 Official Hotel Room Types)
+// 9 Hạng phòng chuẩn thực tế của Galaxy Boutique Hotel
 $defaultRoomsSeed = [
     [
         'id' => 'phong-don-tiet-kiem',
@@ -350,16 +231,16 @@ $defaultRoomsSeed = [
         'maxChildren' => 1,
         'areaSqm' => 20,
         'bedType' => ['vi' => '1 Giường Đôi King + 1 Giường Đơn', 'en' => '1 King Bed + 1 Single Bed'],
-        'view' => ['vi' => 'Ban công ngắm phố Quận 1', 'en' => 'District 1 Street View Balcony'],
+        'view' => ['vi' => 'Ban công ngắm phố trung tâm', 'en' => 'Balcony Street View'],
         'amenities' => [
-            'vi' => ['Ban công riêng ngắm phố', 'Máy lạnh Inverter', 'Smart TV', 'Wifi tốc độ cao', 'Tủ lạnh minibar', 'Bàn ghế ban công'],
-            'en' => ['Private Balcony', 'Inverter AC', 'Smart TV', 'High-Speed Wi-Fi', 'Minibar Fridge', 'Balcony Chairs']
+            'vi' => ['Ban công riêng', 'Máy lạnh Inverter', 'Smart TV 43 inch', 'Wifi tốc độ cao', 'Tủ lạnh minibar', 'Phòng tắm đứng', 'Bàn trà'],
+            'en' => ['Private Balcony', 'Inverter AC', '43" Smart TV', 'High-Speed Wi-Fi', 'Minibar', 'Private Shower', 'Tea Table']
         ],
         'features' => [
-            'vi' => ['Ban công thoáng mát ngắm phố', 'Nước suối miễn phí', 'Check-in linh hoạt'],
-            'en' => ['Scenic private balcony', 'Complimentary bottled water', 'Flexible check-in']
+            'vi' => ['Ban công ngắm phố chill', 'Nước suối miễn phí', 'Không gian thoáng sáng'],
+            'en' => ['Chilling balcony view', 'Complimentary water', 'Bright & airy']
         ],
-        'images' => ['/images/rooms/phong-b.jpg', '/images/rooms/phong-ad.jpg'],
+        'images' => ['/images/rooms/phong-b.jpg', '/images/hero-1.jpg'],
         'status' => 'available',
         'isPopular' => true,
         'totalInventory' => 3
@@ -367,53 +248,53 @@ $defaultRoomsSeed = [
     [
         'id' => 'phong-gia-dinh-4-nguoi',
         'slug' => 'phong-gia-dinh-4-nguoi',
-        'name' => ['vi' => 'Phòng Gia Đình 4 Người', 'en' => 'Family Room for 4'],
-        'subtitle' => ['vi' => '2 giường đôi tiêu chuẩn rộng rãi, bố trí tiện nghi khoa học cho gia đình 4 người', 'en' => '2 spacious double beds thoughtfully arranged for a family of 4'],
-        'description' => ['vi' => 'Phòng Gia Đình 4 Người là lựa chọn lý tưởng cho các gia đình có con nhỏ hoặc nhóm 4 bạn du lịch cùng nhau.', 'en' => 'Family Room for 4 is the ideal choice for families with children or a group of 4 friends.'],
-        'pricePerNight' => 900000,
-        'priceHourlyFirst2h' => 350000,
+        'name' => ['vi' => 'Phòng Gia Đình 4 Người (2 Giường Lớn)', 'en' => 'Family Suite 4 Guests (2 Large Beds)'],
+        'subtitle' => ['vi' => 'Không gian rộng rãi 22m², trang bị 2 giường đôi lớn êm ái cho gia đình 4 người', 'en' => 'Spacious 22sqm suite with 2 large double beds for a family of 4'],
+        'description' => ['vi' => 'Phòng Gia Đình 4 Người là lựa chọn tuyệt hảo cho các gia đình có con nhỏ hoặc nhóm 4 người đi du lịch cùng nhau.', 'en' => 'Family Suite is the ideal retreat for families with kids or groups of 4 traveling together.'],
+        'pricePerNight' => 850000,
+        'priceHourlyFirst2h' => 300000,
         'priceHourlyExtra' => 70000,
         'maxAdults' => 4,
-        'maxChildren' => 1,
+        'maxChildren' => 2,
         'areaSqm' => 22,
-        'bedType' => ['vi' => '2 Giường Đôi Queen (1.6m x 2.0m)', 'en' => '2 Queen Beds (1.6m x 2.0m)'],
-        'view' => ['vi' => 'Cửa sổ thông gió mát mẻ', 'en' => 'Fresh Breeze Window'],
+        'bedType' => ['vi' => '2 Giường Đôi Queen (1.6m x 2.0m)', 'en' => '2 Queen Double Beds (1.6m x 2.0m)'],
+        'view' => ['vi' => 'Cửa sổ thoáng mát đón gió', 'en' => 'Breeze & Daylight Window'],
         'amenities' => [
-            'vi' => ['2 Giường đôi êm ái', 'Máy lạnh làm lạnh nhanh', 'Smart TV', 'Wifi riêng biệt', 'Tủ lạnh minibar', 'Phòng tắm đứng'],
-            'en' => ['2 Double Beds', 'Fast Cooling AC', 'Smart TV', 'Dedicated Wi-Fi', 'Minibar Fridge', 'Private Shower']
+            'vi' => ['2 Giường Đôi êm ái', 'Máy lạnh Inverter', 'Smart TV 50 inch', 'Wifi cáp quang', 'Tủ quần áo lớn', 'Tủ lạnh minibar', 'Phòng tắm rộng'],
+            'en' => ['2 Plush Double Beds', 'Inverter AC', '50" Smart TV', 'Fiber Wi-Fi', 'Large Wardrobe', 'Minibar', 'Spacious Bath']
         ],
         'features' => [
-            'vi' => ['Phù hợp gia đình 4 người', 'Nước suối miễn phí', 'Lễ tân 24/7'],
-            'en' => ['Ideal for family of 4', 'Free bottled water', '24/7 Front desk']
+            'vi' => ['Phòng rộng cho cả gia đình', 'Dọn phòng sạch sẽ mỗi ngày', 'Hỗ trợ nhận phòng sớm'],
+            'en' => ['Spacious for whole family', 'Daily housekeeping', 'Early check-in support']
         ],
-        'images' => ['/images/rooms/phong-d.jpg', '/images/rooms/phong-c.jpg'],
+        'images' => ['/images/rooms/phong-c.jpg', '/images/rooms/phong-d.jpg'],
         'status' => 'available',
         'isPopular' => true,
         'totalInventory' => 3
     ],
     [
-        'id' => 'phong-nhom-6-nguoi',
-        'slug' => 'phong-nhom-6-nguoi',
-        'name' => ['vi' => 'Phòng Nhóm 6 Người', 'en' => 'Grand Group Suite for 6'],
-        'subtitle' => ['vi' => 'Không gian gia đình rộng 28m², 3 giường đôi lớn cho tối đa 6 người lưu trú', 'en' => 'Expansive 28sqm suite with 3 large double beds accommodating up to 6 guests'],
-        'description' => ['vi' => 'Phòng Nhóm 6 Người là không gian nghỉ dưỡng tuyệt vời cho đại gia đình hoặc nhóm bạn đi du lịch TP.HCM.', 'en' => 'Grand Group Suite for 6 is the top choice for large families or travel groups.'],
-        'pricePerNight' => 1200000,
-        'priceHourlyFirst2h' => 450000,
+        'id' => 'phong-gia-dinh-5-nguoi',
+        'slug' => 'phong-gia-dinh-5-nguoi',
+        'name' => ['vi' => 'Phòng Đại Gia Đình 5 Người (Cực Rộng)', 'en' => 'Grand Family Suite 5 Guests (Extra Large)'],
+        'subtitle' => ['vi' => 'Phòng lớn nhất 26m² với 2 giường đôi King + sofa/giường phụ, view cửa sổ lớn ngắm phố', 'en' => 'Largest 26sqm suite with 2 King beds + sofa bed, panoramic window view'],
+        'description' => ['vi' => 'Hạng phòng đại gia đình lớn nhất tại khách sạn! Sức chứa lên tới 5 người với đầy đủ tiện nghi sinh hoạt tiện lợi.', 'en' => 'The largest grand family suite at Galaxy Boutique Hotel! Comfortably accommodates 5 guests.'],
+        'pricePerNight' => 950000,
+        'priceHourlyFirst2h' => 350000,
         'priceHourlyExtra' => 80000,
-        'maxAdults' => 6,
+        'maxAdults' => 5,
         'maxChildren' => 2,
-        'areaSqm' => 28,
-        'bedType' => ['vi' => '3 Giường Đôi Tiêu Chuẩn (1.6m x 2.0m)', 'en' => '3 Standard Double Beds (1.6m x 2.0m)'],
-        'view' => ['vi' => 'Cửa sổ lớn toàn cảnh thoáng đãng', 'en' => 'Large Scenic Panoramic Window'],
+        'areaSqm' => 26,
+        'bedType' => ['vi' => '2 Giường King Size (1.8m x 2.0m)', 'en' => '2 King Beds (1.8m x 2.0m)'],
+        'view' => ['vi' => 'Cửa sổ lớn toàn cảnh góc phố', 'en' => 'Panoramic Street Corner View'],
         'amenities' => [
-            'vi' => ['3 Giường đôi lớn cao cấp', 'Smart TV 55 inch 4K', 'Wifi cáp quang tốc độ cao', 'Tủ lạnh lớn', 'Ấm siêu tốc', 'Phòng tắm rộng rãi'],
-            'en' => ['3 Large Luxury Beds', '55" 4K Smart TV', 'Ultra-fast Wi-Fi', 'Large Refrigerator', 'Kettle', 'Spacious Bathroom']
+            'vi' => ['2 Giường King Size', 'Smart TV 55 inch 4K', 'Máy lạnh Inverter công suất lớn', 'Wifi tốc độ cao', 'Tủ lạnh minibar', 'Phòng tắm cao cấp'],
+            'en' => ['2 King Size Beds', '55" 4K Smart TV', 'High-Power Inverter AC', 'High-Speed Wi-Fi', 'Minibar', 'Premium Bath']
         ],
         'features' => [
-            'vi' => ['Không gian rộng rãi cho 6 người', '3 Giường đôi thoải mái', 'Lễ tân 24/7'],
-            'en' => ['Spacious for 6 guests', '3 comfortable double beds', '24/7 Support']
+            'vi' => ['Diện tích lớn nhất khách sạn', 'Cửa sổ lớn view đẹp', 'Tiện nghi cho nhóm đông'],
+            'en' => ['Largest suite in hotel', 'Panoramic window view', 'Full group amenities']
         ],
-        'images' => ['/images/rooms/phong-c.jpg', '/images/rooms/phong-d.jpg'],
+        'images' => ['/images/rooms/phong-d.jpg', '/images/rooms/phong-b.jpg'],
         'status' => 'available',
         'isPopular' => true,
         'totalInventory' => 2
@@ -424,109 +305,11 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        $rooms = [];
-        if (isset($pdo) && $pdo) {
-            try {
-                $stmt = $pdo->query("SELECT * FROM rooms ORDER BY price_per_night DESC");
-                $dbRows = $stmt->fetchAll();
-                
-                // Check if DB has legacy rooms (phong-a, phong-ad, etc.) or has less than 9 rooms
-                $hasLegacy = false;
-                if ($dbRows && count($dbRows) > 0) {
-                    foreach ($dbRows as $r) {
-                        if (in_array($r['id'], ['phong-a', 'phong-ad', 'phong-b', 'phong-c', 'phong-d'])) {
-                            $hasLegacy = true;
-                            break;
-                        }
-                    }
-                }
-                
-                if (!$dbRows || count($dbRows) < 9 || $hasLegacy) {
-                    // Auto-sync official 9 rooms into MySQL
-                    foreach ($defaultRoomsSeed as $seed) {
-                        $sId = $seed['id'];
-                        $sNameVi = $seed['name']['vi'];
-                        $sNameEn = $seed['name']['en'];
-                        $sSlug = $seed['slug'];
-                        $sSubVi = $seed['subtitle']['vi'];
-                        $sSubEn = $seed['subtitle']['en'];
-                        $sDescVi = $seed['description']['vi'];
-                        $sDescEn = $seed['description']['en'];
-                        $sPriceNight = $seed['pricePerNight'];
-                        $sPriceFirst2h = $seed['priceHourlyFirst2h'];
-                        $sPriceExtra = $seed['priceHourlyExtra'];
-                        $sMaxAdults = $seed['maxAdults'];
-                        $sMaxChildren = $seed['maxChildren'];
-                        $sArea = $seed['areaSqm'];
-                        $sBedVi = $seed['bedType']['vi'];
-                        $sBedEn = $seed['bedType']['en'];
-                        $sViewVi = $seed['view']['vi'];
-                        $sViewEn = $seed['view']['en'];
-                        $sAmJson = json_encode($seed['amenities'], JSON_UNESCAPED_UNICODE);
-                        $sImJson = json_encode($seed['images'], JSON_UNESCAPED_UNICODE);
-                        $sStatus = $seed['status'];
-                        $sPop = $seed['isPopular'] ? 1 : 0;
-                        $sInventory = (int)($seed['totalInventory'] ?? 4);
-
-                        $insStmt = $pdo->prepare("INSERT INTO rooms (
-                            id, name_vi, name_en, slug, subtitle_vi, subtitle_en,
-                            price_per_night, price_hourly_first2h, price_hourly_extra,
-                            max_adults, max_children, area_sqm, bed_type_vi, bed_type_en,
-                            view_vi, view_en, amenities_json, description_vi, description_en, images_json, status, is_popular, total_inventory
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        ON DUPLICATE KEY UPDATE
-                            name_vi = VALUES(name_vi),
-                            name_en = VALUES(name_en),
-                            slug = VALUES(slug),
-                            subtitle_vi = VALUES(subtitle_vi),
-                            subtitle_en = VALUES(subtitle_en),
-                            price_per_night = VALUES(price_per_night),
-                            price_hourly_first2h = VALUES(price_hourly_first2h),
-                            price_hourly_extra = VALUES(price_hourly_extra),
-                            max_adults = VALUES(max_adults),
-                            max_children = VALUES(max_children),
-                            area_sqm = VALUES(area_sqm),
-                            bed_type_vi = VALUES(bed_type_vi),
-                            bed_type_en = VALUES(bed_type_en),
-                            view_vi = VALUES(view_vi),
-                            view_en = VALUES(view_en),
-                            description_vi = VALUES(description_vi),
-                            description_en = VALUES(description_en),
-                            total_inventory = VALUES(total_inventory)");
-                        $insStmt->execute([
-                            $sId, $sNameVi, $sNameEn, $sSlug, $sSubVi, $sSubEn,
-                            $sPriceNight, $sPriceFirst2h, $sPriceExtra,
-                            $sMaxAdults, $sMaxChildren, $sArea, $sBedVi, $sBedEn,
-                            $sViewVi, $sViewEn, $sAmJson, $sDescVi, $sDescEn, $sImJson, $sStatus, $sPop, $sInventory
-                        ]);
-                    }
-                    if ($hasLegacy) {
-                        $pdo->exec("DELETE FROM rooms WHERE id IN ('phong-a', 'phong-ad', 'phong-b', 'phong-c', 'phong-d')");
-                    }
-                    $stmt = $pdo->query("SELECT * FROM rooms ORDER BY price_per_night DESC");
-                    $dbRows = $stmt->fetchAll();
-                }
-
-                if ($dbRows && count($dbRows) > 0) {
-                    foreach ($dbRows as $row) {
-                        $rooms[] = formatRoomRow($row);
-                    }
-                    saveRoomsBackup($rooms);
-                }
-            } catch (Exception $e) {}
+        $rooms = loadRoomsBackup();
+        if (!$rooms || count($rooms) === 0) {
+            $rooms = $defaultRoomsSeed;
+            saveRoomsBackup($rooms);
         }
-
-        // If DB had no rows or failed, try backup file
-        if (empty($rooms)) {
-            $backup = loadRoomsBackup();
-            if ($backup && count($backup) > 0) {
-                $rooms = $backup;
-            } else {
-                $rooms = $defaultRoomsSeed;
-                saveRoomsBackup($rooms);
-            }
-        }
-
         echo json_encode(['success' => true, 'data' => $rooms]);
         break;
 
@@ -541,96 +324,15 @@ switch ($method) {
         }
 
         $id = trim($input['id']);
-        $nameVi = is_array($input['name'] ?? null) ? ($input['name']['vi'] ?? '') : ($input['name'] ?? '');
-        $nameEn = is_array($input['name'] ?? null) ? ($input['name']['en'] ?? $nameVi) : $nameVi;
-        $slug = $input['slug'] ?? $id;
-        $subtitleVi = is_array($input['subtitle'] ?? null) ? ($input['subtitle']['vi'] ?? '') : ($input['subtitle'] ?? '');
-        $subtitleEn = is_array($input['subtitle'] ?? null) ? ($input['subtitle']['en'] ?? $subtitleVi) : $subtitleVi;
-        $descVi = is_array($input['description'] ?? null) ? ($input['description']['vi'] ?? '') : ($input['description'] ?? '');
-        $descEn = is_array($input['description'] ?? null) ? ($input['description']['en'] ?? $descVi) : $descVi;
-        
-        $priceNight = (float)($input['pricePerNight'] ?? 650000);
-        $priceFirst2h = (float)($input['priceHourlyFirst2h'] ?? 150000);
-        $priceExtra = (float)($input['priceHourlyExtra'] ?? 50000);
-        $maxAdults = (int)($input['maxAdults'] ?? 2);
-        $maxChildren = (int)($input['maxChildren'] ?? 1);
-        $areaSqm = (int)($input['areaSqm'] ?? 18);
-        $bedTypeVi = is_array($input['bedType'] ?? null) ? ($input['bedType']['vi'] ?? '') : ($input['bedType'] ?? '1 Giường Đôi');
-        $bedTypeEn = is_array($input['bedType'] ?? null) ? ($input['bedType']['en'] ?? $bedTypeVi) : $bedTypeVi;
-        $viewVi = is_array($input['view'] ?? null) ? ($input['view']['vi'] ?? '') : ($input['view'] ?? 'Cửa sổ đón gió tự nhiên');
-        $viewEn = is_array($input['view'] ?? null) ? ($input['view']['en'] ?? $viewVi) : $viewVi;
-        $imagesJson = json_encode(array_values(is_array($input['images'] ?? null) ? $input['images'] : []), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        
-        // Amenities JSON formatting
-        $amenitiesObj = ['vi' => [], 'en' => []];
-        if (isset($input['amenities'])) {
-            if (isset($input['amenities']['vi']) && is_array($input['amenities']['vi'])) {
-                $amenitiesObj['vi'] = $input['amenities']['vi'];
-                $amenitiesObj['en'] = $input['amenities']['en'] ?? $input['amenities']['vi'];
-            } elseif (is_array($input['amenities'])) {
-                $amenitiesObj['vi'] = $input['amenities'];
-                $amenitiesObj['en'] = $input['amenities'];
-            }
-        }
-        $amenitiesJson = json_encode($amenitiesObj, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        
-        $status = $input['status'] ?? 'available';
-        $isPopular = !empty($input['isPopular']) ? 1 : 0;
-        $totalInventory = (int)($input['totalInventory'] ?? 4);
-
-        if (isset($pdo) && $pdo) {
-            try {
-                $sql = "INSERT INTO rooms (
-                    id, name_vi, name_en, slug, subtitle_vi, subtitle_en,
-                    price_per_night, price_hourly_first2h, price_hourly_extra,
-                    max_adults, max_children, area_sqm, bed_type_vi, bed_type_en,
-                    view_vi, view_en, amenities_json, description_vi, description_en, images_json, status, is_popular, total_inventory
-                ) VALUES (
-                    ?, ?, ?, ?, ?, ?,
-                    ?, ?, ?,
-                    ?, ?, ?, ?, ?,
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?
-                ) ON DUPLICATE KEY UPDATE
-                    name_vi = VALUES(name_vi),
-                    name_en = VALUES(name_en),
-                    subtitle_vi = VALUES(subtitle_vi),
-                    subtitle_en = VALUES(subtitle_en),
-                    description_vi = VALUES(description_vi),
-                    description_en = VALUES(description_en),
-                    price_per_night = VALUES(price_per_night),
-                    price_hourly_first2h = VALUES(price_hourly_first2h),
-                    price_hourly_extra = VALUES(price_hourly_extra),
-                    max_adults = VALUES(max_adults),
-                    max_children = VALUES(max_children),
-                    area_sqm = VALUES(area_sqm),
-                    bed_type_vi = VALUES(bed_type_vi),
-                    bed_type_en = VALUES(bed_type_en),
-                    view_vi = VALUES(view_vi),
-                    view_en = VALUES(view_en),
-                    amenities_json = VALUES(amenities_json),
-                    images_json = VALUES(images_json),
-                    status = VALUES(status),
-                    is_popular = VALUES(is_popular),
-                    total_inventory = VALUES(total_inventory)";
-
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute([
-                    $id, $nameVi, $nameEn, $slug, $subtitleVi, $subtitleEn,
-                    $priceNight, $priceFirst2h, $priceExtra,
-                    $maxAdults, $maxChildren, $areaSqm, $bedTypeVi, $bedTypeEn,
-                    $viewVi, $viewEn, $amenitiesJson, $descVi, $descEn, $imagesJson, $status, $isPopular, $totalInventory
-                ]);
-            } catch (Exception $e) {
-                // error logged
-            }
+        $currentList = loadRoomsBackup();
+        if (!$currentList || count($currentList) === 0) {
+            $currentList = $defaultRoomsSeed;
         }
 
-        // Also update JSON backup
-        $currentList = loadRoomsBackup() ?: [];
         $found = false;
         foreach ($currentList as &$r) {
             if ($r['id'] === $id) {
-                $r = $input;
+                $r = array_merge($r, $input);
                 $found = true;
                 break;
             }
@@ -638,6 +340,7 @@ switch ($method) {
         if (!$found) {
             $currentList[] = $input;
         }
+
         saveRoomsBackup($currentList);
 
         echo json_encode([
@@ -661,19 +364,13 @@ switch ($method) {
             exit();
         }
 
-        if (isset($pdo) && $pdo) {
-            try {
-                $stmt = $pdo->prepare("DELETE FROM rooms WHERE id = ?");
-                $stmt->execute([$id]);
-            } catch (Exception $e) {}
+        $currentList = loadRoomsBackup();
+        if ($currentList) {
+            $currentList = array_values(array_filter($currentList, function($r) use ($id) {
+                return $r['id'] !== $id;
+            }));
+            saveRoomsBackup($currentList);
         }
-
-        // Update backup
-        $currentList = loadRoomsBackup() ?: [];
-        $currentList = array_values(array_filter($currentList, function($r) use ($id) {
-            return $r['id'] !== $id;
-        }));
-        saveRoomsBackup($currentList);
 
         echo json_encode(['success' => true, 'message' => 'Đã xóa hạng phòng thành công']);
         break;

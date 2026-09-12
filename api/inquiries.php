@@ -1,6 +1,7 @@
 <?php
 // =========================================================================
-// GALAXY BOUTIQUE HOTEL - INQUIRIES & CONTACTS REST API (MYSQL + JSON)
+// GALAXY BOUTIQUE HOTEL - INQUIRIES REST API (PURE JSON ENGINE)
+// Lưu trữ độc lập 100% bằng JSON, không phụ thuộc MySQL
 // =========================================================================
 
 header('Access-Control-Allow-Origin: *');
@@ -13,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/mailer.php';
 
 $dataDir = __DIR__ . '/data';
@@ -22,43 +22,7 @@ if (!is_dir($dataDir)) {
 }
 $inquiriesFile = $dataDir . '/inquiries.json';
 
-// Auto create inquiries table in MySQL if connected
-if (isset($pdo) && $pdo) {
-    try {
-        $pdo->exec("CREATE TABLE IF NOT EXISTS `inquiries` (
-            `id` VARCHAR(50) PRIMARY KEY,
-            `full_name` VARCHAR(150) NOT NULL,
-            `phone` VARCHAR(50) NOT NULL,
-            `email` VARCHAR(150) DEFAULT '',
-            `check_in_date` DATE DEFAULT NULL,
-            `check_out_date` DATE DEFAULT NULL,
-            `room_type` VARCHAR(150) DEFAULT '',
-            `guests_count` INT DEFAULT 1,
-            `message` TEXT NOT NULL,
-            `status` VARCHAR(50) NOT NULL DEFAULT 'new',
-            `notes` TEXT,
-            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
-
-        $safeAdd = function($col, $def) use ($pdo) {
-            try {
-                $check = $pdo->query("SHOW COLUMNS FROM `inquiries` LIKE '$col'");
-                if ($check && $check->rowCount() == 0) {
-                    $pdo->exec("ALTER TABLE `inquiries` ADD COLUMN `$col` $def");
-                }
-            } catch (Exception $e) {}
-        };
-        $safeAdd('notes', 'TEXT');
-        $safeAdd('status', "VARCHAR(50) NOT NULL DEFAULT 'new'");
-        $safeAdd('email', "VARCHAR(150) DEFAULT ''");
-        $safeAdd('check_in_date', 'DATE DEFAULT NULL');
-        $safeAdd('check_out_date', 'DATE DEFAULT NULL');
-        $safeAdd('room_type', "VARCHAR(150) DEFAULT ''");
-        $safeAdd('guests_count', 'INT DEFAULT 1');
-    } catch (Exception $e) {}
-}
-
-function loadInquiriesBackup($filePath) {
+function loadInquiries($filePath) {
     if (file_exists($filePath)) {
         $content = @file_get_contents($filePath);
         if ($content) {
@@ -69,66 +33,19 @@ function loadInquiriesBackup($filePath) {
     return [];
 }
 
-function saveInquiriesBackup($filePath, $items) {
-    @file_put_contents($filePath, json_encode(array_values($items), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+function saveInquiries($filePath, $items) {
+    $dir = dirname($filePath);
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0777, true);
+    }
+    return @file_put_contents($filePath, json_encode(array_values($items), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), LOCK_EX) !== false;
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        $inquiries = [];
-        if (isset($pdo) && $pdo) {
-            try {
-                $stmt = $pdo->query("SELECT * FROM inquiries ORDER BY created_at DESC");
-                $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                foreach ($rows as $row) {
-                    $inquiries[] = [
-                        'id' => $row['id'],
-                        'fullName' => $row['full_name'],
-                        'phone' => $row['phone'],
-                        'email' => $row['email'] ?? '',
-                        'checkInDate' => $row['check_in_date'] ?? '',
-                        'checkOutDate' => $row['check_out_date'] ?? '',
-                        'roomType' => $row['room_type'] ?? '',
-                        'guestsCount' => (int)($row['guests_count'] ?? 1),
-                        'message' => $row['message'] ?? '',
-                        'status' => $row['status'] ?? 'new',
-                        'notes' => $row['notes'] ?? '',
-                        'createdAt' => $row['created_at'] ?? ''
-                    ];
-                }
-                if (count($inquiries) > 0) {
-                    saveInquiriesBackup($inquiriesFile, $inquiries);
-                } else {
-                    $backup = loadInquiriesBackup($inquiriesFile);
-                    if (count($backup) > 0) {
-                        $inquiries = $backup;
-                        foreach ($backup as $item) {
-                            try {
-                                $ins = $pdo->prepare("INSERT INTO inquiries 
-                                    (id, full_name, phone, email, check_in_date, check_out_date, room_type, guests_count, message, status, notes, created_at)
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                                    ON DUPLICATE KEY UPDATE status = VALUES(status), notes = VALUES(notes)");
-                                $ins->execute([
-                                    $item['id'], $item['fullName'], $item['phone'], $item['email'] ?? '',
-                                    !empty($item['checkInDate']) ? $item['checkInDate'] : null, 
-                                    !empty($item['checkOutDate']) ? $item['checkOutDate'] : null,
-                                    $item['roomType'] ?? '', $item['guestsCount'] ?? 1,
-                                    $item['message'] ?? '', $item['status'] ?? 'new', $item['notes'] ?? '',
-                                    $item['createdAt'] ?? date('Y-m-d H:i:s')
-                                ]);
-                            } catch (Exception $e) {}
-                        }
-                    }
-                }
-            } catch (Exception $e) {
-                $inquiries = loadInquiriesBackup($inquiriesFile);
-            }
-        } else {
-            $inquiries = loadInquiriesBackup($inquiriesFile);
-        }
-
+        $inquiries = loadInquiries($inquiriesFile);
         echo json_encode(['success' => true, 'data' => $inquiries]);
         break;
 
@@ -146,14 +63,14 @@ switch ($method) {
         $fullName = trim($input['fullName'] ?? $input['name'] ?? 'Khách hàng');
         $phone = trim($input['phone'] ?? $input['guestPhone'] ?? '');
         $email = trim($input['email'] ?? $input['guestEmail'] ?? '');
-        $checkInDate = !empty($input['checkInDate']) ? trim($input['checkInDate']) : null;
-        $checkOutDate = !empty($input['checkOutDate']) ? trim($input['checkOutDate']) : null;
+        $checkInDate = !empty($input['checkInDate']) ? trim($input['checkInDate']) : '';
+        $checkOutDate = !empty($input['checkOutDate']) ? trim($input['checkOutDate']) : '';
         $roomType = trim($input['roomType'] ?? $input['roomName'] ?? '');
         $guestsCount = (int)($input['guestsCount'] ?? $input['adults'] ?? 1);
-        $message = trim($input['message'] ?? $input['specialRequests'] ?? 'Yêu cầu tư vấn đặt phòng');
+        $message = trim($input['message'] ?? $input['specialRequests'] ?? 'Yêu cầu tư vấn qua website');
         $status = $input['status'] ?? 'new';
         $notes = trim($input['notes'] ?? '');
-        $createdAt = date('Y-m-d H:i:s');
+        $createdAt = !empty($input['createdAt']) ? $input['createdAt'] : date('Y-m-d H:i:s');
 
         $inquiryItem = [
             'id' => $id,
@@ -170,24 +87,11 @@ switch ($method) {
             'createdAt' => $createdAt
         ];
 
-        if (isset($pdo) && $pdo) {
-            try {
-                $stmt = $pdo->prepare("INSERT INTO inquiries 
-                    (id, full_name, phone, email, check_in_date, check_out_date, room_type, guests_count, message, status, notes, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([
-                    $id, $fullName, $phone, $email, 
-                    $checkInDate, $checkOutDate, $roomType, $guestsCount, 
-                    $message, $status, $notes, $createdAt
-                ]);
-            } catch (Exception $e) {}
-        }
+        $inquiries = loadInquiries($inquiriesFile);
+        array_unshift($inquiries, $inquiryItem);
+        saveInquiries($inquiriesFile, $inquiries);
 
-        $backup = loadInquiriesBackup($inquiriesFile);
-        array_unshift($backup, $inquiryItem);
-        saveInquiriesBackup($inquiriesFile, $backup);
-
-        // Send email notification to hotel admin/reception
+        // Gửi email thông báo cho Lễ tân / Admin
         try {
             sendInquiryNotificationEmail($inquiryItem);
         } catch (Exception $e) {}
@@ -211,26 +115,28 @@ switch ($method) {
 
         $id = trim($input['id']);
         $status = $input['status'] ?? 'new';
-        $notes = trim($input['notes'] ?? '');
+        $notes = isset($input['notes']) ? trim($input['notes']) : null;
 
-        if (isset($pdo) && $pdo) {
-            try {
-                $stmt = $pdo->prepare("UPDATE inquiries SET status = ?, notes = ? WHERE id = ?");
-                $stmt->execute([$status, $notes, $id]);
-            } catch (Exception $e) {}
-        }
-
-        $backup = loadInquiriesBackup($inquiriesFile);
-        foreach ($backup as &$item) {
+        $inquiries = loadInquiries($inquiriesFile);
+        $found = false;
+        foreach ($inquiries as &$item) {
             if ($item['id'] === $id) {
                 $item['status'] = $status;
-                $item['notes'] = $notes;
+                if ($notes !== null) {
+                    $item['notes'] = $notes;
+                }
+                $found = true;
                 break;
             }
         }
-        saveInquiriesBackup($inquiriesFile, $backup);
 
-        echo json_encode(['success' => true, 'message' => 'Cập nhật trạng thái yêu cầu thành công']);
+        if ($found) {
+            saveInquiries($inquiriesFile, $inquiries);
+            echo json_encode(['success' => true, 'message' => 'Đã cập nhật trạng thái yêu cầu']);
+        } else {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'message' => 'Không tìm thấy yêu cầu']);
+        }
         break;
 
     case 'DELETE':
@@ -247,20 +153,13 @@ switch ($method) {
             exit();
         }
 
-        if (isset($pdo) && $pdo) {
-            try {
-                $stmt = $pdo->prepare("DELETE FROM inquiries WHERE id = ?");
-                $stmt->execute([$id]);
-            } catch (Exception $e) {}
-        }
+        $inquiries = loadInquiries($inquiriesFile);
+        $filtered = array_filter($inquiries, function($i) use ($id) {
+            return $i['id'] !== $id;
+        });
 
-        $backup = loadInquiriesBackup($inquiriesFile);
-        $backup = array_values(array_filter($backup, function($item) use ($id) {
-            return $item['id'] !== $id;
-        }));
-        saveInquiriesBackup($inquiriesFile, $backup);
-
-        echo json_encode(['success' => true, 'message' => 'Xóa yêu cầu thành công']);
+        saveInquiries($inquiriesFile, $filtered);
+        echo json_encode(['success' => true, 'message' => 'Đã xóa yêu cầu thành công']);
         break;
 
     default:

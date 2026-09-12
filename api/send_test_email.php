@@ -4,7 +4,6 @@
 // Kiểm tra khả năng gửi email từ hosting cPanel AZDIGI
 // =========================================================================
 
-require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/mailer.php';
 
 $method = $_SERVER['REQUEST_METHOD'];

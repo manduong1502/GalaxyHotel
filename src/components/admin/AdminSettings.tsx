@@ -207,7 +207,7 @@ export const AdminSettings: React.FC = () => {
           Cài Đặt Hệ Thống & Tích Hợp
         </h2>
         <p className="text-xs text-neutral-500 mt-0.5">
-          Cấu hình sao lưu song song Google Sheets, MySQL Database và bảo mật tài khoản
+          Cấu hình sao lưu Google Sheets, Hệ thống lưu trữ dữ liệu JSON độc lập và bảo mật tài khoản
         </p>
       </div>
 
@@ -409,36 +409,52 @@ export const AdminSettings: React.FC = () => {
         )}
       </div>
 
-      {/* MySQL Connection Status */}
+      {/* JSON Flat-File Storage Engine Status */}
       <div className="bg-white p-6 sm:p-8 rounded-2xl border border-neutral-200 shadow-sm space-y-4">
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center flex-shrink-0">
             <Database className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="font-sans font-bold text-xl text-neutral-900 tracking-tight">
-              Cơ Sở Dữ Liệu MySQL (Hosting AZDIGI cPanel)
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-sans font-bold text-xl text-neutral-900 tracking-tight">
+                Hệ Thống Lưu Trữ Dữ Liệu (JSON Flat-File Engine)
+              </h3>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                Đang Hoạt Động 100%
+              </span>
+            </div>
             <p className="text-xs text-neutral-500 mt-1 font-sans">
-              File schema SQL đã được tạo sẵn tại <code className="bg-neutral-100 px-1.5 py-0.5 rounded text-neutral-900 font-bold">api/schema.sql</code>.
+              Dữ liệu được lưu trữ tự động dạng tệp JSON tại thư mục <code className="bg-neutral-100 px-1.5 py-0.5 rounded text-neutral-900 font-bold">api/data/</code>, an toàn tuyệt đối và không phụ thuộc MySQL.
             </p>
           </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200 text-xs space-y-2 font-sans">
+        <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200 text-xs space-y-2.5 font-sans">
           <div className="flex items-center justify-between">
-            <span className="text-neutral-500">Môi trường hiện tại:</span>
+            <span className="text-neutral-500">Cơ chế lưu trữ:</span>
             <span className="font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-              ● Hybrid LocalStorage + REST API Ready
+              ● Độc lập 100% (Zero MySQL Setup)
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-neutral-500">Hỗ trợ hosting:</span>
-            <span className="font-semibold text-neutral-800">cPanel AZDIGI / DirectAdmin / VPS Linux</span>
+            <span className="text-neutral-500">Tệp dữ liệu đang quản lý:</span>
+            <span className="font-semibold text-neutral-800">rooms.json, inquiries.json, bookings.json, room_locks.json, banners.json, gallery.json, services.json</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-neutral-500">File kết nối DB:</span>
-            <span className="font-mono text-neutral-800">api/db.php</span>
+            <span className="text-neutral-500">Hỗ trợ hosting:</span>
+            <span className="font-semibold text-neutral-800">Tất cả hosting PHP / cPanel AZDIGI / DirectAdmin / VPS</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-neutral-500">Kiểm tra chẩn đoán hệ thống:</span>
+            <a 
+              href="/api/diag.php" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="font-mono text-blue-600 hover:text-blue-800 font-bold underline"
+            >
+              /api/diag.php ↗
+            </a>
           </div>
         </div>
       </div>

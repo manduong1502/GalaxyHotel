@@ -1,0 +1,29 @@
+{
+  "heroSlides": [
+    {
+      "id": "hero-1",
+      "image": "/images/hero-1.jpg",
+      "title": "Không Gian Ấm Cúng, Tiện Nghi & Riêng Tư",
+      "subtitle": "Khách sạn boutique chuẩn mực tại trung tâm Quận 1 Sài Gòn, chỉ cách Phố đi bộ Bùi Viện vài bước chân.",
+      "highlight": "SẠCH SẼ & ẤM CÚNG"
+    },
+    {
+      "id": "hero-2",
+      "image": "/images/hero-2.jpg",
+      "title": "Phòng Nghỉ Tiêu Chuẩn & Phòng Gia Đình Rộng Rãi",
+      "subtitle": "Trang bị đầy đủ Smart TV, máy lạnh êm ái, wifi tốc độ cao và phòng tắm riêng hiện đại.",
+      "highlight": "TIỆN NGHI HOÀN HẢO"
+    },
+    {
+      "id": "hero-3",
+      "image": "/images/facility-1.jpg",
+      "title": "Trải Nghiệm Du Lịch & Ẩm Thực Sài Gòn",
+      "subtitle": "Hỗ trợ đặt tour miền Tây, Củ Chi, đặt vé máy bay và xe đưa đón sân bay 24/7.",
+      "highlight": "TÂM ĐIỂM QUẬN 1"
+    }
+  ],
+  "welcomeImages": {
+    "mainImage": "/images/welcome-1.jpg",
+    "secondaryImage": "/images/welcome-2.jpg"
+  }
+}

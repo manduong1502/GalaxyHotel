@@ -1,6 +1,7 @@
 <?php
 // =========================================================================
-// GALAXY BOUTIQUE HOTEL - GALLERY & CHECK-IN PHOTO REST API
+// GALAXY BOUTIQUE HOTEL - GALLERY REST API (PURE JSON ENGINE)
+// Lưu trữ độc lập 100% bằng JSON, không phụ thuộc MySQL
 // =========================================================================
 
 header('Access-Control-Allow-Origin: *');
@@ -13,26 +14,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-require_once __DIR__ . '/db.php';
+$dataDir = __DIR__ . '/data';
+if (!is_dir($dataDir)) {
+    @mkdir($dataDir, 0777, true);
+}
 
-// Helper: Multi-location persistence paths
+// Multi-location persistence paths
 function getPossibleGalleryFiles() {
     $webRoot = dirname(__DIR__);
     return [
-        $webRoot . '/uploads/gallery.json',
         __DIR__ . '/data/gallery.json',
+        $webRoot . '/uploads/gallery.json',
         __DIR__ . '/gallery.json'
     ];
 }
 
 function saveGalleryJson($photos) {
-    $encoded = json_encode($photos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    $encoded = json_encode(array_values($photos), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     foreach (getPossibleGalleryFiles() as $path) {
         $dir = dirname($path);
         if (!is_dir($dir)) {
             @mkdir($dir, 0777, true);
         }
-        @file_put_contents($path, $encoded);
+        @file_put_contents($path, $encoded, LOCK_EX);
     }
 }
 
@@ -49,23 +53,6 @@ function loadGalleryJson() {
         }
     }
     return null;
-}
-
-// Auto create gallery table in MySQL if connected
-if (isset($pdo) && $pdo) {
-    try {
-        $pdo->exec("CREATE TABLE IF NOT EXISTS `gallery` (
-            `id` VARCHAR(50) PRIMARY KEY,
-            `url` MEDIUMTEXT NOT NULL,
-            `title` VARCHAR(255) NOT NULL,
-            `category` VARCHAR(50) NOT NULL DEFAULT 'checkin',
-            `date` DATE DEFAULT NULL,
-            `sort_order` INT DEFAULT 0,
-            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
-
-        $pdo->exec("ALTER TABLE `gallery` MODIFY COLUMN `url` MEDIUMTEXT NOT NULL");
-    } catch (Exception $e) {}
 }
 
 // Default initial gallery photos
@@ -114,46 +101,11 @@ $defaultPhotos = [
     ]
 ];
 
-function getStoredPhotos($defaultPhotos, $pdo = null) {
-    // 1. Try MySQL
-    if ($pdo) {
-        try {
-            $pdo->exec("CREATE TABLE IF NOT EXISTS `gallery` (
-                `id` VARCHAR(50) PRIMARY KEY,
-                `url` MEDIUMTEXT NOT NULL,
-                `title` VARCHAR(255) NOT NULL,
-                `category` VARCHAR(50) NOT NULL DEFAULT 'checkin',
-                `date` DATE DEFAULT NULL,
-                `sort_order` INT DEFAULT 0,
-                `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
-
-            $stmt = $pdo->query("SELECT * FROM gallery ORDER BY sort_order ASC, created_at DESC");
-            $rows = $stmt->fetchAll();
-            if (!empty($rows)) {
-                $list = [];
-                foreach ($rows as $row) {
-                    $list[] = [
-                        'id' => $row['id'],
-                        'url' => $row['url'],
-                        'title' => $row['title'],
-                        'category' => $row['category'],
-                        'date' => $row['date'] ?? date('Y-m-d')
-                    ];
-                }
-                saveGalleryJson($list);
-                return $list;
-            }
-        } catch (Exception $e) {}
-    }
-
-    // 2. Try JSON backup across multiple locations
+function getStoredPhotos($defaultPhotos) {
     $backup = loadGalleryJson();
     if ($backup && count($backup) > 0) {
         return $backup;
     }
-
-    // 3. Fallback to default
     saveGalleryJson($defaultPhotos);
     return $defaultPhotos;
 }
@@ -162,7 +114,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        $photos = getStoredPhotos($defaultPhotos, $pdo);
+        $photos = getStoredPhotos($defaultPhotos);
         echo json_encode(['success' => true, 'data' => $photos]);
         break;
 
@@ -176,40 +128,10 @@ switch ($method) {
             exit;
         }
 
-        $photos = getStoredPhotos($defaultPhotos, $pdo);
+        $photos = getStoredPhotos($defaultPhotos);
 
         if (isset($input['action']) && $input['action'] === 'save_all' && isset($input['photos']) && is_array($input['photos'])) {
             $photos = $input['photos'];
-            
-            // Sync to MySQL
-            if ($pdo) {
-                try {
-                    $pdo->exec("CREATE TABLE IF NOT EXISTS `gallery` (
-                        `id` VARCHAR(50) PRIMARY KEY,
-                        `url` MEDIUMTEXT NOT NULL,
-                        `title` VARCHAR(255) NOT NULL,
-                        `category` VARCHAR(50) NOT NULL DEFAULT 'checkin',
-                        `date` DATE DEFAULT NULL,
-                        `sort_order` INT DEFAULT 0,
-                        `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
-
-                    $pdo->exec("DELETE FROM gallery");
-                    $stmt = $pdo->prepare("INSERT INTO gallery (id, url, title, category, date, sort_order) VALUES (?, ?, ?, ?, ?, ?)");
-                    foreach ($photos as $idx => $p) {
-                        $stmt->execute([
-                            $p['id'] ?? ('gal-' . $idx),
-                            $p['url'] ?? '',
-                            $p['title'] ?? 'Khoảnh khắc khách hàng',
-                            $p['category'] ?? 'checkin',
-                            $p['date'] ?? date('Y-m-d'),
-                            $idx
-                        ]);
-                    }
-                } catch (Exception $e) {}
-            }
-
-            // Always save JSON backup across all writeable locations
             saveGalleryJson($photos);
             echo json_encode(['success' => true, 'data' => $photos, 'message' => 'Đã lưu danh sách ảnh thành công']);
             exit;
@@ -223,31 +145,6 @@ switch ($method) {
                 'date' => $input['date'] ?? date('Y-m-d')
             ];
             array_unshift($photos, $newPhoto);
-
-            if ($pdo) {
-                try {
-                    $pdo->exec("CREATE TABLE IF NOT EXISTS `gallery` (
-                        `id` VARCHAR(50) PRIMARY KEY,
-                        `url` MEDIUMTEXT NOT NULL,
-                        `title` VARCHAR(255) NOT NULL,
-                        `category` VARCHAR(50) NOT NULL DEFAULT 'checkin',
-                        `date` DATE DEFAULT NULL,
-                        `sort_order` INT DEFAULT 0,
-                        `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
-
-                    $stmt = $pdo->prepare("INSERT INTO gallery (id, url, title, category, date, sort_order) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE url = VALUES(url), title = VALUES(title), category = VALUES(category), date = VALUES(date)");
-                    $stmt->execute([
-                        $newId,
-                        $newPhoto['url'],
-                        $newPhoto['title'],
-                        $newPhoto['category'],
-                        $newPhoto['date'],
-                        0
-                    ]);
-                } catch (Exception $e) {}
-            }
-
             saveGalleryJson($photos);
             echo json_encode(['success' => true, 'data' => $photos, 'message' => 'Đã lưu hình ảnh vào Thư viện thành công']);
             exit;
@@ -271,20 +168,13 @@ switch ($method) {
             exit;
         }
 
-        $photos = getStoredPhotos($defaultPhotos, $pdo);
+        $photos = getStoredPhotos($defaultPhotos);
         $filtered = array_values(array_filter($photos, function($p) use ($id) {
             return ($p['id'] ?? '') != $id;
         }));
 
-        if ($pdo) {
-            try {
-                $stmt = $pdo->prepare("DELETE FROM gallery WHERE id = ?");
-                $stmt->execute([$id]);
-            } catch (Exception $e) {}
-        }
-
         saveGalleryJson($filtered);
-        echo json_encode(['success' => true, 'data' => $filtered, 'message' => 'Đã xóa ảnh']);
+        echo json_encode(['success' => true, 'data' => $filtered, 'message' => 'Đã xóa ảnh thành công']);
         break;
 
     default:

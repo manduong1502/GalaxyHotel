@@ -1,6 +1,7 @@
 <?php
 // =========================================================================
-// GALAXY BOUTIQUE HOTEL - BOOKINGS REST API (MYSQL PRODUCTION + JSON BACKUP)
+// GALAXY BOUTIQUE HOTEL - BOOKINGS REST API (PURE JSON ENGINE)
+// Lưu trữ và quản lý đơn đặt phòng độc lập 100% bằng JSON
 // =========================================================================
 
 header('Access-Control-Allow-Origin: *');
@@ -13,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/mailer.php';
 
 $dataDir = __DIR__ . '/data';
@@ -22,319 +22,68 @@ if (!is_dir($dataDir)) {
 }
 $bookingsFile = $dataDir . '/bookings.json';
 
-// Auto create bookings table in MySQL if connected
-if (isset($pdo) && $pdo) {
-    try {
-        $pdo->exec("CREATE TABLE IF NOT EXISTS `bookings` (
-            `id` INT AUTO_INCREMENT PRIMARY KEY,
-            `booking_code` VARCHAR(50) NOT NULL UNIQUE,
-            `booking_type` ENUM('daily', 'hourly') NOT NULL DEFAULT 'daily',
-            `room_id` VARCHAR(50) NOT NULL,
-            `room_name` VARCHAR(150) NOT NULL,
-            `guest_name` VARCHAR(150) NOT NULL,
-            `guest_phone` VARCHAR(50) NOT NULL,
-            `guest_email` VARCHAR(150) DEFAULT '',
-            `check_in_date` DATE NOT NULL,
-            `check_in_time` VARCHAR(10) DEFAULT '14:00',
-            `check_out_date` DATE NOT NULL,
-            `check_out_time` VARCHAR(10) DEFAULT '12:00',
-            `hours_count` INT DEFAULT NULL,
-            `nights_count` INT DEFAULT NULL,
-            `adults` INT NOT NULL DEFAULT 1,
-            `children` INT NOT NULL DEFAULT 0,
-            `total_price` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
-            `special_requests` TEXT,
-            `staff_notes` TEXT,
-            `status` ENUM('pending', 'confirmed', 'checked_in', 'completed', 'cancelled') NOT NULL DEFAULT 'pending',
-            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
-    } catch (Exception $e) {}
+function loadBookings($filePath) {
+    if (file_exists($filePath)) {
+        $content = @file_get_contents($filePath);
+        if ($content) {
+            $data = json_decode($content, true);
+            if (is_array($data)) return $data;
+        }
+    }
+    return [];
 }
 
-// Initial seed bookings (including verified VIP test booking)
-$defaultSeedBookings = [
-    [
-        'id' => 'bk-1005',
-        'bookingCode' => 'GBH-8899',
-        'bookingType' => 'daily',
-        'roomId' => 'phong-vip',
-        'roomName' => 'Phòng Hạng Sang Ban Công VIP',
-        'guestName' => 'Dương Minh Mẫn',
-        'guestPhone' => '0793295664',
-        'guestEmail' => 'manduong1502@gmail.com',
-        'checkInDate' => '2026-08-31',
-        'checkInTime' => '14:00',
-        'checkOutDate' => '2026-09-02',
-        'checkOutTime' => '12:00',
-        'nightsCount' => 2,
-        'adults' => 2,
-        'children' => 0,
-        'totalPrice' => 1300000,
-        'specialRequests' => 'Phòng view đẹp, nhận phòng sớm',
-        'staffNotes' => 'Khách VIP, đã đồng bộ Google Sheets',
-        'status' => 'confirmed',
-        'createdAt' => '2026-08-31T23:22:00Z',
-    ],
-    [
-        'id' => 'bk-1001',
-        'bookingCode' => 'GBH-8492',
-        'bookingType' => 'daily',
-        'roomId' => 'phong-a',
-        'roomName' => 'Phòng A (Standard Deluxe)',
-        'guestName' => 'Nguyễn Hoàng Long',
-        'guestPhone' => '0908123456',
-        'guestEmail' => 'long.nguyen@gmail.com',
-        'checkInDate' => '2026-08-23',
-        'checkInTime' => '14:00',
-        'checkOutDate' => '2026-08-25',
-        'checkOutTime' => '12:00',
-        'nightsCount' => 2,
-        'adults' => 2,
-        'children' => 0,
-        'totalPrice' => 1300000,
-        'specialRequests' => 'Khách đến từ Hà Nội, cần nhận phòng sớm nếu được',
-        'staffNotes' => 'Đã gọi xác nhận, khách sẽ đến lúc 13:30',
-        'status' => 'confirmed',
-        'createdAt' => '2026-08-22T08:30:00Z',
-    ],
-    [
-        'id' => 'bk-1002',
-        'bookingCode' => 'GBH-8493',
-        'bookingType' => 'hourly',
-        'roomId' => 'phong-ad',
-        'roomName' => 'Phòng AD (Deluxe Triple)',
-        'guestName' => 'Trần Thị Mai Phương',
-        'guestPhone' => '0912345678',
-        'guestEmail' => 'phuong.tran@gmail.com',
-        'checkInDate' => '2026-08-23',
-        'checkInTime' => '15:00',
-        'checkOutDate' => '2026-08-23',
-        'checkOutTime' => '18:00',
-        'hoursCount' => 3,
-        'adults' => 2,
-        'children' => 1,
-        'totalPrice' => 240000,
-        'specialRequests' => 'Cần phòng yên tĩnh để em bé ngủ',
-        'staffNotes' => '',
-        'status' => 'checked_in',
-        'createdAt' => '2026-08-23T07:15:00Z',
-    ],
-    [
-        'id' => 'bk-1003',
-        'bookingCode' => 'GBH-8494',
-        'bookingType' => 'daily',
-        'roomId' => 'phong-c',
-        'roomName' => 'Phòng C (Family Suite - 5 Khách)',
-        'guestName' => 'Mr. Johnathan Smith',
-        'guestPhone' => '+61412345678',
-        'guestEmail' => 'johnathan.smith@australia.com',
-        'checkInDate' => '2026-08-24',
-        'checkInTime' => '14:00',
-        'checkOutDate' => '2026-08-27',
-        'checkOutTime' => '12:00',
-        'nightsCount' => 3,
-        'adults' => 4,
-        'children' => 1,
-        'totalPrice' => 1950000,
-        'specialRequests' => 'Needs airport pickup at Tan Son Nhat airport (Flight VN123, ETA 13:00)',
-        'staffNotes' => 'Lễ tân đã đặt xe 7 chỗ đón khách tại Ga Quốc Tế',
-        'status' => 'pending',
-        'createdAt' => '2026-08-23T09:00:00Z',
-    ],
-    [
-        'id' => 'bk-1004',
-        'bookingCode' => 'GBH-8495',
-        'bookingType' => 'daily',
-        'roomId' => 'phong-b',
-        'roomName' => 'Phòng Đơn Tiết Kiệm',
-        'guestName' => 'Lê Văn Tuấn',
-        'guestPhone' => '0987654321',
-        'guestEmail' => 'tuan.le@fpt.com.vn',
-        'checkInDate' => '2026-08-22',
-        'checkInTime' => '14:00',
-        'checkOutDate' => '2026-08-23',
-        'checkOutTime' => '12:00',
-        'nightsCount' => 1,
-        'adults' => 1,
-        'children' => 0,
-        'totalPrice' => 390000,
-        'specialRequests' => 'Đi công tác 1 mình',
-        'staffNotes' => 'Đã thanh toán đủ, check-out đúng giờ',
-        'status' => 'completed',
-        'createdAt' => '2026-08-21T16:00:00Z',
-    ]
-];
-
-// Helper to convert DB snake_case row to React camelCase record
-function formatDbRowToRecord($row) {
-    return [
-        'id' => (string)($row['id'] ?? ('bk-' . rand(1000, 9999))),
-        'bookingCode' => $row['booking_code'] ?? '',
-        'bookingType' => $row['booking_type'] ?? 'daily',
-        'roomId' => $row['room_id'] ?? 'phong-a',
-        'roomName' => $row['room_name'] ?? 'Phòng Khách Sạn',
-        'guestName' => $row['guest_name'] ?? '',
-        'guestPhone' => $row['guest_phone'] ?? '',
-        'guestEmail' => $row['guest_email'] ?? '',
-        'checkInDate' => $row['check_in_date'] ?? date('Y-m-d'),
-        'checkInTime' => $row['check_in_time'] ?? '14:00',
-        'checkOutDate' => $row['check_out_date'] ?? date('Y-m-d'),
-        'checkOutTime' => $row['check_out_time'] ?? '12:00',
-        'hoursCount' => isset($row['hours_count']) ? intval($row['hours_count']) : null,
-        'nightsCount' => isset($row['nights_count']) ? intval($row['nights_count']) : null,
-        'adults' => intval($row['adults'] ?? 1),
-        'children' => intval($row['children'] ?? 0),
-        'totalPrice' => floatval($row['total_price'] ?? 0),
-        'specialRequests' => $row['special_requests'] ?? '',
-        'staffNotes' => $row['staff_notes'] ?? '',
-        'status' => $row['status'] ?? 'pending',
-        'createdAt' => $row['created_at'] ?? date('c'),
-    ];
-}
-
-function triggerGoogleSheetsWebhook($booking) {
-    try {
-        $webhookUrl = 'https://script.google.com/macros/s/AKfycbzUUx2Msg5NCm6W2Ngm79XnJy8KPeDfaVyC5XAO2MQl2DBjE9xdJwZfVk5PkAKXhYwWyA/exec';
-        
-        $payload = json_encode([
-            'action' => 'new_booking',
-            'bookingCode' => $booking['bookingCode'] ?? $booking['booking_code'] ?? ('GBH-' . rand(1000, 9999)),
-            'bookingType' => ($booking['bookingType'] ?? $booking['booking_type'] ?? 'daily') === 'daily' ? 'Theo Ngày' : 'Theo Giờ',
-            'roomName' => $booking['roomName'] ?? $booking['room_name'] ?? 'Phòng Khách Sạn',
-            'guestName' => $booking['guestName'] ?? $booking['guest_name'] ?? 'Khách Hàng',
-            'guestPhone' => $booking['guestPhone'] ?? $booking['guest_phone'] ?? '',
-            'guestEmail' => $booking['guestEmail'] ?? $booking['guest_email'] ?? '',
-            'checkInDate' => $booking['checkInDate'] ?? $booking['check_in_date'] ?? date('Y-m-d'),
-            'checkInTime' => $booking['checkInTime'] ?? $booking['check_in_time'] ?? '14:00',
-            'checkOutDate' => $booking['checkOutDate'] ?? $booking['check_out_date'] ?? date('Y-m-d'),
-            'checkOutTime' => $booking['checkOutTime'] ?? $booking['check_out_time'] ?? '12:00',
-            'duration' => ($booking['bookingType'] ?? $booking['booking_type'] ?? 'daily') === 'daily' 
-                ? (($booking['nightsCount'] ?? $booking['nights_count'] ?? 1) . ' đêm') 
-                : (($booking['hoursCount'] ?? $booking['hours_count'] ?? 2) . ' giờ'),
-            'guests' => ($booking['adults'] ?? 1) . ' Lớn, ' . ($booking['children'] ?? 0) . ' Trẻ',
-            'totalPrice' => number_format($booking['totalPrice'] ?? $booking['total_price'] ?? 0, 0, ',', '.') . ' VNĐ',
-            'status' => $booking['status'] ?? 'Chờ xác nhận',
-            'specialRequests' => ($booking['specialRequests'] ?? $booking['special_requests']) ?: 'Không',
-            'createdAt' => date('d/m/Y H:i:s')
-        ]);
-
-        $ch = curl_init($webhookUrl);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 4);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-        curl_exec($ch);
-        curl_close($ch);
-    } catch (Exception $e) {}
+function saveBookings($filePath, $items) {
+    $dir = dirname($filePath);
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0777, true);
+    }
+    return @file_put_contents($filePath, json_encode(array_values($items), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), LOCK_EX) !== false;
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        $result = [];
-
-        // 1. Read from MySQL if connected
-        if (isset($pdo) && $pdo) {
-            try {
-                $stmt = $pdo->query("SELECT * FROM bookings ORDER BY created_at DESC");
-                $rows = $stmt->fetchAll();
-
-                // If MySQL table is empty, auto seed initial bookings including Duong Minh Man
-                if (empty($rows)) {
-                    $insertStmt = $pdo->prepare("INSERT INTO bookings (booking_code, booking_type, room_id, room_name, guest_name, guest_phone, guest_email, check_in_date, check_in_time, check_out_date, check_out_time, hours_count, nights_count, adults, children, total_price, special_requests, staff_notes, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                    foreach ($defaultSeedBookings as $seed) {
-                        try {
-                            $insertStmt->execute([
-                                $seed['bookingCode'],
-                                $seed['bookingType'],
-                                $seed['roomId'],
-                                $seed['roomName'],
-                                $seed['guestName'],
-                                $seed['guestPhone'],
-                                $seed['guestEmail'],
-                                $seed['checkInDate'],
-                                $seed['checkInTime'],
-                                $seed['checkOutDate'],
-                                $seed['checkOutTime'],
-                                $seed['hoursCount'] ?? null,
-                                $seed['nightsCount'] ?? null,
-                                $seed['adults'],
-                                $seed['children'],
-                                $seed['totalPrice'],
-                                $seed['specialRequests'],
-                                $seed['staffNotes'],
-                                $seed['status']
-                            ]);
-                        } catch (Exception $ex) {}
-                    }
-                    // Re-query
-                    $stmt = $pdo->query("SELECT * FROM bookings ORDER BY created_at DESC");
-                    $rows = $stmt->fetchAll();
-                }
-
-                if (!empty($rows)) {
-                    foreach ($rows as $row) {
-                        $result[] = formatDbRowToRecord($row);
-                    }
-                    echo json_encode(['success' => true, 'data' => $result]);
-                    exit();
-                }
-            } catch (Exception $e) {}
-        }
-
-        // 2. Read from JSON file fallback
-        if (file_exists($bookingsFile)) {
-            $content = @file_get_contents($bookingsFile);
-            if ($content) {
-                $json = json_decode($content, true);
-                if (is_array($json) && count($json) > 0) {
-                    echo json_encode(['success' => true, 'data' => $json]);
-                    exit();
-                }
-            }
-        }
-
-        // Save default seed bookings to JSON
-        @file_put_contents($bookingsFile, json_encode($defaultSeedBookings, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-        echo json_encode(['success' => true, 'data' => $defaultSeedBookings]);
+        $bookings = loadBookings($bookingsFile);
+        echo json_encode(['success' => true, 'data' => $bookings]);
         break;
 
     case 'POST':
         $raw = file_get_contents('php://input');
         $input = json_decode($raw, true);
 
-        if (!$input || empty($input['guestName']) || empty($input['guestPhone'])) {
+        if (!$input || empty($input['guestName']) || empty($input['guestPhone']) || empty($input['roomId'])) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Vui lòng điền đầy đủ họ tên và số điện thoại']);
+            echo json_encode(['success' => false, 'message' => 'Vui lòng cung cấp đủ thông tin khách hàng và phòng đặt']);
             exit();
         }
 
-        $bookingCode = $input['bookingCode'] ?? ('GBH-' . rand(1000, 9999));
+        $id = !empty($input['id']) ? trim($input['id']) : ('bk-' . time() . '-' . rand(100, 999));
+        $bookingCode = !empty($input['bookingCode']) ? trim($input['bookingCode']) : ('GBH-' . rand(1000, 9999));
         $bookingType = $input['bookingType'] ?? 'daily';
-        $roomId = $input['roomId'] ?? 'phong-a';
-        $roomName = $input['roomName'] ?? 'Phòng Khách Sạn';
+        $roomId = trim($input['roomId']);
+        $roomName = trim($input['roomName'] ?? 'Phòng Khách Sạn Galaxy');
         $guestName = trim($input['guestName']);
         $guestPhone = trim($input['guestPhone']);
         $guestEmail = trim($input['guestEmail'] ?? '');
-        $checkInDate = $input['checkInDate'] ?? date('Y-m-d');
-        $checkInTime = $input['checkInTime'] ?? '14:00';
-        $checkOutDate = $input['checkOutDate'] ?? date('Y-m-d');
-        $checkOutTime = $input['checkOutTime'] ?? '12:00';
-        $hoursCount = isset($input['hoursCount']) ? intval($input['hoursCount']) : null;
-        $nightsCount = isset($input['nightsCount']) ? intval($input['nightsCount']) : 1;
-        $adults = intval($input['adults'] ?? 1);
-        $children = intval($input['children'] ?? 0);
-        $totalPrice = floatval($input['totalPrice'] ?? 0);
-        $specialRequests = $input['specialRequests'] ?? '';
+        $checkInDate = trim($input['checkInDate'] ?? date('Y-m-d'));
+        $checkInTime = trim($input['checkInTime'] ?? '14:00');
+        $checkOutDate = trim($input['checkOutDate'] ?? date('Y-m-d'));
+        $checkOutTime = trim($input['checkOutTime'] ?? '12:00');
+        $hoursCount = isset($input['hoursCount']) ? (int)$input['hoursCount'] : null;
+        $nightsCount = isset($input['nightsCount']) ? (int)$input['nightsCount'] : 1;
+        $adults = (int)($input['adults'] ?? 2);
+        $children = (int)($input['children'] ?? 0);
+        $totalPrice = (float)($input['totalPrice'] ?? 0);
+        $specialRequests = trim($input['specialRequests'] ?? '');
+        $staffNotes = trim($input['staffNotes'] ?? '');
         $status = $input['status'] ?? 'pending';
-        $staffNotes = $input['staffNotes'] ?? '';
-        $createdAt = date('c');
+        $createdAt = !empty($input['createdAt']) ? $input['createdAt'] : date('Y-m-d H:i:s');
+        $updatedAt = date('Y-m-d H:i:s');
 
-        $newRecord = [
-            'id' => 'bk-' . time() . rand(100, 999),
+        $bookingRecord = [
+            'id' => $id,
             'bookingCode' => $bookingCode,
             'bookingType' => $bookingType,
             'roomId' => $roomId,
@@ -354,150 +103,85 @@ switch ($method) {
             'specialRequests' => $specialRequests,
             'staffNotes' => $staffNotes,
             'status' => $status,
-            'createdAt' => $createdAt
+            'createdAt' => $createdAt,
+            'updatedAt' => $updatedAt
         ];
 
-        // 1. Lưu vào MySQL Database (Thực thi INSERT vào bảng bookings)
-        if (isset($pdo) && $pdo) {
-            try {
-                $stmt = $pdo->prepare("INSERT INTO bookings (booking_code, booking_type, room_id, room_name, guest_name, guest_phone, guest_email, check_in_date, check_in_time, check_out_date, check_out_time, hours_count, nights_count, adults, children, total_price, special_requests, staff_notes, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->execute([
-                    $bookingCode,
-                    $bookingType,
-                    $roomId,
-                    $roomName,
-                    $guestName,
-                    $guestPhone,
-                    $guestEmail,
-                    $checkInDate,
-                    $checkInTime,
-                    $checkOutDate,
-                    $checkOutTime,
-                    $hoursCount,
-                    $nightsCount,
-                    $adults,
-                    $children,
-                    $totalPrice,
-                    $specialRequests,
-                    $staffNotes,
-                    $status
-                ]);
-                $newRecord['id'] = (string)$pdo->lastInsertId();
-            } catch (Exception $e) {
-                // Log MySQL error if any
-                @file_put_contents($dataDir . '/mysql_error.log', date('c') . " - " . $e->getMessage() . "\n", FILE_APPEND);
-            }
-        }
+        $bookings = loadBookings($bookingsFile);
+        array_unshift($bookings, $bookingRecord);
+        saveBookings($bookingsFile, $bookings);
 
-        // 2. Lưu vào JSON Backup File
-        $currentBookings = $defaultSeedBookings;
-        if (file_exists($bookingsFile)) {
-            $content = @file_get_contents($bookingsFile);
-            if ($content) {
-                $json = json_decode($content, true);
-                if (is_array($json)) $currentBookings = $json;
-            }
-        }
-        array_unshift($currentBookings, $newRecord);
-        @file_put_contents($bookingsFile, json_encode($currentBookings, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        // 3. Đồng bộ sang Google Sheets
-        triggerGoogleSheetsWebhook($newRecord);
-
-        // 4. Gửi Email thông báo qua SMTP (gửi cho cả Lễ tân và Khách hàng)
+        // Gửi email xác nhận đặt phòng
         try {
-            sendBookingEmails($newRecord);
-        } catch (Throwable $e) {
-            @file_put_contents($dataDir . '/mail_error.log', date('c') . " - " . $e->getMessage() . "\n", FILE_APPEND);
-        }
+            sendBookingNotificationEmail($bookingRecord);
+        } catch (Exception $e) {}
 
         echo json_encode([
             'success' => true,
-            'data' => $newRecord,
-            'message' => 'Lưu đơn đặt phòng thành công vào Cơ sở dữ liệu! Mã: ' . $bookingCode
+            'data' => $bookingRecord,
+            'message' => 'Đặt phòng thành công!'
         ]);
         break;
 
     case 'PUT':
         $raw = file_get_contents('php://input');
         $input = json_decode($raw, true);
+
         if (!$input || empty($input['id'])) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Thiếu ID đơn']);
+            echo json_encode(['success' => false, 'message' => 'Thiếu ID đơn đặt phòng']);
             exit();
         }
 
-        $id = $input['id'];
-        $status = $input['status'] ?? null;
-        $staffNotes = $input['staffNotes'] ?? null;
+        $id = trim($input['id']);
+        $bookings = loadBookings($bookingsFile);
+        $found = false;
 
-        // Update in MySQL
-        if (isset($pdo) && $pdo) {
-            try {
-                if ($status !== null && $staffNotes !== null) {
-                    $stmt = $pdo->prepare("UPDATE bookings SET status = ?, staff_notes = ? WHERE id = ? OR booking_code = ?");
-                    $stmt->execute([$status, $staffNotes, $id, $id]);
-                } else if ($status !== null) {
-                    $stmt = $pdo->prepare("UPDATE bookings SET status = ? WHERE id = ? OR booking_code = ?");
-                    $stmt->execute([$status, $id, $id]);
-                } else if ($staffNotes !== null) {
-                    $stmt = $pdo->prepare("UPDATE bookings SET staff_notes = ? WHERE id = ? OR booking_code = ?");
-                    $stmt->execute([$staffNotes, $id, $id]);
-                }
-            } catch (Exception $e) {}
-        }
-
-        // Update in JSON file
-        if (file_exists($bookingsFile)) {
-            $content = @file_get_contents($bookingsFile);
-            if ($content) {
-                $json = json_decode($content, true);
-                if (is_array($json)) {
-                    foreach ($json as &$b) {
-                        if (($b['id'] ?? '') == $id || ($b['bookingCode'] ?? '') == $id) {
-                            if ($status !== null) $b['status'] = $status;
-                            if ($staffNotes !== null) $b['staffNotes'] = $staffNotes;
-                            break;
-                        }
-                    }
-                    @file_put_contents($bookingsFile, json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-                }
+        foreach ($bookings as &$item) {
+            if ($item['id'] === $id || (isset($item['bookingCode']) && $item['bookingCode'] === $id)) {
+                if (isset($input['status'])) $item['status'] = $input['status'];
+                if (isset($input['staffNotes'])) $item['staffNotes'] = $input['staffNotes'];
+                if (isset($input['specialRequests'])) $item['specialRequests'] = $input['specialRequests'];
+                $item['updatedAt'] = date('Y-m-d H:i:s');
+                $found = true;
+                break;
             }
         }
 
-        echo json_encode(['success' => true, 'message' => 'Đã cập nhật trạng thái đơn!']);
+        if ($found) {
+            saveBookings($bookingsFile, $bookings);
+            echo json_encode(['success' => true, 'message' => 'Đã cập nhật trạng thái đơn đặt phòng']);
+        } else {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'message' => 'Không tìm thấy đơn đặt phòng']);
+        }
         break;
 
     case 'DELETE':
-        $id = $_GET['id'] ?? '';
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
+            $raw = file_get_contents('php://input');
+            $input = json_decode($raw, true);
+            $id = $input['id'] ?? null;
+        }
+
         if (!$id) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Thiếu ID đơn']);
+            echo json_encode(['success' => false, 'message' => 'Thiếu ID đơn đặt phòng cần xóa']);
             exit();
         }
 
-        // Delete from MySQL
-        if (isset($pdo) && $pdo) {
-            try {
-                $stmt = $pdo->prepare("DELETE FROM bookings WHERE id = ? OR booking_code = ?");
-                $stmt->execute([$id, $id]);
-            } catch (Exception $e) {}
-        }
+        $bookings = loadBookings($bookingsFile);
+        $filtered = array_filter($bookings, function($b) use ($id) {
+            return $b['id'] !== $id && (!isset($b['bookingCode']) || $b['bookingCode'] !== $id);
+        });
 
-        // Delete from JSON
-        if (file_exists($bookingsFile)) {
-            $content = @file_get_contents($bookingsFile);
-            if ($content) {
-                $json = json_decode($content, true);
-                if (is_array($json)) {
-                    $filtered = array_values(array_filter($json, function($b) use ($id) {
-                        return ($b['id'] ?? '') != $id && ($b['bookingCode'] ?? '') != $id;
-                    }));
-                    @file_put_contents($bookingsFile, json_encode($filtered, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-                }
-            }
-        }
+        saveBookings($bookingsFile, $filtered);
+        echo json_encode(['success' => true, 'message' => 'Đã xóa đơn đặt phòng thành công']);
+        break;
 
-        echo json_encode(['success' => true, 'message' => 'Đã xóa đơn đặt phòng khỏi Cơ sở dữ liệu!']);
+    default:
+        http_response_code(405);
+        echo json_encode(['success' => false, 'message' => 'Phương thức không được hỗ trợ']);
         break;
 }
