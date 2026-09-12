@@ -30,6 +30,7 @@ export const RoomsManager: React.FC = () => {
   const [editAmenitiesVi, setEditAmenitiesVi] = useState('Smart TV 50 inch 4K, 2 Giường đôi nệm êm ái, Wifi cáp quang băng thông rộng, Máy lạnh Inverter siêu êm, Phòng tắm nóng lạnh 24/7, Bàn làm việc & Minibar');
   const [editMaxAdults, setEditMaxAdults] = useState(2);
   const [editMaxChildren, setEditMaxChildren] = useState(1);
+  const [editTotalInventory, setEditTotalInventory] = useState<number>(4);
   const [editImages, setEditImages] = useState<string[]>([]);
   const [editIsPopular, setEditIsPopular] = useState(false);
 
@@ -53,6 +54,7 @@ export const RoomsManager: React.FC = () => {
     setEditAmenitiesVi(room.amenities?.vi ? room.amenities.vi.join(', ') : 'Máy lạnh Inverter, Smart TV, Wifi riêng, Minibar, Nước nóng 24/7');
     setEditMaxAdults(room.maxAdults);
     setEditMaxChildren(room.maxChildren);
+    setEditTotalInventory(room.totalInventory ?? 4);
     setEditImages([...room.images]);
     setEditIsPopular(!!room.isPopular);
   };
@@ -72,6 +74,7 @@ export const RoomsManager: React.FC = () => {
     setEditAmenitiesVi('Smart TV 50 inch 4K, 2 Giường đôi nệm êm ái, Wifi cáp quang băng thông rộng, Máy lạnh Inverter siêu êm, Phòng tắm nóng lạnh 24/7, Bàn làm việc & Minibar');
     setEditMaxAdults(2);
     setEditMaxChildren(1);
+    setEditTotalInventory(4);
     setEditStatus('available');
     setEditImages(['/images/rooms/phong-may-chieu.jpg']);
     setEditIsPopular(false);
@@ -182,6 +185,7 @@ export const RoomsManager: React.FC = () => {
         view: { vi: editViewVi, en: editViewVi },
         maxAdults: Number(editMaxAdults),
         maxChildren: Number(editMaxChildren),
+        totalInventory: Number(editTotalInventory) || 4,
         amenities: {
           vi: finalAmenitiesVi,
           en: finalAmenitiesVi
@@ -210,6 +214,7 @@ export const RoomsManager: React.FC = () => {
         areaSqm: Number(editAreaSqm),
         bedType: { vi: editBedVi, en: editingRoom.bedType?.en || editBedVi },
         view: { vi: editViewVi, en: editingRoom.view?.en || editViewVi },
+        totalInventory: Number(editTotalInventory) || 4,
         amenities: {
           vi: finalAmenitiesVi,
           en: finalAmenitiesVi
@@ -322,7 +327,7 @@ export const RoomsManager: React.FC = () => {
                 </p>
 
                 {/* Specs */}
-                <div className="grid grid-cols-3 gap-2 py-2 border-y border-gray-100 text-[11px] text-gray-600 mb-3 text-center">
+                <div className="grid grid-cols-4 gap-1.5 py-2 border-y border-gray-100 text-[11px] text-gray-600 mb-3 text-center">
                   <div>
                     <span className="text-gray-400 block text-[10px]">Diện Tích</span>
                     <strong>{room.areaSqm} m²</strong>
@@ -334,6 +339,10 @@ export const RoomsManager: React.FC = () => {
                   <div>
                     <span className="text-gray-400 block text-[10px]">Giường</span>
                     <strong className="line-clamp-1 text-[10px]">{room.bedType?.vi}</strong>
+                  </div>
+                  <div>
+                    <span className="text-amber-700 block text-[10px] font-bold">Số Lượng</span>
+                    <strong className="text-amber-900">{room.totalInventory ?? 4} phòng</strong>
                   </div>
                 </div>
 
@@ -710,8 +719,8 @@ export const RoomsManager: React.FC = () => {
                 </div>
               </div>
 
-              {/* Specs: Area, Bed, Guests */}
-              <div className="grid grid-cols-3 gap-3">
+              {/* Specs: Area, Bed, Guests, Total Inventory */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold text-neutral-700 mb-1">Diện Tích (m²)</label>
                   <input
@@ -737,6 +746,20 @@ export const RoomsManager: React.FC = () => {
                     value={editMaxChildren}
                     onChange={(e) => setEditMaxChildren(Number(e.target.value))}
                     className="w-full px-3 py-2 rounded-xl border border-neutral-300 text-xs font-semibold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-amber-800 mb-1">
+                    Tổng Số Phòng (Tồn) *
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={50}
+                    required
+                    value={editTotalInventory}
+                    onChange={(e) => setEditTotalInventory(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl border border-amber-400 bg-amber-50/50 text-xs font-bold text-amber-900 focus:bg-white"
                   />
                 </div>
               </div>

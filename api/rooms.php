@@ -47,6 +47,7 @@ if (isset($pdo) && $pdo) {
             `description_en` TEXT,
             `status` ENUM('available', 'occupied', 'cleaning', 'maintenance') DEFAULT 'available',
             `is_popular` TINYINT(1) DEFAULT 0,
+            `total_inventory` INT NOT NULL DEFAULT 4,
             `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
 
@@ -59,6 +60,7 @@ if (isset($pdo) && $pdo) {
         $pdo->exec("ALTER TABLE `rooms` ADD COLUMN IF NOT EXISTS `images_json` MEDIUMTEXT");
         $pdo->exec("ALTER TABLE `rooms` MODIFY COLUMN `images_json` MEDIUMTEXT");
         $pdo->exec("ALTER TABLE `rooms` MODIFY COLUMN `amenities_json` MEDIUMTEXT");
+        $pdo->exec("ALTER TABLE `rooms` ADD COLUMN IF NOT EXISTS `total_inventory` INT NOT NULL DEFAULT 4");
     } catch (Exception $e) {}
 }
 
@@ -156,7 +158,8 @@ function formatRoomRow($row) {
         ],
         'images' => array_values($images),
         'status' => $row['status'] ?? 'available',
-        'isPopular' => !empty($row['is_popular'])
+        'isPopular' => !empty($row['is_popular']),
+        'totalInventory' => isset($row['total_inventory']) ? (int)$row['total_inventory'] : 4
     ];
 }
 
@@ -186,7 +189,8 @@ $defaultRoomsSeed = [
         ],
         'images' => ['/images/rooms/phong-a.jpg', '/images/rooms/phong-ad.jpg'],
         'status' => 'available',
-        'isPopular' => true
+        'isPopular' => true,
+        'totalInventory' => 3
     ],
     [
         'id' => 'phong-doi-khong-cua-so',
@@ -212,7 +216,8 @@ $defaultRoomsSeed = [
         ],
         'images' => ['/images/rooms/phong-a.jpg', '/images/rooms/phong-ad.jpg'],
         'status' => 'available',
-        'isPopular' => false
+        'isPopular' => false,
+        'totalInventory' => 5
     ],
     [
         'id' => 'phong-doi-co-cua-so',
@@ -238,7 +243,8 @@ $defaultRoomsSeed = [
         ],
         'images' => ['/images/rooms/phong-b.jpg', '/images/rooms/phong-a.jpg'],
         'status' => 'available',
-        'isPopular' => true
+        'isPopular' => true,
+        'totalInventory' => 5
     ],
     [
         'id' => 'phong-may-chieu',
@@ -264,7 +270,8 @@ $defaultRoomsSeed = [
         ],
         'images' => ['/images/rooms/phong-may-chieu.jpg', '/images/welcome-1.jpg', '/images/hero-2.jpg'],
         'status' => 'available',
-        'isPopular' => true
+        'isPopular' => true,
+        'totalInventory' => 2
     ],
     [
         'id' => 'phong-giuong-tang',
@@ -290,7 +297,8 @@ $defaultRoomsSeed = [
         ],
         'images' => ['/images/rooms/phong-a.jpg', '/images/rooms/phong-b.jpg'],
         'status' => 'available',
-        'isPopular' => false
+        'isPopular' => false,
+        'totalInventory' => 2
     ],
     [
         'id' => 'phong-3-nguoi-tiet-kiem',
@@ -316,7 +324,8 @@ $defaultRoomsSeed = [
         ],
         'images' => ['/images/rooms/phong-ad.jpg', '/images/rooms/phong-a.jpg'],
         'status' => 'available',
-        'isPopular' => true
+        'isPopular' => true,
+        'totalInventory' => 3
     ],
     [
         'id' => 'phong-3-nguoi-ban-cong',
@@ -342,7 +351,8 @@ $defaultRoomsSeed = [
         ],
         'images' => ['/images/rooms/phong-b.jpg', '/images/rooms/phong-ad.jpg'],
         'status' => 'available',
-        'isPopular' => true
+        'isPopular' => true,
+        'totalInventory' => 3
     ],
     [
         'id' => 'phong-gia-dinh-4-nguoi',
@@ -368,7 +378,8 @@ $defaultRoomsSeed = [
         ],
         'images' => ['/images/rooms/phong-d.jpg', '/images/rooms/phong-c.jpg'],
         'status' => 'available',
-        'isPopular' => true
+        'isPopular' => true,
+        'totalInventory' => 3
     ],
     [
         'id' => 'phong-nhom-6-nguoi',
@@ -394,7 +405,8 @@ $defaultRoomsSeed = [
         ],
         'images' => ['/images/rooms/phong-c.jpg', '/images/rooms/phong-d.jpg'],
         'status' => 'available',
-        'isPopular' => true
+        'isPopular' => true,
+        'totalInventory' => 2
     ]
 ];
 
@@ -444,13 +456,14 @@ switch ($method) {
                         $sImJson = json_encode($seed['images'], JSON_UNESCAPED_UNICODE);
                         $sStatus = $seed['status'];
                         $sPop = $seed['isPopular'] ? 1 : 0;
+                        $sInventory = (int)($seed['totalInventory'] ?? 4);
 
                         $insStmt = $pdo->prepare("INSERT INTO rooms (
                             id, name_vi, name_en, slug, subtitle_vi, subtitle_en,
                             price_per_night, price_hourly_first2h, price_hourly_extra,
                             max_adults, max_children, area_sqm, bed_type_vi, bed_type_en,
-                            view_vi, view_en, amenities_json, description_vi, description_en, images_json, status, is_popular
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            view_vi, view_en, amenities_json, description_vi, description_en, images_json, status, is_popular, total_inventory
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ON DUPLICATE KEY UPDATE
                             name_vi = VALUES(name_vi),
                             name_en = VALUES(name_en),
@@ -468,12 +481,13 @@ switch ($method) {
                             view_vi = VALUES(view_vi),
                             view_en = VALUES(view_en),
                             description_vi = VALUES(description_vi),
-                            description_en = VALUES(description_en)");
+                            description_en = VALUES(description_en),
+                            total_inventory = VALUES(total_inventory)");
                         $insStmt->execute([
                             $sId, $sNameVi, $sNameEn, $sSlug, $sSubVi, $sSubEn,
                             $sPriceNight, $sPriceFirst2h, $sPriceExtra,
                             $sMaxAdults, $sMaxChildren, $sArea, $sBedVi, $sBedEn,
-                            $sViewVi, $sViewEn, $sAmJson, $sDescVi, $sDescEn, $sImJson, $sStatus, $sPop
+                            $sViewVi, $sViewEn, $sAmJson, $sDescVi, $sDescEn, $sImJson, $sStatus, $sPop, $sInventory
                         ]);
                     }
                     if ($hasLegacy) {
@@ -552,6 +566,7 @@ switch ($method) {
         
         $status = $input['status'] ?? 'available';
         $isPopular = !empty($input['isPopular']) ? 1 : 0;
+        $totalInventory = (int)($input['totalInventory'] ?? 4);
 
         if (isset($pdo) && $pdo) {
             try {
@@ -559,12 +574,12 @@ switch ($method) {
                     id, name_vi, name_en, slug, subtitle_vi, subtitle_en,
                     price_per_night, price_hourly_first2h, price_hourly_extra,
                     max_adults, max_children, area_sqm, bed_type_vi, bed_type_en,
-                    view_vi, view_en, amenities_json, description_vi, description_en, images_json, status, is_popular
+                    view_vi, view_en, amenities_json, description_vi, description_en, images_json, status, is_popular, total_inventory
                 ) VALUES (
                     ?, ?, ?, ?, ?, ?,
                     ?, ?, ?,
                     ?, ?, ?, ?, ?,
-                    ?, ?, ?, ?, ?, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?
                 ) ON DUPLICATE KEY UPDATE
                     name_vi = VALUES(name_vi),
                     name_en = VALUES(name_en),
@@ -585,14 +600,15 @@ switch ($method) {
                     amenities_json = VALUES(amenities_json),
                     images_json = VALUES(images_json),
                     status = VALUES(status),
-                    is_popular = VALUES(is_popular)";
+                    is_popular = VALUES(is_popular),
+                    total_inventory = VALUES(total_inventory)";
 
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute([
                     $id, $nameVi, $nameEn, $slug, $subtitleVi, $subtitleEn,
                     $priceNight, $priceFirst2h, $priceExtra,
                     $maxAdults, $maxChildren, $areaSqm, $bedTypeVi, $bedTypeEn,
-                    $viewVi, $viewEn, $amenitiesJson, $descVi, $descEn, $imagesJson, $status, $isPopular
+                    $viewVi, $viewEn, $amenitiesJson, $descVi, $descEn, $imagesJson, $status, $isPopular, $totalInventory
                 ]);
             } catch (Exception $e) {
                 // error logged

@@ -8,29 +8,32 @@ import { RoomCalendarView } from './RoomCalendarView';
 import { GalleryManager } from './GalleryManager';
 import { ServicesManager } from './ServicesManager';
 import { BannersManager } from './BannersManager';
+import { InquiriesManager } from './InquiriesManager';
 import { AdminSettings } from './AdminSettings';
 import { 
   LayoutDashboard, CalendarCheck, BedDouble, Calendar, 
-  Settings, LogOut, ArrowLeft, Globe, Heart, Compass, Sparkles, Menu, X 
+  Settings, LogOut, ArrowLeft, Globe, Heart, Compass, Sparkles, Menu, X, Inbox 
 } from 'lucide-react';
 
 interface AdminLayoutProps {
   onBackToWebsite: () => void;
 }
 
-export type AdminTab = 'dashboard' | 'bookings' | 'rooms' | 'gallery' | 'services' | 'banners' | 'calendar' | 'settings';
+export type AdminTab = 'dashboard' | 'bookings' | 'inquiries' | 'rooms' | 'gallery' | 'services' | 'banners' | 'calendar' | 'settings';
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => {
   const { user, logout } = useAuth();
-  const { bookings } = useBookings();
+  const { bookings, inquiries } = useBookings();
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const pendingCount = bookings.filter(b => b.status === 'pending').length;
+  const newInquiriesCount = inquiries.filter(i => i.status === 'new').length;
 
   const navItems = [
     { id: 'dashboard', label: 'Tổng Quan', icon: LayoutDashboard },
     { id: 'bookings', label: 'Đơn Đặt Phòng', icon: CalendarCheck, badge: pendingCount > 0 ? pendingCount : undefined },
+    { id: 'inquiries', label: 'Yêu Cầu & Tư Vấn', icon: Inbox, badge: newInquiriesCount > 0 ? newInquiriesCount : undefined },
     { id: 'rooms', label: 'Phòng, Giá & Ảnh', icon: BedDouble },
     { id: 'gallery', label: 'Góc Nhỏ Yêu Thương', icon: Heart },
     { id: 'services', label: 'Dịch Vụ & Tour', icon: Compass },
@@ -258,6 +261,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onBackToWebsite }) => 
       <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto max-w-7xl">
         {activeTab === 'dashboard' && <DashboardOverview onNavigateToTab={(tab: string) => setActiveTab(tab as AdminTab)} />}
         {activeTab === 'bookings' && <BookingsManager />}
+        {activeTab === 'inquiries' && <InquiriesManager />}
         {activeTab === 'rooms' && <RoomsManager />}
         {activeTab === 'gallery' && <GalleryManager />}
         {activeTab === 'services' && <ServicesManager />}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useBookings } from '../context/BookingContext';
 import { 
   Home, ChevronRight, MapPin, Phone, Mail, 
   Clock, Navigation, Send, CheckCircle2, MessageSquare 
@@ -11,11 +12,21 @@ interface ContactPageProps {
 
 export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
   const { lang, t } = useLanguage();
+  const { submitInquiry } = useBookings();
   const [formData, setFormData] = useState({ name: '', phone: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name.trim() || !formData.phone.trim()) return;
+
+    await submitInquiry({
+      fullName: formData.name.trim(),
+      phone: formData.phone.trim(),
+      email: formData.email.trim(),
+      message: formData.message.trim() || 'Yêu cầu liên hệ qua trang Contact'
+    });
+
     setSubmitted(true);
     setTimeout(() => {
       setSubmitted(false);

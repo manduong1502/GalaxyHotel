@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS `rooms` (
   `description_en` TEXT,
   `status` ENUM('available', 'occupied', 'cleaning', 'maintenance') DEFAULT 'available',
   `is_popular` TINYINT(1) DEFAULT 0,
+  `total_inventory` INT NOT NULL DEFAULT 4,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -106,4 +107,35 @@ INSERT INTO `settings` (`setting_key`, `setting_value`) VALUES
 ('gsheet_webhook_url', '')
 ON DUPLICATE KEY UPDATE `setting_key` = `setting_key`;
 
+-- 5. BẢNG KHÓA PHÒNG / BẢO TRÌ (room_locks)
+CREATE TABLE IF NOT EXISTS `room_locks` (
+  `id` VARCHAR(50) PRIMARY KEY,
+  `room_id` VARCHAR(50) NOT NULL,
+  `start_date` DATE NOT NULL,
+  `end_date` DATE NOT NULL,
+  `reason` VARCHAR(255) DEFAULT '',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_lock_room` (`room_id`),
+  INDEX `idx_lock_dates` (`start_date`, `end_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 6. BẢNG YÊU CẦU TƯ VẤN & LIÊN HỆ (inquiries)
+CREATE TABLE IF NOT EXISTS `inquiries` (
+  `id` VARCHAR(50) PRIMARY KEY,
+  `full_name` VARCHAR(150) NOT NULL,
+  `phone` VARCHAR(50) NOT NULL,
+  `email` VARCHAR(150) DEFAULT '',
+  `check_in_date` DATE DEFAULT NULL,
+  `check_out_date` DATE DEFAULT NULL,
+  `room_type` VARCHAR(150) DEFAULT '',
+  `guests_count` INT DEFAULT 1,
+  `message` TEXT NOT NULL,
+  `status` ENUM('new', 'contacted', 'resolved', 'cancelled') NOT NULL DEFAULT 'new',
+  `notes` TEXT DEFAULT '',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_inq_status` (`status`),
+  INDEX `idx_inq_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;
+

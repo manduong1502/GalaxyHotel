@@ -461,3 +461,105 @@ function sendBookingEmails($booking, $receptionEmail = null) {
 function sendBookingConfirmationEmail($booking) {
     return sendBookingEmails($booking);
 }
+
+/**
+ * Gửi email thông báo Yêu Cầu Tư Vấn / Liên Hệ mới cho Lễ tân & Khách sạn
+ */
+function sendInquiryNotificationEmail($inquiry, $recipientEmail = null) {
+    if (!$recipientEmail) {
+        $recipientEmail = getReceptionEmail();
+    }
+    $fullName = htmlspecialchars($inquiry['fullName'] ?? $inquiry['full_name'] ?? 'Khách hàng');
+    $phone = htmlspecialchars($inquiry['phone'] ?? '');
+    $email = htmlspecialchars($inquiry['email'] ?? 'Không có');
+    $roomType = htmlspecialchars($inquiry['roomType'] ?? $inquiry['room_type'] ?? 'Tư vấn chung');
+    $checkIn = htmlspecialchars($inquiry['checkInDate'] ?? $inquiry['check_in_date'] ?? 'Chưa xác định');
+    $checkOut = htmlspecialchars($inquiry['checkOutDate'] ?? $inquiry['check_out_date'] ?? 'Chưa xác định');
+    $guestsCount = htmlspecialchars($inquiry['guestsCount'] ?? $inquiry['guests_count'] ?? '1');
+    $message = nl2br(htmlspecialchars($inquiry['message'] ?? ''));
+    $createdAt = date('d/m/Y H:i:s');
+
+    $subject = "🔔 [YÊU CẦU TƯ VẤN] Từ khách hàng: {$fullName} - SĐT: {$phone}";
+
+    $html = <<<HTML
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>{$subject}</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #F8F6F0; margin: 0; padding: 24px; color: #1A1A1A;">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 0 auto; background-color: #FFFFFF; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid #EAE6DF;">
+        <tr>
+            <td style="background-color: #1E293B; padding: 28px 32px; text-align: center; color: #FFFFFF;">
+                <h1 style="font-size: 20px; font-weight: 700; letter-spacing: 1px; margin: 0; text-transform: uppercase;">
+                    📩 YÊU CẦU TƯ VẤN / LIÊN HỆ MỚI
+                </h1>
+                <p style="font-size: 13px; color: #CBD5E1; margin: 6px 0 0 0;">
+                    Khách sạn Galaxy Boutique Hotel Saigon
+                </p>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 28px 32px;">
+                <div style="background-color: #FAF9F5; border: 1px solid #EAE6DF; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <div style="font-size: 11px; font-weight: 700; color: #8A6943; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">
+                        👤 THÔNG TIN KHÁCH HÀNG
+                    </div>
+                    <table width="100%" cellspacing="0" cellpadding="6" style="font-size: 14px;">
+                        <tr>
+                            <td width="35%" style="color: #666666;">Họ và tên:</td>
+                            <td style="font-weight: 700; color: #1A1A1A;">{$fullName}</td>
+                        </tr>
+                        <tr>
+                            <td style="color: #666666;">Số điện thoại:</td>
+                            <td>
+                                <a href="tel:{$phone}" style="color: #2563EB; font-weight: 700; text-decoration: none;">
+                                    📞 {$phone} (Bấm để gọi ngay)
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="color: #666666;">Email:</td>
+                            <td style="color: #1A1A1A;">{$email}</td>
+                        </tr>
+                        <tr>
+                            <td style="color: #666666;">Loại phòng quan tâm:</td>
+                            <td style="font-weight: 600; color: #D97706;">{$roomType}</td>
+                        </tr>
+                        <tr>
+                            <td style="color: #666666;">Dự kiến lưu trú:</td>
+                            <td>{$checkIn} ➔ {$checkOut} ({$guestsCount} khách)</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div style="background-color: #F1F5F9; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                    <div style="font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
+                        💬 NỘI DUNG YÊU CẦU / LỜI NHẮN:
+                    </div>
+                    <div style="font-size: 14px; line-height: 1.6; color: #1E293B;">
+                        {$message}
+                    </div>
+                </div>
+
+                <div style="text-align: center;">
+                    <a href="tel:{$phone}" style="display: inline-block; background-color: #059669; color: #FFFFFF; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; padding: 12px 28px; border-radius: 8px; margin-right: 8px;">
+                        📞 Gọi Lại Cho Khách
+                    </a>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color: #FAF9F5; border-top: 1px solid #EAE6DF; padding: 18px 32px; text-align: center; font-size: 11px; color: #737373;">
+                Thời gian nhận: {$createdAt} • Galaxy Boutique Hotel Admin System
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+HTML;
+
+    return sendHtmlEmail($recipientEmail, $subject, $html);
+}
+

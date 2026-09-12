@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useBookings } from '../context/BookingContext';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { MapPin, Phone, Mail, Clock, Send, Check } from 'lucide-react';
 
 export const LocationContactSection: React.FC = () => {
   const { t, lang } = useLanguage();
+  const { submitInquiry } = useBookings();
   const { ref: sectionRef, isVisible } = useScrollReveal<HTMLElement>(0.1);
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
@@ -14,8 +16,17 @@ export const LocationContactSection: React.FC = () => {
     message: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name.trim() || !formData.phone.trim()) return;
+
+    await submitInquiry({
+      fullName: formData.name.trim(),
+      phone: formData.phone.trim(),
+      email: formData.email.trim(),
+      message: formData.message.trim() || 'Yêu cầu tư vấn qua website'
+    });
+
     setSubmitted(true);
     setTimeout(() => {
       setSubmitted(false);

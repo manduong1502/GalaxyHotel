@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useBookings } from '../context/BookingContext';
 import { Room } from '../types';
-import { X, Calendar as CalendarIcon, Users, Maximize2, Bed, Check, ChevronLeft, ChevronRight, ShieldCheck } from 'lucide-react';
+import { 
+  X, Calendar as CalendarIcon, Users, Maximize2, Bed, Check, 
+  ChevronLeft, ChevronRight, ShieldCheck, Lock, Sparkles, AlertCircle 
+} from 'lucide-react';
 
 interface RoomDetailModalProps {
   room: Room | null;
@@ -11,23 +15,56 @@ interface RoomDetailModalProps {
 
 export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ room, onClose, onBookNow }) => {
   const { lang, t } = useLanguage();
+  const { getAvailableRoomsCount, roomLocks } = useBookings();
+  
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [selectedCalendarDate, setSelectedCalendarDate] = useState<number>(new Date().getDate());
+  const [calendarDate, setCalendarDate] = useState<Date>(new Date());
+  const [selectedDateStr, setSelectedDateStr] = useState<string>(() => {
+    return new Date().toISOString().split('T')[0];
+  });
 
   if (!room) return null;
+
+  const totalInventory = room.totalInventory ?? 4;
+  const currentAvailableForSelected = getAvailableRoomsCount(room.id, selectedDateStr);
+  const isSelectedDateLocked = roomLocks.some(
+    l => l.roomId === room.id && selectedDateStr >= l.startDate && selectedDateStr <= l.endDate
+  );
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';
   };
 
-  const currentMonth = lang === 'vi' ? 'Tháng 08 / 2026' : 'August 2026';
-  const daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1);
+  const year = calendarDate.getFullYear();
+  const month = calendarDate.getMonth();
 
-  const getAvailabilityStatus = (day: number) => {
-    if ([5, 12, 19, 26].includes(day)) return 'booked';
-    if ([6, 13, 20, 27, 28].includes(day)) return 'partial';
-    return 'available';
+  const prevMonth = () => {
+    setCalendarDate(new Date(year, month - 1, 1));
   };
+
+  const nextMonth = () => {
+    setCalendarDate(new Date(year, month + 1, 1));
+  };
+
+  const monthNamesVi = [
+    'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+    'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+  ];
+  const monthNamesEn = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  const currentMonthLabel = lang === 'vi' 
+    ? `${monthNamesVi[month]} / ${year}`
+    : `${monthNamesEn[month]} ${year}`;
+
+  // Monday-first calculation (0 = Mon, ..., 6 = Sun)
+  const firstDayRaw = new Date(year, month, 1).getDay(); // 0 is Sun
+  const firstDayIndex = firstDayRaw === 0 ? 6 : firstDayRaw - 1;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const todayStr = new Date().toISOString().split('T')[0];
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-backdrop">
@@ -45,7 +82,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ room, onClose,
         <div className="relative h-72 sm:h-96 w-full bg-neutral-900 overflow-hidden flex-shrink-0">
           <img
             src={room.images[activeImageIndex]}
-            alt={room.name[lang]}
+            alt={room.name[lang] || room.name.vi}
             onError={(e) => { e.currentTarget.src = '/images/rooms/phong-a.jpg'; }}
             className="w-full h-full object-cover transition-all duration-500 ease-out"
           />
@@ -96,10 +133,18 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ room, onClose,
           {/* Header Info */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-neutral-100 pb-6">
             <div>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-[#8A6943] bg-[#FAF9F5] px-2.5 py-1 rounded border border-neutral-200">
-                {lang === 'vi' ? 'Phòng Nghỉ Thực Tế' : 'Boutique Room'}
-              </span>
-              <h2 className="font-serif font-bold text-2xl sm:text-3xl text-neutral-900 mt-2">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-[#8A6943] bg-[#FAF9F5] px-2.5 py-1 rounded border border-neutral-200">
+                  {lang === 'vi' ? 'Phòng Nghỉ Thực Tế' : 'Boutique Room'}
+                </span>
+                
+                {/* Total Inventory Badge */}
+                <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-200">
+                  {lang === 'vi' ? `Khách Sạn Có ${totalInventory} Phòng Loại Này` : `Total ${totalInventory} Units Available`}
+                </span>
+              </div>
+
+              <h2 className="font-serif font-bold text-2xl sm:text-3xl text-neutral-900 mt-1">
                 {room.name?.[lang] || room.name?.vi}
               </h2>
               <p className="text-xs sm:text-sm text-neutral-500 mt-1 font-sans">
@@ -197,65 +242,155 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ room, onClose,
             </div>
           </div>
 
-          {/* Availability Calendar */}
-          <div className="bg-[#FAF9F5] p-5 rounded-xl border border-neutral-200/80 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* Dynamic Real-time Availability Calendar */}
+          <div className="bg-[#FAF9F5] p-5 rounded-2xl border border-neutral-200/80 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <CalendarIcon className="w-4 h-4 text-neutral-900" />
+                <CalendarIcon className="w-4 h-4 text-[#8A6943]" />
                 <h3 className="font-serif font-bold text-base text-neutral-900">
-                  {lang === 'vi' ? `Lịch Phòng Còn Trống (${currentMonth})` : `Availability (${currentMonth})`}
+                  {lang === 'vi' ? `Lịch Phòng Trống Trực Tuyến` : `Live Room Availability`}
                 </h3>
+              </div>
+
+              {/* Month Navigation */}
+              <div className="flex items-center gap-2 bg-white px-2 py-1 rounded-xl border border-neutral-200 shadow-xs">
+                <button
+                  onClick={prevMonth}
+                  title="Tháng trước"
+                  className="w-7 h-7 rounded-lg hover:bg-neutral-100 flex items-center justify-center text-neutral-800 transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <span className="text-xs font-bold text-neutral-900 px-2 min-w-[110px] text-center">
+                  {currentMonthLabel}
+                </span>
+                <button
+                  onClick={nextMonth}
+                  title="Tháng sau"
+                  className="w-7 h-7 rounded-lg hover:bg-neutral-100 flex items-center justify-center text-neutral-800 transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
 
               {/* Status Legend */}
               <div className="flex items-center gap-3 text-[11px] font-medium">
                 <span className="flex items-center gap-1 text-emerald-700">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-                  <span>{lang === 'vi' ? 'Còn trống' : 'Available'}</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
+                  <span>{lang === 'vi' ? 'Còn phòng' : 'Available'}</span>
                 </span>
                 <span className="flex items-center gap-1 text-amber-700">
-                  <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />
-                  <span>{lang === 'vi' ? 'Khung giờ' : 'Slots'}</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" />
+                  <span>{lang === 'vi' ? 'Sắp hết' : 'Limited'}</span>
                 </span>
                 <span className="flex items-center gap-1 text-red-600">
-                  <span className="w-2 h-2 rounded-full bg-red-400 inline-block" />
-                  <span>{lang === 'vi' ? 'Kín' : 'Full'}</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-400 inline-block" />
+                  <span>{lang === 'vi' ? 'Hết/Khóa' : 'Full/Locked'}</span>
                 </span>
+              </div>
+            </div>
+
+            {/* Selected Date Real-Time Inventory Counter Badge */}
+            <div className={`p-3 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs ${
+              isSelectedDateLocked
+                ? 'bg-red-50 border-red-200 text-red-900'
+                : currentAvailableForSelected === 0
+                  ? 'bg-neutral-100 border-neutral-200 text-neutral-600'
+                  : currentAvailableForSelected <= 1
+                    ? 'bg-amber-50 border-amber-200 text-amber-900'
+                    : 'bg-emerald-50 border-emerald-200 text-emerald-900'
+            }`}>
+              <div className="flex items-center gap-2">
+                {isSelectedDateLocked ? (
+                  <Lock className="w-4 h-4 text-red-600 shrink-0" />
+                ) : (
+                  <Sparkles className="w-4 h-4 text-[#8A6943] shrink-0" />
+                )}
+                <div>
+                  <span className="font-bold">
+                    {lang === 'vi' ? `Ngày đã chọn: ${selectedDateStr}` : `Selected Date: ${selectedDateStr}`}
+                  </span>
+                  <span className="mx-2">•</span>
+                  <span>
+                    {isSelectedDateLocked
+                      ? (lang === 'vi' ? 'Hạng phòng đã tạm khóa vào ngày này' : 'Room is locked for this date')
+                      : currentAvailableForSelected === 0
+                        ? (lang === 'vi' ? 'Đã kín phòng vào ngày này' : 'Fully booked for this date')
+                        : (lang === 'vi' 
+                            ? `Hiện còn ${currentAvailableForSelected} / ${totalInventory} phòng trống sẵn sàng đón khách`
+                            : `${currentAvailableForSelected} of ${totalInventory} rooms available`)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="font-bold text-xs shrink-0">
+                {isSelectedDateLocked ? (
+                  <span className="text-red-600">Đã khóa</span>
+                ) : currentAvailableForSelected > 0 ? (
+                  <span className="text-emerald-700">✓ Có thể đặt ngay</span>
+                ) : (
+                  <span className="text-neutral-500">Hết chỗ</span>
+                )}
               </div>
             </div>
 
             {/* Calendar Days Matrix */}
             <div className="grid grid-cols-7 gap-1.5 sm:gap-2 text-center">
               {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((d, i) => (
-                <div key={i} className="text-[11px] font-semibold text-neutral-400 py-1 font-sans">
+                <div key={i} className="text-[11px] font-bold text-neutral-400 py-1 font-sans">
                   {lang === 'vi' ? d : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i]}
                 </div>
               ))}
 
-              {daysInMonth.map((day) => {
-                const status = getAvailabilityStatus(day);
-                const isSelected = selectedCalendarDate === day;
+              {/* Leading Empty Slots */}
+              {Array.from({ length: firstDayIndex }).map((_, i) => (
+                <div key={`empty-${i}`} className="py-2.5 rounded-lg bg-neutral-100/30 border border-transparent" />
+              ))}
+
+              {/* Month Days */}
+              {Array.from({ length: daysInMonth }).map((_, i) => {
+                const dayNum = i + 1;
+                const dayDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+                const availableCount = getAvailableRoomsCount(room.id, dayDateStr);
+                const isLocked = roomLocks.some(
+                  l => l.roomId === room.id && dayDateStr >= l.startDate && dayDateStr <= l.endDate
+                );
+                const isSelected = selectedDateStr === dayDateStr;
+                const isToday = todayStr === dayDateStr;
 
                 let bgClass = 'bg-white border-neutral-200 text-neutral-800 hover:border-neutral-900';
-                if (status === 'partial') bgClass = 'bg-amber-50 border-amber-200 text-amber-900 hover:border-amber-400';
-                if (status === 'booked') bgClass = 'bg-neutral-100 border-neutral-200 text-neutral-400 opacity-60 cursor-not-allowed';
+                let labelText = `Còn ${availableCount}p`;
+
+                if (isLocked) {
+                  bgClass = 'bg-red-50 border-red-200 text-red-800 opacity-60';
+                  labelText = lang === 'vi' ? 'Đã khóa' : 'Locked';
+                } else if (availableCount === 0) {
+                  bgClass = 'bg-neutral-100 border-neutral-200 text-neutral-400 opacity-60 cursor-not-allowed';
+                  labelText = lang === 'vi' ? 'Hết' : 'Full';
+                } else if (availableCount === 1) {
+                  bgClass = 'bg-amber-50 border-amber-200 text-amber-900 hover:border-amber-400';
+                  labelText = lang === 'vi' ? 'Còn 1p' : '1 left';
+                } else {
+                  labelText = lang === 'vi' ? `Còn ${availableCount}p` : `${availableCount} free`;
+                }
 
                 return (
                   <button
-                    key={day}
-                    disabled={status === 'booked'}
-                    onClick={() => setSelectedCalendarDate(day)}
-                    className={`py-2 rounded-lg text-xs font-semibold border transition-all duration-200 ${bgClass} ${
-                      isSelected ? 'ring-2 ring-neutral-900 font-bold' : ''
-                    }`}
+                    key={dayDateStr}
+                    onClick={() => setSelectedDateStr(dayDateStr)}
+                    className={`py-2 rounded-xl text-xs font-semibold border transition-all duration-200 flex flex-col items-center justify-between ${bgClass} ${
+                      isSelected ? 'ring-2 ring-[#C29A64] border-[#C29A64] font-bold shadow-sm' : ''
+                    } ${isToday ? 'border-blue-400' : ''}`}
                   >
-                    <div>{day}</div>
-                    <div className="text-[9px] mt-0.5 opacity-70">
-                      {status === 'available' 
-                        ? (lang === 'vi' ? 'Trống' : 'Free') 
-                        : status === 'partial' 
-                          ? (lang === 'vi' ? 'Vài giờ' : 'Slots') 
-                          : (lang === 'vi' ? 'Hết' : 'Full')}
+                    <div className="flex items-center justify-center">
+                      <span className={`${isToday ? 'w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold' : ''}`}>
+                        {dayNum}
+                      </span>
+                    </div>
+                    <div className={`text-[9px] mt-0.5 font-bold ${
+                      isLocked ? 'text-red-600' : availableCount === 0 ? 'text-neutral-400' : availableCount === 1 ? 'text-amber-700' : 'text-emerald-700'
+                    }`}>
+                      {labelText}
                     </div>
                   </button>
                 );
@@ -267,7 +402,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ room, onClose,
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-100">
             <button
               onClick={onClose}
-              className="btn-magnetic px-5 py-2.5 rounded-lg border border-neutral-300 hover:bg-neutral-50 text-neutral-800 font-semibold text-xs transition-colors"
+              className="btn-magnetic px-5 py-2.5 rounded-xl border border-neutral-300 hover:bg-neutral-50 text-neutral-800 font-semibold text-xs transition-colors"
             >
               {t('modal.close')}
             </button>
@@ -277,7 +412,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ room, onClose,
                 onClose();
                 onBookNow(room);
               }}
-              className="btn-magnetic px-6 py-2.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-xs tracking-wider uppercase shadow-sm flex items-center gap-2 transition-colors"
+              className="btn-magnetic px-6 py-2.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-xs tracking-wider uppercase shadow-sm flex items-center gap-2 transition-colors active:scale-95"
             >
               <CalendarIcon className="w-3.5 h-3.5 text-[#E8DCB9]" />
               <span>{lang === 'vi' ? 'Tiến Hành Đặt Phòng' : 'Proceed Booking'}</span>

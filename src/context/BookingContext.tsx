@@ -1,10 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { BookingRecord, BookingFormData, BookingStatus, Room, RoomStatus } from '../types';
+import { BookingRecord, BookingFormData, BookingStatus, Room, RoomStatus, RoomLock, Inquiry } from '../types';
 import { roomsData as initialRooms } from '../data/mockData';
 
 interface BookingContextType {
   bookings: BookingRecord[];
   rooms: Room[];
+  roomLocks: RoomLock[];
+  inquiries: Inquiry[];
   googleSheetWebhookUrl: string;
   setGoogleSheetWebhookUrl: (url: string) => void;
   addBooking: (formData: BookingFormData, totalPrice: number) => Promise<BookingRecord>;
@@ -16,11 +18,23 @@ interface BookingContextType {
   addNewRoom: (room: Room) => void;
   deleteRoom: (id: string) => void;
   syncBookingToGoogleSheets: (booking: BookingRecord) => Promise<boolean>;
+  // Room Locks
+  lockRoom: (lockData: Omit<RoomLock, 'id' | 'createdAt'>) => Promise<boolean>;
+  unlockRoom: (lockId: string) => Promise<boolean>;
+  // Inquiries
+  submitInquiry: (inquiryData: Omit<Inquiry, 'id' | 'status' | 'createdAt'>) => Promise<boolean>;
+  updateInquiryStatus: (id: string, status: Inquiry['status'], notes?: string) => void;
+  deleteInquiry: (id: string) => void;
+  // Inventory & Availability Helpers
+  getAvailableRoomsCount: (roomId: string, dateStr: string) => number;
+  isRoomAvailableOnDates: (roomId: string, checkInDate: string, checkOutDate: string) => boolean;
 }
 
 const BookingContext = createContext<BookingContextType>({
   bookings: [],
   rooms: [],
+  roomLocks: [],
+  inquiries: [],
   googleSheetWebhookUrl: '',
   setGoogleSheetWebhookUrl: () => {},
   addBooking: async () => ({} as BookingRecord),
@@ -32,11 +46,20 @@ const BookingContext = createContext<BookingContextType>({
   addNewRoom: () => {},
   deleteRoom: () => {},
   syncBookingToGoogleSheets: async () => false,
+  lockRoom: async () => false,
+  unlockRoom: async () => false,
+  submitInquiry: async () => false,
+  updateInquiryStatus: () => {},
+  deleteInquiry: () => {},
+  getAvailableRoomsCount: () => 1,
+  isRoomAvailableOnDates: () => true,
 });
 
 const BOOKINGS_STORAGE_KEY = 'galaxy_hotel_bookings_list';
 const ROOMS_STORAGE_KEY = 'galaxy_hotel_rooms_custom';
 const WEBHOOK_STORAGE_KEY = 'galaxy_hotel_gsheet_webhook';
+const ROOM_LOCKS_STORAGE_KEY = 'galaxy_hotel_room_locks';
+const INQUIRIES_STORAGE_KEY = 'galaxy_hotel_inquiries';
 
 // Initial realistic seed bookings for demonstration
 const initialSeedBookings: BookingRecord[] = [
@@ -166,7 +189,42 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return initialSeedBookings;
   });
 
-  // Auto fetch live bookings and rooms from server API
+  const [rooms, setRooms] = useState<Room[]>(() => {
+    const saved = localStorage.getItem(ROOMS_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        // fallback
+      }
+    }
+    return initialRooms.map(r => ({ ...r, status: r.status || 'available' }));
+  });
+
+  const [roomLocks, setRoomLocks] = useState<RoomLock[]>(() => {
+    const saved = localStorage.getItem(ROOM_LOCKS_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {}
+    }
+    return [];
+  });
+
+  const [inquiries, setInquiries] = useState<Inquiry[]>(() => {
+    const saved = localStorage.getItem(INQUIRIES_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {}
+    }
+    return [];
+  });
+
+  // Auto fetch live bookings, rooms, room locks, and inquiries from server API
   useEffect(() => {
     fetch('/api/bookings.php')
       .then(res => res.json())
@@ -189,20 +247,25 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
       })
       .catch(() => {});
-  }, []);
 
-  const [rooms, setRooms] = useState<Room[]>(() => {
-    const saved = localStorage.getItem(ROOMS_STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      } catch (e) {
-        // fallback
-      }
-    }
-    return initialRooms.map(r => ({ ...r, status: r.status || 'available' }));
-  });
+    fetch('/api/room_locks.php')
+      .then(res => res.json())
+      .then(res => {
+        if (res && res.success && Array.isArray(res.data)) {
+          setRoomLocks(res.data);
+        }
+      })
+      .catch(() => {});
+
+    fetch('/api/inquiries.php')
+      .then(res => res.json())
+      .then(res => {
+        if (res && res.success && Array.isArray(res.data)) {
+          setInquiries(res.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const [googleSheetWebhookUrl, setGoogleSheetWebhookUrlState] = useState<string>(() => {
     return localStorage.getItem(WEBHOOK_STORAGE_KEY) || 'https://script.google.com/macros/s/AKfycbzUUx2Msg5NCm6W2Ngm79XnJy8KPeDfaVyC5XAO2MQl2DBjE9xdJwZfVk5PkAKXhYwWyA/exec';
@@ -215,6 +278,14 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   useEffect(() => {
     localStorage.setItem(ROOMS_STORAGE_KEY, JSON.stringify(rooms));
   }, [rooms]);
+
+  useEffect(() => {
+    localStorage.setItem(ROOM_LOCKS_STORAGE_KEY, JSON.stringify(roomLocks));
+  }, [roomLocks]);
+
+  useEffect(() => {
+    localStorage.setItem(INQUIRIES_STORAGE_KEY, JSON.stringify(inquiries));
+  }, [inquiries]);
 
   const setGoogleSheetWebhookUrl = (url: string) => {
     setGoogleSheetWebhookUrlState(url);
@@ -402,11 +473,147 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }).catch(() => {});
   };
 
+  // --- ROOM LOCKS API METHODS ---
+  const lockRoom = async (lockData: Omit<RoomLock, 'id' | 'createdAt'>): Promise<boolean> => {
+    const newId = 'lock_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+    const newLock: RoomLock = {
+      ...lockData,
+      id: newId,
+      createdAt: new Date().toISOString(),
+    };
+    setRoomLocks(prev => [...prev, newLock]);
+
+    try {
+      const res = await fetch('/api/room_locks.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newLock),
+      });
+      const data = await res.json();
+      return !!(data && data.success);
+    } catch (e) {
+      return true;
+    }
+  };
+
+  const unlockRoom = async (lockId: string): Promise<boolean> => {
+    setRoomLocks(prev => prev.filter(l => l.id !== lockId));
+    try {
+      const res = await fetch(`/api/room_locks.php?id=${encodeURIComponent(lockId)}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      return !!(data && data.success);
+    } catch (e) {
+      return true;
+    }
+  };
+
+  // --- INQUIRIES API METHODS ---
+  const submitInquiry = async (inquiryData: Omit<Inquiry, 'id' | 'status' | 'createdAt'>): Promise<boolean> => {
+    const newId = 'inq_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+    const newInquiry: Inquiry = {
+      ...inquiryData,
+      id: newId,
+      status: 'new',
+      createdAt: new Date().toISOString(),
+    };
+    setInquiries(prev => [newInquiry, ...prev]);
+
+    try {
+      const res = await fetch('/api/inquiries.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newInquiry),
+      });
+      const data = await res.json();
+      return !!(data && data.success);
+    } catch (e) {
+      return true;
+    }
+  };
+
+  const updateInquiryStatus = (id: string, status: Inquiry['status'], notes?: string) => {
+    setInquiries(prev =>
+      prev.map(item => (item.id === id ? { ...item, status, notes: notes !== undefined ? notes : item.notes } : item))
+    );
+    fetch('/api/inquiries.php', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status, notes }),
+    }).catch(() => {});
+  };
+
+  const deleteInquiry = (id: string) => {
+    setInquiries(prev => prev.filter(item => item.id !== id));
+    fetch(`/api/inquiries.php?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }).catch(() => {});
+  };
+
+  // --- INVENTORY & REALTIME AVAILABILITY HELPERS ---
+  const getAvailableRoomsCount = (roomId: string, dateStr: string): number => {
+    const room = rooms.find(r => r.id === roomId);
+    if (!room) return 0;
+    if (room.status === 'maintenance') return 0;
+
+    const total = room.totalInventory ?? 4;
+
+    // Check if room is specifically locked on this date
+    const isLocked = roomLocks.some(l => l.roomId === roomId && dateStr >= l.startDate && dateStr <= l.endDate);
+    if (isLocked) return 0;
+
+    // Count non-cancelled bookings that occupy this date
+    const activeBookings = bookings.filter(b => {
+      if (b.roomId !== roomId) return false;
+      if (b.status === 'cancelled') return false;
+
+      if (b.bookingType === 'daily') {
+        // Daily booking occupies [checkInDate, checkOutDate)
+        return dateStr >= b.checkInDate && dateStr < b.checkOutDate;
+      } else {
+        // Hourly booking occupies checkInDate
+        return dateStr === b.checkInDate;
+      }
+    });
+
+    const remaining = total - activeBookings.length;
+    return Math.max(0, remaining);
+  };
+
+  const isRoomAvailableOnDates = (roomId: string, checkInDate: string, checkOutDate: string): boolean => {
+    if (!checkInDate) return true;
+    if (!checkOutDate || checkInDate === checkOutDate) {
+      return getAvailableRoomsCount(roomId, checkInDate) > 0;
+    }
+
+    const start = new Date(checkInDate);
+    const end = new Date(checkOutDate);
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
+      return getAvailableRoomsCount(roomId, checkInDate) > 0;
+    }
+
+    const cur = new Date(start);
+    while (cur < end) {
+      const y = cur.getFullYear();
+      const m = String(cur.getMonth() + 1).padStart(2, '0');
+      const d = String(cur.getDate()).padStart(2, '0');
+      const curStr = `${y}-${m}-${d}`;
+      if (getAvailableRoomsCount(roomId, curStr) <= 0) {
+        return false;
+      }
+      cur.setDate(cur.getDate() + 1);
+    }
+    return true;
+  };
+
   return (
     <BookingContext.Provider
       value={{
         bookings,
         rooms,
+        roomLocks,
+        inquiries,
         googleSheetWebhookUrl,
         setGoogleSheetWebhookUrl,
         addBooking,
@@ -418,6 +625,13 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         addNewRoom,
         deleteRoom,
         syncBookingToGoogleSheets,
+        lockRoom,
+        unlockRoom,
+        submitInquiry,
+        updateInquiryStatus,
+        deleteInquiry,
+        getAvailableRoomsCount,
+        isRoomAvailableOnDates,
       }}
     >
       {children}

@@ -13,7 +13,7 @@ interface BookingModalProps {
 
 export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, selectedRoom, onClose }) => {
   const { lang, t } = useLanguage();
-  const { addBooking, rooms } = useBookings();
+  const { addBooking, rooms, isRoomAvailableOnDates, getAvailableRoomsCount, roomLocks } = useBookings();
 
   const [bookingType, setBookingType] = useState<'daily' | 'hourly'>('daily');
   const [currentRoomId, setCurrentRoomId] = useState<string>(selectedRoom?.id || rooms[0]?.id || roomsData[0].id);
@@ -48,6 +48,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, selectedRoom
 
   const currentRoom = (rooms.length > 0 ? rooms : roomsData).find((r) => r.id === currentRoomId) || rooms[0] || roomsData[0];
 
+  const targetStartDate = bookingType === 'daily' ? checkInDate : stayDate;
+  const targetEndDate = bookingType === 'daily' ? checkOutDate : stayDate;
+  const isAvailableForDates = isRoomAvailableOnDates(currentRoom.id, targetStartDate, targetEndDate);
+  const availableCountOnStart = getAvailableRoomsCount(currentRoom.id, targetStartDate);
+  const isRoomLockedOnStart = roomLocks.some(
+    l => l.roomId === currentRoom.id && targetStartDate >= l.startDate && targetStartDate <= l.endDate
+  );
+
   // Calculate estimated total
   let totalAmount = 0;
   let durationText = '';
@@ -69,6 +77,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, selectedRoom
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isAvailableForDates) {
+      alert(
+        lang === 'vi'
+          ? 'Hạng phòng này hiện đã hết phòng hoặc đang tạm khóa bảo trì trong khoảng ngày bạn chọn. Vui lòng chọn ngày khác hoặc đổi sang hạng phòng khác!'
+          : 'This room is fully booked or temporarily locked on your selected dates. Please select other dates or another room!'
+      );
+      return;
+    }
     
     const createdBooking = await addBooking({
       bookingType,
@@ -223,13 +240,47 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, selectedRoom
                 onChange={(e) => setCurrentRoomId(e.target.value)}
                 className="w-full bg-[#FAF9F5] border border-neutral-200 rounded-lg px-3.5 py-2.5 text-xs font-semibold text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
               >
-                {(rooms && rooms.length > 0 ? rooms : roomsData).map((room) => (
-                  <option key={room.id} value={room.id}>
-                    {room.name[lang]} — {formatCurrency(room.pricePerNight)}/đêm ({formatCurrency(room.priceHourlyFirst2h)}/2h)
-                  </option>
-                ))}
+                {(rooms && rooms.length > 0 ? rooms : roomsData).map((room) => {
+                  const avail = getAvailableRoomsCount(room.id, targetStartDate);
+                  const isLocked = roomLocks.some(l => l.roomId === room.id && targetStartDate >= l.startDate && targetStartDate <= l.endDate);
+                  const statusNote = isLocked
+                    ? ` — [${lang === 'vi' ? 'Đã khóa' : 'Locked'}]`
+                    : avail <= 0
+                    ? ` — [${lang === 'vi' ? 'Hết phòng' : 'Full'}]`
+                    : ` — [${lang === 'vi' ? `Còn ${avail} phòng` : `${avail} left`}]`;
+
+                  return (
+                    <option key={room.id} value={room.id}>
+                      {room.name[lang]} {statusNote} — {formatCurrency(room.pricePerNight)}/đêm
+                    </option>
+                  );
+                })}
               </select>
             </div>
+
+            {/* Availability Notification Banner */}
+            {!isAvailableForDates ? (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2.5 text-xs text-rose-800">
+                <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0 animate-ping"></span>
+                <span>
+                  {isRoomLockedOnStart
+                    ? (lang === 'vi' ? 'Hạng phòng này đang tạm khóa bảo trì trong thời gian bạn chọn.' : 'This room type is temporarily locked for maintenance on selected dates.')
+                    : (lang === 'vi' ? 'Hạng phòng này hiện đã hết phòng trống trong khoảng thời gian đã chọn.' : 'This room is currently fully booked on selected dates.')}
+                </span>
+              </div>
+            ) : (
+              <div className="p-2.5 bg-emerald-50/70 border border-emerald-200/80 rounded-xl flex items-center justify-between text-xs text-emerald-800">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  <span className="font-medium">
+                    {lang === 'vi' ? 'Còn phòng sẵn sàng:' : 'Available units:'}
+                  </span>
+                </div>
+                <span className="font-bold font-sans bg-emerald-100/80 px-2 py-0.5 rounded text-emerald-900">
+                  {lang === 'vi' ? `Còn ${availableCountOnStart} phòng trống` : `${availableCountOnStart} rooms available`}
+                </span>
+              </div>
+            )}
 
             {/* Date & Time Pickers */}
             {bookingType === 'daily' ? (
@@ -425,10 +476,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, selectedRoom
               </button>
               <button
                 type="submit"
-                className="btn-magnetic px-7 py-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-xs uppercase tracking-wider shadow-sm flex items-center gap-2 transition-colors"
+                disabled={!isAvailableForDates}
+                className={`btn-magnetic px-7 py-3 rounded-lg font-semibold text-xs uppercase tracking-wider shadow-sm flex items-center gap-2 transition-all ${
+                  isAvailableForDates
+                    ? 'bg-neutral-900 hover:bg-neutral-800 text-white cursor-pointer'
+                    : 'bg-neutral-300 text-neutral-500 cursor-not-allowed'
+                }`}
               >
-                <span>{t('modal.confirm_btn')}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <span>{isAvailableForDates ? t('modal.confirm_btn') : (lang === 'vi' ? 'Hết Phòng / Đã Khóa' : 'Unavailable')}</span>
+                {isAvailableForDates && <ArrowRight className="w-3.5 h-3.5" />}
               </button>
             </div>
           </form>

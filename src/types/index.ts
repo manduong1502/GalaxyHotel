@@ -42,6 +42,7 @@ export interface Room {
   };
   status?: RoomStatus;
   isPopular?: boolean;
+  totalInventory?: number; // Total physical rooms of this type (default 1)
 }
 
 export interface ServiceItem {
@@ -109,6 +110,30 @@ export interface BookingRecord {
   updatedAt?: string;
 }
 
+export interface RoomLock {
+  id: string;
+  roomId: string;
+  startDate: string; // YYYY-MM-DD
+  endDate: string;   // YYYY-MM-DD
+  reason?: string;
+  createdAt?: string;
+}
+
+export interface Inquiry {
+  id: string;
+  fullName: string;
+  phone: string;
+  email?: string;
+  checkInDate?: string;
+  checkOutDate?: string;
+  roomType?: string;
+  guestsCount?: number;
+  message: string;
+  status: 'new' | 'contacted' | 'resolved' | 'cancelled';
+  notes?: string;
+  createdAt: string;
+}
+
 export interface AdminUser {
   id: string;
   username: string;
@@ -126,3 +151,4 @@ export interface DashboardStats {
   estimatedRevenue: number;
   occupancyRate: number;
 }
+
