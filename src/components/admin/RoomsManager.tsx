@@ -749,8 +749,8 @@ export const RoomsManager: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-amber-800 mb-1">
-                    Tổng Số Phòng (Tồn) *
+                  <label className="block text-[11px] font-bold text-neutral-800 mb-1">
+                    Số Phòng Vật Lý (Mặc Định) *
                   </label>
                   <input
                     type="number"
@@ -759,8 +759,11 @@ export const RoomsManager: React.FC = () => {
                     required
                     value={editTotalInventory}
                     onChange={(e) => setEditTotalInventory(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-amber-400 bg-amber-50/50 text-xs font-bold text-amber-900 focus:bg-white"
+                    className="w-full px-3 py-2 rounded-xl border border-neutral-300 bg-neutral-50 text-xs font-bold text-neutral-900 focus:bg-white"
                   />
+                  <span className="text-[9px] text-neutral-500 mt-0.5 block">
+                    (Cài đặt tồn theo từng ngày: vào menu Sơ Đồ Lịch Phòng)
+                  </span>
                 </div>
               </div>
 

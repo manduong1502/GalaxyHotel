@@ -53,9 +53,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, selectedRoom
   const targetEndDate = bookingType === 'daily' ? checkOutDate : stayDate;
   const isAvailableForDates = isRoomAvailableOnDates(currentRoom.id, targetStartDate, targetEndDate);
   const availableCountOnStart = getAvailableRoomsCount(currentRoom.id, targetStartDate);
-  const isRoomLockedOnStart = roomLocks.some(
+  const activeLockSetting = roomLocks.find(
     l => l.roomId === currentRoom.id && targetStartDate >= l.startDate && targetStartDate <= l.endDate
   );
+  const isRoomLockedOnStart = activeLockSetting?.isLocked === true && (!activeLockSetting.customInventory || activeLockSetting.customInventory <= 0);
 
   // Calculate estimated total
   let totalAmount = 0;

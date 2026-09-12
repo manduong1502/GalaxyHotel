@@ -32,11 +32,16 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
 
   if (!room) return null;
 
-  const totalInventory = room.totalInventory ?? 4;
-  const currentAvailableForSelected = getAvailableRoomsCount(room.id, selectedDateStr);
-  const isSelectedDateLocked = roomLocks.some(
+  const activeSetting = roomLocks.find(
     l => l.roomId === room.id && selectedDateStr >= l.startDate && selectedDateStr <= l.endDate
   );
+  const isSelectedDateLocked = activeSetting?.isLocked === true && (!activeSetting.customInventory || activeSetting.customInventory <= 0);
+  const dateBaseInventory = (activeSetting && typeof activeSetting.customInventory === 'number' && activeSetting.customInventory > 0)
+    ? activeSetting.customInventory
+    : (room.totalInventory ?? 4);
+
+  const totalInventory = dateBaseInventory;
+  const currentAvailableForSelected = getAvailableRoomsCount(room.id, selectedDateStr);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN').format(amount) + ' ₫';

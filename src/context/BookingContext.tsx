@@ -579,11 +579,23 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (!room) return 0;
     if (room.status === 'maintenance') return 0;
 
-    const total = room.totalInventory ?? 4;
+    // Check if there is an active setting (lock or custom daily inventory) for this room on this date
+    const activeSetting = roomLocks.find(
+      l => l.roomId === roomId && dateStr >= l.startDate && dateStr <= l.endDate
+    );
 
-    // Check if room is specifically locked on this date
-    const isLocked = roomLocks.some(l => l.roomId === roomId && dateStr >= l.startDate && dateStr <= l.endDate);
-    if (isLocked) return 0;
+    // If explicitly locked or set to 0 custom inventory
+    if (activeSetting) {
+      if (activeSetting.isLocked === true && (!activeSetting.customInventory || activeSetting.customInventory <= 0)) {
+        return 0;
+      }
+    }
+
+    // Determine base capacity for this date (custom daily inventory or default room total)
+    let total = room.totalInventory ?? 4;
+    if (activeSetting && typeof activeSetting.customInventory === 'number' && activeSetting.customInventory > 0) {
+      total = activeSetting.customInventory;
+    }
 
     // Count non-cancelled bookings that occupy this date
     const activeBookings = bookings.filter(b => {

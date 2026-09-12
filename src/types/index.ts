@@ -115,6 +115,8 @@ export interface RoomLock {
   roomId: string;
   startDate: string; // YYYY-MM-DD
   endDate: string;   // YYYY-MM-DD
+  isLocked?: boolean; // true = locked, false = custom inventory override
+  customInventory?: number; // custom number of units available for these dates
   reason?: string;
   createdAt?: string;
 }

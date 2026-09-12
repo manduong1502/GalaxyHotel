@@ -29,9 +29,22 @@ if (isset($pdo) && $pdo) {
             `room_id` VARCHAR(50) NOT NULL,
             `start_date` DATE NOT NULL,
             `end_date` DATE NOT NULL,
+            `is_locked` TINYINT(1) NOT NULL DEFAULT 1,
+            `custom_inventory` INT NOT NULL DEFAULT 0,
             `reason` VARCHAR(255) DEFAULT '',
             `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
+        $safeAdd = function($col, $def) use ($pdo) {
+            try {
+                $check = $pdo->query("SHOW COLUMNS FROM `room_locks` LIKE '$col'");
+                if ($check && $check->rowCount() == 0) {
+                    $pdo->exec("ALTER TABLE `room_locks` ADD COLUMN `$col` $def");
+                }
+            } catch (Exception $e) {}
+        };
+        $safeAdd('is_locked', 'TINYINT(1) NOT NULL DEFAULT 1');
+        $safeAdd('custom_inventory', 'INT NOT NULL DEFAULT 0');
     } catch (Exception $e) {}
 }
 
@@ -65,11 +78,20 @@ switch ($method) {
                         'roomId' => $row['room_id'],
                         'startDate' => $row['start_date'],
                         'endDate' => $row['end_date'],
+                        'isLocked' => isset($row['is_locked']) ? (bool)$row['is_locked'] : true,
+                        'customInventory' => isset($row['custom_inventory']) ? (int)$row['custom_inventory'] : 0,
                         'reason' => $row['reason'] ?? '',
                         'createdAt' => $row['created_at'] ?? ''
                     ];
                 }
-                saveLocksBackup($locksFile, $locks);
+                if (count($locks) > 0) {
+                    saveLocksBackup($locksFile, $locks);
+                } else {
+                    $backup = loadLocksBackup($locksFile);
+                    if (count($backup) > 0) {
+                        $locks = $backup;
+                    }
+                }
             } catch (Exception $e) {
                 $locks = loadLocksBackup($locksFile);
             }
@@ -94,7 +116,9 @@ switch ($method) {
         $roomId = trim($input['roomId']);
         $startDate = trim($input['startDate']);
         $endDate = trim($input['endDate']);
-        $reason = trim($input['reason'] ?? 'Bảo trì / Khóa phòng');
+        $isLocked = isset($input['isLocked']) ? ($input['isLocked'] ? 1 : 0) : 1;
+        $customInventory = isset($input['customInventory']) ? (int)$input['customInventory'] : 0;
+        $reason = trim($input['reason'] ?? ($isLocked ? 'Bảo trì / Khóa phòng' : 'Cài đặt tồn phòng'));
         $createdAt = date('Y-m-d H:i:s');
 
         $lockItem = [
@@ -102,16 +126,18 @@ switch ($method) {
             'roomId' => $roomId,
             'startDate' => $startDate,
             'endDate' => $endDate,
+            'isLocked' => (bool)$isLocked,
+            'customInventory' => $customInventory,
             'reason' => $reason,
             'createdAt' => $createdAt
         ];
 
         if (isset($pdo) && $pdo) {
             try {
-                $stmt = $pdo->prepare("INSERT INTO room_locks (id, room_id, start_date, end_date, reason, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                    ON DUPLICATE KEY UPDATE start_date = VALUES(start_date), end_date = VALUES(end_date), reason = VALUES(reason)");
-                $stmt->execute([$id, $roomId, $startDate, $endDate, $reason, $createdAt]);
+                $stmt = $pdo->prepare("INSERT INTO room_locks (id, room_id, start_date, end_date, is_locked, custom_inventory, reason, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    ON DUPLICATE KEY UPDATE start_date = VALUES(start_date), end_date = VALUES(end_date), is_locked = VALUES(is_locked), custom_inventory = VALUES(custom_inventory), reason = VALUES(reason)");
+                $stmt->execute([$id, $roomId, $startDate, $endDate, $isLocked, $customInventory, $reason, $createdAt]);
             } catch (Exception $e) {}
         }
 
