@@ -77,10 +77,10 @@ export const FloatingContactWidget: React.FC = () => {
       
       {/* Animated Speed Dial Menu Card */}
       <div 
-        className={`mb-3 w-72 sm:w-80 max-w-[calc(100vw-2rem)] bg-white rounded-3xl shadow-2xl border border-neutral-200 overflow-hidden origin-bottom-right transition-all duration-300 ease-out pointer-events-auto transform ${
+        className={`mb-3 w-72 sm:w-80 max-w-[calc(100vw-2rem)] bg-white rounded-3xl shadow-2xl border border-neutral-200 overflow-hidden origin-bottom-right transition-all duration-300 ease-out transform ${
           isOpen 
-            ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' 
-            : 'opacity-0 scale-90 translate-y-4 pointer-events-none'
+            ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto visible' 
+            : 'opacity-0 scale-90 translate-y-4 pointer-events-none invisible'
         }`}
       >
         {/* Header */}
