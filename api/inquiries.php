@@ -82,7 +82,30 @@ switch ($method) {
                         'createdAt' => $row['created_at'] ?? ''
                     ];
                 }
-                saveInquiriesBackup($inquiriesFile, $inquiries);
+                if (count($inquiries) > 0) {
+                    saveInquiriesBackup($inquiriesFile, $inquiries);
+                } else {
+                    $backup = loadInquiriesBackup($inquiriesFile);
+                    if (count($backup) > 0) {
+                        $inquiries = $backup;
+                        foreach ($backup as $item) {
+                            try {
+                                $ins = $pdo->prepare("INSERT INTO inquiries 
+                                    (id, full_name, phone, email, check_in_date, check_out_date, room_type, guests_count, message, status, notes, created_at)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    ON DUPLICATE KEY UPDATE status = VALUES(status), notes = VALUES(notes)");
+                                $ins->execute([
+                                    $item['id'], $item['fullName'], $item['phone'], $item['email'] ?? '',
+                                    !empty($item['checkInDate']) ? $item['checkInDate'] : null, 
+                                    !empty($item['checkOutDate']) ? $item['checkOutDate'] : null,
+                                    $item['roomType'] ?? '', $item['guestsCount'] ?? 1,
+                                    $item['message'] ?? '', $item['status'] ?? 'new', $item['notes'] ?? '',
+                                    $item['createdAt'] ?? date('Y-m-d H:i:s')
+                                ]);
+                            } catch (Exception $e) {}
+                        }
+                    }
+                }
             } catch (Exception $e) {
                 $inquiries = loadInquiriesBackup($inquiriesFile);
             }

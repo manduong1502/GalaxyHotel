@@ -8,11 +8,18 @@ import {
 } from 'lucide-react';
 
 export const InquiriesManager: React.FC = () => {
-  const { inquiries, updateInquiryStatus, deleteInquiry } = useBookings();
+  const { inquiries, updateInquiryStatus, deleteInquiry, refreshInquiries } = useBookings();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
   const [tempNotes, setTempNotes] = useState<string>('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshInquiries();
+    setTimeout(() => setIsRefreshing(false), 600);
+  };
 
   const filteredInquiries = inquiries.filter((item) => {
     const matchesSearch = 
@@ -92,8 +99,18 @@ export const InquiriesManager: React.FC = () => {
           </p>
         </div>
 
-        {/* Quick Stats */}
+        {/* Quick Stats & Refresh Button */}
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleManualRefresh}
+            disabled={isRefreshing}
+            className="px-3.5 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+            title="Đồng bộ dữ liệu mới nhất từ server"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-[#E8DCB9] ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>{isRefreshing ? 'Đang tải...' : 'Làm Mới'}</span>
+          </button>
+
           <div className="px-3.5 py-2 rounded-xl bg-amber-50 border border-amber-200/60 text-center">
             <div className="text-lg font-black text-amber-700">{countNew}</div>
             <div className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Mới Nhận</div>

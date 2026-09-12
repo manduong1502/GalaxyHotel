@@ -25,6 +25,8 @@ interface BookingContextType {
   submitInquiry: (inquiryData: Omit<Inquiry, 'id' | 'status' | 'createdAt'>) => Promise<boolean>;
   updateInquiryStatus: (id: string, status: Inquiry['status'], notes?: string) => void;
   deleteInquiry: (id: string) => void;
+  refreshInquiries: () => Promise<void>;
+  refreshBookings: () => Promise<void>;
   // Inventory & Availability Helpers
   getAvailableRoomsCount: (roomId: string, dateStr: string) => number;
   isRoomAvailableOnDates: (roomId: string, checkInDate: string, checkOutDate: string) => boolean;
@@ -51,6 +53,8 @@ const BookingContext = createContext<BookingContextType>({
   submitInquiry: async () => false,
   updateInquiryStatus: () => {},
   deleteInquiry: () => {},
+  refreshInquiries: async () => {},
+  refreshBookings: async () => {},
   getAvailableRoomsCount: () => 1,
   isRoomAvailableOnDates: () => true,
 });
@@ -224,47 +228,65 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return [];
   });
 
-  // Auto fetch live bookings, rooms, room locks, and inquiries from server API
+  // Refresh handlers
+  const refreshInquiries = async () => {
+    try {
+      const res = await fetch('/api/inquiries.php');
+      const data = await res.json();
+      if (data && data.success && Array.isArray(data.data)) {
+        setInquiries(data.data);
+      }
+    } catch (e) {}
+  };
+
+  const refreshBookings = async () => {
+    try {
+      const res = await fetch('/api/bookings.php');
+      const data = await res.json();
+      if (data && data.success && Array.isArray(data.data) && data.data.length > 0) {
+        setBookings(prev => {
+          const existingCodes = new Set(prev.map(b => b.bookingCode));
+          const newItems = data.data.filter((b: BookingRecord) => !existingCodes.has(b.bookingCode));
+          return [...newItems, ...prev];
+        });
+      }
+    } catch (e) {}
+  };
+
+  const refreshRooms = async () => {
+    try {
+      const res = await fetch('/api/rooms.php');
+      const data = await res.json();
+      if (data && data.success && Array.isArray(data.data) && data.data.length > 0) {
+        setRooms(data.data);
+      }
+    } catch (e) {}
+  };
+
+  const refreshRoomLocks = async () => {
+    try {
+      const res = await fetch('/api/room_locks.php');
+      const data = await res.json();
+      if (data && data.success && Array.isArray(data.data)) {
+        setRoomLocks(data.data);
+      }
+    } catch (e) {}
+  };
+
+  // Auto fetch live data on mount and interval polling
   useEffect(() => {
-    fetch('/api/bookings.php')
-      .then(res => res.json())
-      .then(res => {
-        if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
-          setBookings(prev => {
-            const existingCodes = new Set(prev.map(b => b.bookingCode));
-            const newItems = res.data.filter((b: BookingRecord) => !existingCodes.has(b.bookingCode));
-            return [...newItems, ...prev];
-          });
-        }
-      })
-      .catch(() => {});
+    refreshBookings();
+    refreshRooms();
+    refreshRoomLocks();
+    refreshInquiries();
 
-    fetch('/api/rooms.php')
-      .then(res => res.json())
-      .then(res => {
-        if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
-          setRooms(res.data);
-        }
-      })
-      .catch(() => {});
+    const interval = setInterval(() => {
+      refreshBookings();
+      refreshInquiries();
+      refreshRoomLocks();
+    }, 10000);
 
-    fetch('/api/room_locks.php')
-      .then(res => res.json())
-      .then(res => {
-        if (res && res.success && Array.isArray(res.data)) {
-          setRoomLocks(res.data);
-        }
-      })
-      .catch(() => {});
-
-    fetch('/api/inquiries.php')
-      .then(res => res.json())
-      .then(res => {
-        if (res && res.success && Array.isArray(res.data)) {
-          setInquiries(res.data);
-        }
-      })
-      .catch(() => {});
+    return () => clearInterval(interval);
   }, []);
 
   const [googleSheetWebhookUrl, setGoogleSheetWebhookUrlState] = useState<string>(() => {
@@ -630,6 +652,8 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         submitInquiry,
         updateInquiryStatus,
         deleteInquiry,
+        refreshInquiries,
+        refreshBookings,
         getAvailableRoomsCount,
         isRoomAvailableOnDates,
       }}
