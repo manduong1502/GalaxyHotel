@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useBookings } from '../../context/BookingContext';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -22,10 +22,10 @@ export const AdminSettings: React.FC = () => {
 
   // Email Notification & SMTP State
   const [notificationEmail, setNotificationEmail] = useState(() => {
-    return localStorage.getItem('galaxy_hotel_admin_email') || 'minhmanuzu@gmail.com';
+    return localStorage.getItem('galaxy_hotel_admin_email') || 'galaxyboutiquehotel2022@gmail.com';
   });
   const [smtpUser, setSmtpUser] = useState(() => {
-    return localStorage.getItem('galaxy_hotel_smtp_user') || 'minhmanuzu@gmail.com';
+    return localStorage.getItem('galaxy_hotel_smtp_user') || 'galaxyboutiquehotel2022@gmail.com';
   });
   const [smtpPass, setSmtpPass] = useState(() => {
     return localStorage.getItem('galaxy_hotel_smtp_pass') || '';
@@ -33,6 +33,27 @@ export const AdminSettings: React.FC = () => {
   const [isSavingSmtp, setIsSavingSmtp] = useState(false);
   const [smtpSaveMessage, setSmtpSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showSmtpGuide, setShowSmtpGuide] = useState(false);
+
+  // Auto-sync saved SMTP config from Hosting Server on component load
+  useEffect(() => {
+    fetch('/api/save_smtp.php')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.config) {
+          if (data.config.username) {
+            setSmtpUser(data.config.username);
+            setNotificationEmail(data.config.username);
+            localStorage.setItem('galaxy_hotel_smtp_user', data.config.username);
+            localStorage.setItem('galaxy_hotel_admin_email', data.config.username);
+          }
+          if (data.config.password) {
+            setSmtpPass(data.config.password);
+            localStorage.setItem('galaxy_hotel_smtp_pass', data.config.password);
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const [testingEmail, setTestingEmail] = useState(false);
   const [emailTestResult, setEmailTestResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -247,7 +268,7 @@ export const AdminSettings: React.FC = () => {
                 type="email"
                 value={smtpUser}
                 onChange={(e) => setSmtpUser(e.target.value)}
-                placeholder="minhmanuzu@gmail.com"
+                placeholder="galaxyboutiquehotel2022@gmail.com"
                 className="w-full bg-white border border-neutral-300 rounded-lg px-3.5 py-2 text-xs text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
               />
             </div>
@@ -296,7 +317,7 @@ export const AdminSettings: React.FC = () => {
               type="email"
               value={notificationEmail}
               onChange={(e) => setNotificationEmail(e.target.value)}
-              placeholder="minhmanuzu@gmail.com"
+              placeholder="galaxyboutiquehotel2022@gmail.com"
               className="flex-1 bg-[#FAF9F5] border border-neutral-200 rounded-lg px-3.5 py-2.5 text-xs text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
             />
             <button

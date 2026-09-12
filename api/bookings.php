@@ -404,10 +404,12 @@ switch ($method) {
         // 3. Đồng bộ sang Google Sheets
         triggerGoogleSheetsWebhook($newRecord);
 
-        // 4. Gửi Email thông báo qua SMTP
+        // 4. Gửi Email thông báo qua SMTP (gửi cho cả Lễ tân và Khách hàng)
         try {
-            sendBookingConfirmationEmail($newRecord);
-        } catch (Exception $e) {}
+            sendBookingEmails($newRecord);
+        } catch (Throwable $e) {
+            @file_put_contents($dataDir . '/mail_error.log', date('c') . " - " . $e->getMessage() . "\n", FILE_APPEND);
+        }
 
         echo json_encode([
             'success' => true,
