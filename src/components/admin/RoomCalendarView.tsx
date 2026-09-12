@@ -164,82 +164,95 @@ export const RoomCalendarView: React.FC = () => {
   return (
     <div className="space-y-6 animate-fade-in font-sans">
       
-      {/* Header with Month Navigation & Action Buttons */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-white p-5 sm:p-6 rounded-3xl border border-neutral-200 shadow-sm">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-[#8A6943] uppercase tracking-wider mb-1">
-            <Calendar className="w-4 h-4" />
-            <span>Sơ Đồ Phòng Realtime & Tồn Theo Ngày</span>
+      {/* Header with Title, Primary Actions & Filter Toolbar */}
+      <div className="bg-white p-5 sm:p-6 rounded-3xl border border-neutral-200 shadow-sm space-y-4">
+        {/* Top Row: Title + Primary Action Buttons */}
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-bold text-[#8A6943] uppercase tracking-wider mb-1">
+              <Calendar className="w-4 h-4" />
+              <span>Sơ Đồ Phòng Realtime & Tồn Theo Ngày</span>
+            </div>
+            <h2 className="font-sans font-bold text-2xl text-neutral-900 tracking-tight font-serif">
+              Sơ Đồ Lịch & Tồn Phòng Theo Ngày
+            </h2>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              Cài đặt số lượng phòng tồn/mở bán theo từng ngày, thiết lập khóa ngày (bảo trì) và kiểm tra đơn đặt realtime.
+            </p>
           </div>
-          <h2 className="font-sans font-bold text-2xl text-neutral-900 tracking-tight font-serif">
-            Sơ Đồ Lịch & Tồn Phòng Theo Ngày
-          </h2>
-          <p className="text-xs text-neutral-500 mt-0.5">
-            Cài đặt số lượng phòng tồn/mở bán theo từng ngày, thiết lập khóa ngày (bảo trì) và kiểm tra đơn đặt realtime.
-          </p>
+
+          {/* Primary Action Buttons */}
+          <div className="flex items-center gap-2.5 flex-shrink-0">
+            {/* Button: Cài Tồn Phòng Theo Ngày */}
+            <button
+              onClick={() => handleOpenSetupModal('inventory')}
+              className="px-4 py-2.5 rounded-xl bg-[#8A6943] hover:bg-[#725433] text-white text-xs font-bold flex items-center gap-2 shadow-sm transition-all active:scale-95"
+            >
+              <Sliders className="w-3.5 h-3.5" />
+              <span>Cài Tồn Ngày</span>
+            </button>
+
+            {/* Button: Khóa Phòng / Chặn Ngày */}
+            <button
+              onClick={() => handleOpenSetupModal('lock')}
+              className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-2 shadow-sm transition-all active:scale-95"
+            >
+              <Lock className="w-3.5 h-3.5" />
+              <span>Khóa / Chặn Ngày</span>
+            </button>
+          </div>
         </div>
 
-        {/* Filters & Actions */}
-        <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+        {/* Bottom Control Bar: Room Filter & Month Navigation */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-neutral-100 bg-[#FAF9F5] p-3 rounded-2xl">
           {/* Room Selector Filter */}
-          <select
-            value={selectedRoomFilter}
-            onChange={(e) => setSelectedRoomFilter(e.target.value)}
-            className="text-xs font-bold bg-neutral-100 border border-neutral-300 rounded-xl px-3 py-2 text-neutral-800 focus:outline-none focus:border-[#C29A64]"
-          >
-            <option value="all">Tất cả {rooms.length} hạng phòng</option>
-            {rooms.map(r => (
-              <option key={r.id} value={r.id}>{r.name.vi} (Mặc định: {r.totalInventory ?? 4}p)</option>
-            ))}
-          </select>
-
-          {/* Month Stepper */}
-          <div className="flex items-center gap-1 bg-[#FAF9F5] p-1 rounded-xl border border-neutral-200">
-            <button
-              onClick={prevMonth}
-              title="Tháng trước"
-              className="w-8 h-8 rounded-lg bg-white hover:bg-neutral-100 text-neutral-900 flex items-center justify-center shadow-xs transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-
-            <span className="font-sans font-bold text-xs sm:text-sm text-neutral-900 px-2.5 min-w-[120px] text-center">
-              {monthNames[month]}, {year}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-neutral-600 whitespace-nowrap hidden md:inline">
+              Lọc theo phòng:
             </span>
-
-            <button
-              onClick={nextMonth}
-              title="Tháng sau"
-              className="w-8 h-8 rounded-lg bg-white hover:bg-neutral-100 text-neutral-900 flex items-center justify-center shadow-xs transition-colors"
+            <select
+              value={selectedRoomFilter}
+              onChange={(e) => setSelectedRoomFilter(e.target.value)}
+              className="text-xs font-bold bg-white border border-neutral-300 rounded-xl px-3 py-2 text-neutral-800 focus:outline-none focus:border-[#C29A64] shadow-2xs w-full sm:w-auto min-w-[200px]"
             >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+              <option value="all">Tất cả {rooms.length} hạng phòng</option>
+              {rooms.map(r => (
+                <option key={r.id} value={r.id}>{r.name.vi} (Mặc định: {r.totalInventory ?? 4}p)</option>
+              ))}
+            </select>
           </div>
 
-          <button
-            onClick={goToToday}
-            className="px-3 py-2 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-xs font-bold transition-colors"
-          >
-            Hôm nay
-          </button>
+          {/* Month Stepper & Today Button */}
+          <div className="flex items-center justify-end gap-2">
+            <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-neutral-200 shadow-2xs">
+              <button
+                onClick={prevMonth}
+                title="Tháng trước"
+                className="w-8 h-8 rounded-lg hover:bg-neutral-100 text-neutral-900 flex items-center justify-center transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
 
-          {/* Button: Cài Tồn Phòng Theo Ngày */}
-          <button
-            onClick={() => handleOpenSetupModal('inventory')}
-            className="px-3.5 py-2 rounded-xl bg-[#8A6943] hover:bg-[#725433] text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all active:scale-95"
-          >
-            <Sliders className="w-3.5 h-3.5" />
-            <span>Cài Tồn Ngày</span>
-          </button>
+              <span className="font-sans font-bold text-xs sm:text-sm text-neutral-900 px-3 min-w-[120px] text-center">
+                {monthNames[month]}, {year}
+              </span>
 
-          {/* Button: Khóa Phòng / Chặn Ngày */}
-          <button
-            onClick={() => handleOpenSetupModal('lock')}
-            className="px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all active:scale-95"
-          >
-            <Lock className="w-3.5 h-3.5" />
-            <span>Khóa / Chặn Ngày</span>
-          </button>
+              <button
+                onClick={nextMonth}
+                title="Tháng sau"
+                className="w-8 h-8 rounded-lg hover:bg-neutral-100 text-neutral-900 flex items-center justify-center transition-colors"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            <button
+              onClick={goToToday}
+              className="px-3 py-2 rounded-xl bg-white hover:bg-neutral-100 text-neutral-800 text-xs font-bold border border-neutral-200 shadow-2xs transition-colors"
+            >
+              Hôm nay
+            </button>
+          </div>
         </div>
       </div>
 
@@ -676,11 +689,11 @@ export const RoomCalendarView: React.FC = () => {
 
       {/* Unified Setup Modal: Cài Tồn Phòng & Khóa Phòng */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-backdrop">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 border border-neutral-200 shadow-2xl space-y-5 animate-modal-pop">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm animate-backdrop">
+          <div className="bg-white rounded-3xl max-w-lg w-full border border-neutral-200 shadow-2xl animate-modal-pop max-h-[90vh] flex flex-col overflow-hidden">
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+            <div className="flex items-center justify-between px-6 sm:px-7 py-5 border-b border-neutral-100 bg-white flex-shrink-0">
               <div>
                 <h3 className="font-serif font-bold text-lg text-neutral-900">
                   {modalMode === 'inventory' ? 'Cài Đặt Tồn Phòng Theo Ngày' : 'Khóa Phòng / Chặn Đặt'}
@@ -690,6 +703,7 @@ export const RoomCalendarView: React.FC = () => {
                 </p>
               </div>
               <button
+                type="button"
                 onClick={() => setIsModalOpen(false)}
                 className="p-1.5 rounded-full text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
               >
@@ -697,33 +711,34 @@ export const RoomCalendarView: React.FC = () => {
               </button>
             </div>
 
-            {/* Mode Switcher Tabs */}
-            <div className="grid grid-cols-2 p-1 bg-neutral-100 rounded-xl text-xs font-bold">
-              <button
-                type="button"
-                onClick={() => setModalMode('inventory')}
-                className={`py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
-                  modalMode === 'inventory' 
-                    ? 'bg-white text-[#8A6943] shadow-xs' 
-                    : 'text-neutral-600 hover:text-neutral-900'
-                }`}
-              >
-                <Sliders className="w-3.5 h-3.5" />
-                <span>Cài Tồn Mở Bán</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setModalMode('lock')}
-                className={`py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
-                  modalMode === 'lock' 
-                    ? 'bg-white text-red-600 shadow-xs' 
-                    : 'text-neutral-600 hover:text-neutral-900'
-                }`}
-              >
-                <Lock className="w-3.5 h-3.5" />
-                <span>Khóa Bảo Trì / Chặn</span>
-              </button>
-            </div>
+            <div className="flex-1 overflow-y-auto p-6 sm:p-7 space-y-5">
+              {/* Mode Switcher Tabs */}
+              <div className="grid grid-cols-2 p-1 bg-neutral-100 rounded-xl text-xs font-bold">
+                <button
+                  type="button"
+                  onClick={() => setModalMode('inventory')}
+                  className={`py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+                    modalMode === 'inventory' 
+                      ? 'bg-white text-[#8A6943] shadow-xs' 
+                      : 'text-neutral-600 hover:text-neutral-900'
+                  }`}
+                >
+                  <Sliders className="w-3.5 h-3.5" />
+                  <span>Cài Tồn Mở Bán</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModalMode('lock')}
+                  className={`py-2 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+                    modalMode === 'lock' 
+                      ? 'bg-white text-red-600 shadow-xs' 
+                      : 'text-neutral-600 hover:text-neutral-900'
+                  }`}
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>Khóa Bảo Trì / Chặn</span>
+                </button>
+              </div>
 
             <form onSubmit={handleSubmitModal} className="space-y-4 text-xs">
               {/* Room Selector */}
@@ -887,11 +902,12 @@ export const RoomCalendarView: React.FC = () => {
                 </button>
               </div>
             </form>
-
           </div>
-        </div>
-      )}
 
-    </div>
+        </div>
+      </div>
+    )}
+
+  </div>
   );
 };

@@ -399,10 +399,11 @@ export const RoomsManager: React.FC = () => {
 
       {/* Edit / Add Room Modal with Full Customization */}
       {(editingRoom || isAddingRoom) && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-backdrop">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-neutral-200 my-8 animate-modal-pop max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-backdrop">
+          <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-neutral-200 my-4 sm:my-8 animate-modal-pop max-h-[90vh] flex flex-col overflow-hidden">
             
-            <div className="flex justify-between items-center pb-4 border-b border-neutral-100 mb-6">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center px-6 sm:px-8 py-5 border-b border-neutral-100 bg-white flex-shrink-0">
               <div>
                 <h3 className="font-sans font-bold text-xl text-neutral-900">
                   {isAddingRoom ? 'Thêm Hạng Phòng Mới' : `Chỉnh Sửa: ${editingRoom?.name.vi}`}
@@ -412,17 +413,18 @@ export const RoomsManager: React.FC = () => {
                 </p>
               </div>
               <button
+                type="button"
                 onClick={() => {
                   setEditingRoom(null);
                   setIsAddingRoom(false);
                 }}
-                className="p-2 rounded-full hover:bg-neutral-100 text-neutral-400 hover:text-neutral-700"
+                className="p-2 rounded-full hover:bg-neutral-100 text-neutral-400 hover:text-neutral-700 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="space-y-5">
+            <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5">
               
               {/* Photo Upload Section */}
               <div className="p-4 sm:p-5 rounded-2xl bg-neutral-50 border border-neutral-200 space-y-3.5">
@@ -720,50 +722,60 @@ export const RoomsManager: React.FC = () => {
               </div>
 
               {/* Specs: Area, Bed, Guests, Total Inventory */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold text-neutral-700 mb-1">Diện Tích (m²)</label>
-                  <input
-                    type="number"
-                    value={editAreaSqm}
-                    onChange={(e) => setEditAreaSqm(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-300 text-xs font-semibold"
-                  />
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-neutral-700 mb-1.5 truncate">
+                      Diện Tích (m²)
+                    </label>
+                    <input
+                      type="number"
+                      value={editAreaSqm}
+                      onChange={(e) => setEditAreaSqm(Number(e.target.value))}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-semibold focus:ring-2 focus:ring-neutral-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-neutral-700 mb-1.5 truncate">
+                      Người Lớn (Tối đa)
+                    </label>
+                    <input
+                      type="number"
+                      value={editMaxAdults}
+                      onChange={(e) => setEditMaxAdults(Number(e.target.value))}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-semibold focus:ring-2 focus:ring-neutral-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-neutral-700 mb-1.5 truncate">
+                      Trẻ Em (Tối đa)
+                    </label>
+                    <input
+                      type="number"
+                      value={editMaxChildren}
+                      onChange={(e) => setEditMaxChildren(Number(e.target.value))}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 text-xs font-semibold focus:ring-2 focus:ring-neutral-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-neutral-800 mb-1.5 truncate">
+                      Số Phòng Mặc Định *
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={50}
+                      required
+                      value={editTotalInventory}
+                      onChange={(e) => setEditTotalInventory(Number(e.target.value))}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-300 bg-neutral-50 text-xs font-bold text-neutral-900 focus:bg-white focus:ring-2 focus:ring-neutral-900"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-neutral-700 mb-1">Người Lớn</label>
-                  <input
-                    type="number"
-                    value={editMaxAdults}
-                    onChange={(e) => setEditMaxAdults(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-300 text-xs font-semibold"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-neutral-700 mb-1">Trẻ Em</label>
-                  <input
-                    type="number"
-                    value={editMaxChildren}
-                    onChange={(e) => setEditMaxChildren(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-300 text-xs font-semibold"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-neutral-800 mb-1">
-                    Số Phòng Vật Lý (Mặc Định) *
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={50}
-                    required
-                    value={editTotalInventory}
-                    onChange={(e) => setEditTotalInventory(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-neutral-300 bg-neutral-50 text-xs font-bold text-neutral-900 focus:bg-white"
-                  />
-                  <span className="text-[9px] text-neutral-500 mt-0.5 block">
-                    (Cài đặt tồn theo từng ngày: vào menu Sơ Đồ Lịch Phòng)
-                  </span>
+
+                <div className="text-[10px] text-neutral-500 bg-[#FAF9F5] p-2.5 rounded-xl border border-neutral-200/70 flex items-center gap-1.5">
+                  <span className="text-[#8A6943] font-bold">💡 Lưu ý tồn phòng:</span>
+                  <span>Để tăng/giảm số phòng mở bán hoặc khóa phòng theo từng ngày, hãy vào menu <strong>Sơ Đồ Lịch & Khóa Phòng</strong>.</span>
                 </div>
               </div>
 
