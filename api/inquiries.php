@@ -30,13 +30,28 @@ function getPossibleInquiriesFiles() {
     ];
 }
 
+function safeFilePutContents($filePath, $content) {
+    $dir = dirname($filePath);
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0777, true);
+    }
+    $res = @file_put_contents($filePath, $content, LOCK_EX);
+    if ($res === false) {
+        $res = @file_put_contents($filePath, $content);
+    }
+    if ($res !== false) {
+        @chmod($filePath, 0666);
+    }
+    return $res !== false;
+}
+
 function loadInquiries() {
     foreach (getPossibleInquiriesFiles() as $filePath) {
         if (file_exists($filePath)) {
             $content = @file_get_contents($filePath);
             if ($content) {
                 $data = json_decode($content, true);
-                if (is_array($data) && count($data) > 0) {
+                if (is_array($data)) {
                     return $data;
                 }
             }
@@ -49,11 +64,7 @@ function saveInquiries($items) {
     $encoded = json_encode(array_values($items), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     $saved = false;
     foreach (getPossibleInquiriesFiles() as $filePath) {
-        $dir = dirname($filePath);
-        if (!is_dir($dir)) {
-            @mkdir($dir, 0777, true);
-        }
-        if (@file_put_contents($filePath, $encoded, LOCK_EX) !== false) {
+        if (safeFilePutContents($filePath, $encoded)) {
             $saved = true;
         }
     }

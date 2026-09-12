@@ -18,32 +18,60 @@ $dataDir = __DIR__ . '/data';
 if (!is_dir($dataDir)) {
     @mkdir($dataDir, 0777, true);
 }
-$locksFile = $dataDir . '/room_locks.json';
 
-function loadLocks($filePath) {
-    if (file_exists($filePath)) {
-        $content = @file_get_contents($filePath);
-        if ($content) {
-            $data = json_decode($content, true);
-            if (is_array($data)) return $data;
+function getPossibleLocksFiles() {
+    $webRoot = dirname(__DIR__);
+    return [
+        __DIR__ . '/data/room_locks.json',
+        $webRoot . '/uploads/room_locks.json',
+        __DIR__ . '/room_locks.json'
+    ];
+}
+
+function safeFilePutContents($filePath, $content) {
+    $dir = dirname($filePath);
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0777, true);
+    }
+    $res = @file_put_contents($filePath, $content, LOCK_EX);
+    if ($res === false) {
+        $res = @file_put_contents($filePath, $content);
+    }
+    if ($res !== false) {
+        @chmod($filePath, 0666);
+    }
+    return $res !== false;
+}
+
+function loadLocks() {
+    foreach (getPossibleLocksFiles() as $filePath) {
+        if (file_exists($filePath)) {
+            $content = @file_get_contents($filePath);
+            if ($content) {
+                $data = json_decode($content, true);
+                if (is_array($data)) return $data;
+            }
         }
     }
     return [];
 }
 
-function saveLocks($filePath, $locks) {
-    $dir = dirname($filePath);
-    if (!is_dir($dir)) {
-        @mkdir($dir, 0777, true);
+function saveLocks($locks) {
+    $encoded = json_encode(array_values($locks), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    $saved = false;
+    foreach (getPossibleLocksFiles() as $filePath) {
+        if (safeFilePutContents($filePath, $encoded)) {
+            $saved = true;
+        }
     }
-    return @file_put_contents($filePath, json_encode(array_values($locks), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), LOCK_EX) !== false;
+    return $saved;
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        $locks = loadLocks($locksFile);
+        $locks = loadLocks();
         echo json_encode(['success' => true, 'data' => $locks]);
         break;
 
@@ -77,7 +105,7 @@ switch ($method) {
             'createdAt' => $createdAt
         ];
 
-        $locks = loadLocks($locksFile);
+        $locks = loadLocks();
         $found = false;
         foreach ($locks as &$item) {
             if ($item['id'] === $id) {
@@ -90,7 +118,7 @@ switch ($method) {
             $locks[] = $lockItem;
         }
 
-        saveLocks($locksFile, $locks);
+        saveLocks($locks);
 
         echo json_encode([
             'success' => true,
@@ -113,12 +141,12 @@ switch ($method) {
             exit();
         }
 
-        $locks = loadLocks($locksFile);
-        $filtered = array_filter($locks, function($l) use ($id) {
+        $locks = loadLocks();
+        $filtered = array_values(array_filter($locks, function($l) use ($id) {
             return $l['id'] !== $id;
-        });
+        }));
 
-        saveLocks($locksFile, $filtered);
+        saveLocks($filtered);
         echo json_encode(['success' => true, 'message' => 'Đã mở khóa / xóa cài đặt phòng thành công']);
         break;
 

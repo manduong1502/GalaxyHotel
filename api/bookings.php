@@ -20,32 +20,60 @@ $dataDir = __DIR__ . '/data';
 if (!is_dir($dataDir)) {
     @mkdir($dataDir, 0777, true);
 }
-$bookingsFile = $dataDir . '/bookings.json';
 
-function loadBookings($filePath) {
-    if (file_exists($filePath)) {
-        $content = @file_get_contents($filePath);
-        if ($content) {
-            $data = json_decode($content, true);
-            if (is_array($data)) return $data;
+function getPossibleBookingsFiles() {
+    $webRoot = dirname(__DIR__);
+    return [
+        __DIR__ . '/data/bookings.json',
+        $webRoot . '/uploads/bookings.json',
+        __DIR__ . '/bookings.json'
+    ];
+}
+
+function safeFilePutContents($filePath, $content) {
+    $dir = dirname($filePath);
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0777, true);
+    }
+    $res = @file_put_contents($filePath, $content, LOCK_EX);
+    if ($res === false) {
+        $res = @file_put_contents($filePath, $content);
+    }
+    if ($res !== false) {
+        @chmod($filePath, 0666);
+    }
+    return $res !== false;
+}
+
+function loadBookings() {
+    foreach (getPossibleBookingsFiles() as $filePath) {
+        if (file_exists($filePath)) {
+            $content = @file_get_contents($filePath);
+            if ($content) {
+                $data = json_decode($content, true);
+                if (is_array($data)) return $data;
+            }
         }
     }
     return [];
 }
 
-function saveBookings($filePath, $items) {
-    $dir = dirname($filePath);
-    if (!is_dir($dir)) {
-        @mkdir($dir, 0777, true);
+function saveBookings($items) {
+    $encoded = json_encode(array_values($items), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    $saved = false;
+    foreach (getPossibleBookingsFiles() as $filePath) {
+        if (safeFilePutContents($filePath, $encoded)) {
+            $saved = true;
+        }
     }
-    return @file_put_contents($filePath, json_encode(array_values($items), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), LOCK_EX) !== false;
+    return $saved;
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        $bookings = loadBookings($bookingsFile);
+        $bookings = loadBookings();
         echo json_encode(['success' => true, 'data' => $bookings]);
         break;
 
@@ -107,9 +135,9 @@ switch ($method) {
             'updatedAt' => $updatedAt
         ];
 
-        $bookings = loadBookings($bookingsFile);
+        $bookings = loadBookings();
         array_unshift($bookings, $bookingRecord);
-        saveBookings($bookingsFile, $bookings);
+        saveBookings($bookings);
 
         // Gửi email xác nhận đặt phòng
         try {
@@ -134,7 +162,7 @@ switch ($method) {
         }
 
         $id = trim($input['id']);
-        $bookings = loadBookings($bookingsFile);
+        $bookings = loadBookings();
         $found = false;
 
         foreach ($bookings as &$item) {
@@ -149,7 +177,7 @@ switch ($method) {
         }
 
         if ($found) {
-            saveBookings($bookingsFile, $bookings);
+            saveBookings($bookings);
             echo json_encode(['success' => true, 'message' => 'Đã cập nhật trạng thái đơn đặt phòng']);
         } else {
             http_response_code(404);
@@ -171,12 +199,12 @@ switch ($method) {
             exit();
         }
 
-        $bookings = loadBookings($bookingsFile);
-        $filtered = array_filter($bookings, function($b) use ($id) {
+        $bookings = loadBookings();
+        $filtered = array_values(array_filter($bookings, function($b) use ($id) {
             return $b['id'] !== $id && (!isset($b['bookingCode']) || $b['bookingCode'] !== $id);
-        });
+        }));
 
-        saveBookings($bookingsFile, $filtered);
+        saveBookings($filtered);
         echo json_encode(['success' => true, 'message' => 'Đã xóa đơn đặt phòng thành công']);
         break;
 

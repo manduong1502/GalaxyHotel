@@ -29,14 +29,25 @@ function getPossibleServicesFiles() {
     ];
 }
 
+function safeFilePutContents($filePath, $content) {
+    $dir = dirname($filePath);
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0777, true);
+    }
+    $res = @file_put_contents($filePath, $content, LOCK_EX);
+    if ($res === false) {
+        $res = @file_put_contents($filePath, $content);
+    }
+    if ($res !== false) {
+        @chmod($filePath, 0666);
+    }
+    return $res !== false;
+}
+
 function saveServicesJson($boxes) {
     $encoded = json_encode(array_values($boxes), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     foreach (getPossibleServicesFiles() as $path) {
-        $dir = dirname($path);
-        if (!is_dir($dir)) {
-            @mkdir($dir, 0777, true);
-        }
-        @file_put_contents($path, $encoded, LOCK_EX);
+        safeFilePutContents($path, $encoded);
     }
 }
 
