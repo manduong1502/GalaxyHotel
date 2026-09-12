@@ -6,6 +6,7 @@ import {
   BedDouble, AlertCircle, Lock, Unlock, Plus, Trash2, 
   CheckCircle2, XCircle, ShieldAlert, Sparkles 
 } from 'lucide-react';
+import { getLocalDateStr } from '../../utils/dateUtils';
 
 export const RoomCalendarView: React.FC = () => {
   const { 
@@ -14,14 +15,14 @@ export const RoomCalendarView: React.FC = () => {
   } = useBookings();
   
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDay, setSelectedDay] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [selectedDay, setSelectedDay] = useState<string>(getLocalDateStr());
   const [selectedRoomFilter, setSelectedRoomFilter] = useState<string>('all');
   
   // Room Lock Modal state
   const [isLockModalOpen, setIsLockModalOpen] = useState(false);
   const [lockRoomId, setLockRoomId] = useState<string>(rooms[0]?.id || 'phong-don-tiet-kiem');
-  const [lockStartDate, setLockStartDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [lockEndDate, setLockEndDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [lockStartDate, setLockStartDate] = useState<string>(getLocalDateStr());
+  const [lockEndDate, setLockEndDate] = useState<string>(getLocalDateStr());
   const [lockReason, setLockReason] = useState<string>('Bảo trì / Khóa phòng');
   const [isSubmittingLock, setIsSubmittingLock] = useState(false);
 
@@ -39,7 +40,7 @@ export const RoomCalendarView: React.FC = () => {
   const goToToday = () => {
     const today = new Date();
     setCurrentDate(today);
-    setSelectedDay(today.toISOString().split('T')[0]);
+    setSelectedDay(getLocalDateStr(today));
   };
 
   // Calendar calculations
@@ -238,7 +239,7 @@ export const RoomCalendarView: React.FC = () => {
               const dayBookings = getBookingsForDate(dateStr);
               const dayLocks = getLocksForDate(dateStr);
               const isSelected = selectedDay === dateStr;
-              const isToday = new Date().toISOString().split('T')[0] === dateStr;
+              const isToday = getLocalDateStr() === dateStr;
               const dayOfWeek = new Date(year, month, dayNum).getDay();
               const isSunday = dayOfWeek === 0;
 

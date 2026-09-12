@@ -3,6 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useBookings } from '../context/BookingContext';
 import { roomsData } from '../data/mockData';
 import { Calendar as CalendarIcon, Clock, Users, Search, ArrowRight } from 'lucide-react';
+import { getLocalDateStr, getTomorrowDateStr } from '../utils/dateUtils';
 
 interface BookingBarProps {
   onSearch: (params: {
@@ -23,8 +24,8 @@ export const BookingBar: React.FC<BookingBarProps> = ({ onSearch }) => {
   const [bookingType, setBookingType] = useState<'daily' | 'hourly'>('daily');
   const displayRooms = (rooms && rooms.length > 0) ? rooms : roomsData;
 
-  const today = new Date().toISOString().split('T')[0];
-  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  const today = getLocalDateStr();
+  const tomorrow = getTomorrowDateStr();
 
   const [checkInDate, setCheckInDate] = useState(today);
   const [checkOutDate, setCheckOutDate] = useState(tomorrow);

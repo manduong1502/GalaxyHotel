@@ -4,6 +4,7 @@ import { useBookings } from '../context/BookingContext';
 import { Room } from '../types';
 import { roomsData } from '../data/mockData';
 import { X, Calendar as CalendarIcon, Clock, Check, Phone, ArrowRight } from 'lucide-react';
+import { getLocalDateStr, getTomorrowDateStr } from '../utils/dateUtils';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -18,8 +19,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, selectedRoom
   const [bookingType, setBookingType] = useState<'daily' | 'hourly'>('daily');
   const [currentRoomId, setCurrentRoomId] = useState<string>(selectedRoom?.id || rooms[0]?.id || roomsData[0].id);
 
-  const today = new Date().toISOString().split('T')[0];
-  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  const today = getLocalDateStr();
+  const tomorrow = getTomorrowDateStr();
 
   const [checkInDate, setCheckInDate] = useState(today);
   const [checkOutDate, setCheckOutDate] = useState(tomorrow);

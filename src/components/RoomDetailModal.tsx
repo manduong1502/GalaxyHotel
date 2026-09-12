@@ -3,24 +3,31 @@ import { useLanguage } from '../context/LanguageContext';
 import { useBookings } from '../context/BookingContext';
 import { Room } from '../types';
 import { 
-  X, Calendar as CalendarIcon, Users, Maximize2, Bed, Check, 
-  ChevronLeft, ChevronRight, ShieldCheck, Lock, Sparkles, AlertCircle 
+  X, Check, ChevronLeft, ChevronRight, Users, Bed, 
+  Maximize2, ShieldCheck, Sparkles, Calendar as CalendarIcon, Lock 
 } from 'lucide-react';
+import { getLocalDateStr } from '../utils/dateUtils';
 
 interface RoomDetailModalProps {
   room: Room | null;
+  isOpen?: boolean;
   onClose: () => void;
   onBookNow: (room: Room) => void;
 }
 
-export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ room, onClose, onBookNow }) => {
+export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
+  room,
+  isOpen,
+  onClose,
+  onBookNow,
+}) => {
   const { lang, t } = useLanguage();
   const { getAvailableRoomsCount, roomLocks } = useBookings();
   
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
   const [selectedDateStr, setSelectedDateStr] = useState<string>(() => {
-    return new Date().toISOString().split('T')[0];
+    return getLocalDateStr();
   });
 
   if (!room) return null;
@@ -64,7 +71,7 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({ room, onClose,
   const firstDayIndex = firstDayRaw === 0 ? 6 : firstDayRaw - 1;
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getLocalDateStr();
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-backdrop">

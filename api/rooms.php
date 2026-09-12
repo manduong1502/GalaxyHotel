@@ -51,16 +51,26 @@ if (isset($pdo) && $pdo) {
             `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
 
-        // Safe auto-migration for existing tables
-        $pdo->exec("ALTER TABLE `rooms` ADD COLUMN IF NOT EXISTS `bed_type_vi` VARCHAR(150) DEFAULT '1 Giường Đôi'");
-        $pdo->exec("ALTER TABLE `rooms` ADD COLUMN IF NOT EXISTS `bed_type_en` VARCHAR(150) DEFAULT '1 Double Bed'");
-        $pdo->exec("ALTER TABLE `rooms` ADD COLUMN IF NOT EXISTS `view_vi` VARCHAR(150) DEFAULT ''");
-        $pdo->exec("ALTER TABLE `rooms` ADD COLUMN IF NOT EXISTS `view_en` VARCHAR(150) DEFAULT ''");
-        $pdo->exec("ALTER TABLE `rooms` ADD COLUMN IF NOT EXISTS `amenities_json` MEDIUMTEXT");
-        $pdo->exec("ALTER TABLE `rooms` ADD COLUMN IF NOT EXISTS `images_json` MEDIUMTEXT");
-        $pdo->exec("ALTER TABLE `rooms` MODIFY COLUMN `images_json` MEDIUMTEXT");
-        $pdo->exec("ALTER TABLE `rooms` MODIFY COLUMN `amenities_json` MEDIUMTEXT");
-        $pdo->exec("ALTER TABLE `rooms` ADD COLUMN IF NOT EXISTS `total_inventory` INT NOT NULL DEFAULT 4");
+        // Safe auto-migration for existing tables across all MySQL / MariaDB versions
+        $safeAdd = function($col, $def) use ($pdo) {
+            try {
+                $check = $pdo->query("SHOW COLUMNS FROM `rooms` LIKE '$col'");
+                if ($check && $check->rowCount() == 0) {
+                    $pdo->exec("ALTER TABLE `rooms` ADD COLUMN `$col` $def");
+                }
+            } catch (Exception $e) {}
+        };
+
+        $safeAdd('bed_type_vi', "VARCHAR(150) DEFAULT '1 Giường Đôi'");
+        $safeAdd('bed_type_en', "VARCHAR(150) DEFAULT '1 Double Bed'");
+        $safeAdd('view_vi', "VARCHAR(150) DEFAULT ''");
+        $safeAdd('view_en', "VARCHAR(150) DEFAULT ''");
+        $safeAdd('amenities_json', "MEDIUMTEXT");
+        $safeAdd('images_json', "MEDIUMTEXT");
+        $safeAdd('total_inventory', "INT NOT NULL DEFAULT 4");
+
+        try { $pdo->exec("ALTER TABLE `rooms` MODIFY COLUMN `images_json` MEDIUMTEXT"); } catch (Exception $e) {}
+        try { $pdo->exec("ALTER TABLE `rooms` MODIFY COLUMN `amenities_json` MEDIUMTEXT"); } catch (Exception $e) {}
     } catch (Exception $e) {}
 }
 

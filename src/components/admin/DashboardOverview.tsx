@@ -2,6 +2,7 @@ import React from 'react';
 import { useBookings } from '../../context/BookingContext';
 import { BookingRecord } from '../../types';
 import { CalendarCheck, DollarSign, Clock, Users, BedDouble, AlertCircle, ArrowUpRight, CheckCircle2, XCircle, Inbox } from 'lucide-react';
+import { getLocalDateStr } from '../../utils/dateUtils';
 
 interface DashboardOverviewProps {
   onNavigateToTab: (tab: string) => void;
@@ -15,7 +16,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ onNavigate
   const pendingCount = bookings.filter(b => b.status === 'pending').length;
   const newInquiriesCount = inquiries ? inquiries.filter(i => i.status === 'new').length : 0;
   const confirmedCount = bookings.filter(b => b.status === 'confirmed' || b.status === 'checked_in').length;
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalDateStr();
   const todayCheckIns = bookings.filter(b => b.checkInDate === today && b.status !== 'cancelled').length;
   const todayCheckOuts = bookings.filter(b => b.checkOutDate === today && b.status !== 'cancelled').length;
 

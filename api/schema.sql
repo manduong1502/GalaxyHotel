@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS `inquiries` (
   `guests_count` INT DEFAULT 1,
   `message` TEXT NOT NULL,
   `status` ENUM('new', 'contacted', 'resolved', 'cancelled') NOT NULL DEFAULT 'new',
-  `notes` TEXT DEFAULT '',
+  `notes` TEXT,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX `idx_inq_status` (`status`),
   INDEX `idx_inq_created` (`created_at`)

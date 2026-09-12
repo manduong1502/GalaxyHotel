@@ -36,7 +36,7 @@ if (isset($pdo) && $pdo) {
             `guests_count` INT DEFAULT 1,
             `message` TEXT NOT NULL,
             `status` ENUM('new', 'contacted', 'resolved', 'cancelled') NOT NULL DEFAULT 'new',
-            `notes` TEXT DEFAULT '',
+            `notes` TEXT,
             `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
     } catch (Exception $e) {}
