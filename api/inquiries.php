@@ -35,10 +35,26 @@ if (isset($pdo) && $pdo) {
             `room_type` VARCHAR(150) DEFAULT '',
             `guests_count` INT DEFAULT 1,
             `message` TEXT NOT NULL,
-            `status` ENUM('new', 'contacted', 'resolved', 'cancelled') NOT NULL DEFAULT 'new',
+            `status` VARCHAR(50) NOT NULL DEFAULT 'new',
             `notes` TEXT,
             `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
+
+        $safeAdd = function($col, $def) use ($pdo) {
+            try {
+                $check = $pdo->query("SHOW COLUMNS FROM `inquiries` LIKE '$col'");
+                if ($check && $check->rowCount() == 0) {
+                    $pdo->exec("ALTER TABLE `inquiries` ADD COLUMN `$col` $def");
+                }
+            } catch (Exception $e) {}
+        };
+        $safeAdd('notes', 'TEXT');
+        $safeAdd('status', "VARCHAR(50) NOT NULL DEFAULT 'new'");
+        $safeAdd('email', "VARCHAR(150) DEFAULT ''");
+        $safeAdd('check_in_date', 'DATE DEFAULT NULL');
+        $safeAdd('check_out_date', 'DATE DEFAULT NULL');
+        $safeAdd('room_type', "VARCHAR(150) DEFAULT ''");
+        $safeAdd('guests_count', 'INT DEFAULT 1');
     } catch (Exception $e) {}
 }
 

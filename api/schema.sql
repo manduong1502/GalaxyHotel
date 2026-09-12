@@ -107,12 +107,14 @@ INSERT INTO `settings` (`setting_key`, `setting_value`) VALUES
 ('gsheet_webhook_url', '')
 ON DUPLICATE KEY UPDATE `setting_key` = `setting_key`;
 
--- 5. BẢNG KHÓA PHÒNG / BẢO TRÌ (room_locks)
+-- 5. BẢNG KHÓA PHÒNG / CÀI TỒN THEO NGÀY (room_locks)
 CREATE TABLE IF NOT EXISTS `room_locks` (
   `id` VARCHAR(50) PRIMARY KEY,
   `room_id` VARCHAR(50) NOT NULL,
   `start_date` DATE NOT NULL,
   `end_date` DATE NOT NULL,
+  `is_locked` TINYINT(1) NOT NULL DEFAULT 1,
+  `custom_inventory` INT NOT NULL DEFAULT 0,
   `reason` VARCHAR(255) DEFAULT '',
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX `idx_lock_room` (`room_id`),
@@ -130,7 +132,7 @@ CREATE TABLE IF NOT EXISTS `inquiries` (
   `room_type` VARCHAR(150) DEFAULT '',
   `guests_count` INT DEFAULT 1,
   `message` TEXT NOT NULL,
-  `status` ENUM('new', 'contacted', 'resolved', 'cancelled') NOT NULL DEFAULT 'new',
+  `status` VARCHAR(50) NOT NULL DEFAULT 'new',
   `notes` TEXT,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX `idx_inq_status` (`status`),
