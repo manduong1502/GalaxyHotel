@@ -27,6 +27,8 @@ interface BookingContextType {
   deleteInquiry: (id: string) => void;
   refreshInquiries: () => Promise<void>;
   refreshBookings: () => Promise<void>;
+  refreshRooms: () => Promise<void>;
+  refreshRoomLocks: () => Promise<void>;
   // Inventory & Availability Helpers
   getAvailableRoomsCount: (roomId: string, dateStr: string) => number;
   isRoomAvailableOnDates: (roomId: string, checkInDate: string, checkOutDate: string) => boolean;
@@ -55,6 +57,8 @@ const BookingContext = createContext<BookingContextType>({
   deleteInquiry: () => {},
   refreshInquiries: async () => {},
   refreshBookings: async () => {},
+  refreshRooms: async () => {},
+  refreshRoomLocks: async () => {},
   getAvailableRoomsCount: () => 1,
   isRoomAvailableOnDates: () => true,
 });
@@ -575,13 +579,13 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // --- INVENTORY & REALTIME AVAILABILITY HELPERS ---
   const getAvailableRoomsCount = (roomId: string, dateStr: string): number => {
-    const room = rooms.find(r => r.id === roomId);
+    const room = rooms.find(r => String(r.id) === String(roomId));
     if (!room) return 0;
     if (room.status === 'maintenance') return 0;
 
     // Check if there is an active setting (lock or custom daily inventory) for this room on this date
     const activeSetting = roomLocks.find(
-      l => l.roomId === roomId && dateStr >= l.startDate && dateStr <= l.endDate
+      l => String(l.roomId) === String(roomId) && dateStr >= l.startDate && dateStr <= l.endDate
     );
 
     // If explicitly locked or set to 0 custom inventory
@@ -599,7 +603,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     // Count non-cancelled bookings that occupy this date
     const activeBookings = bookings.filter(b => {
-      if (b.roomId !== roomId) return false;
+      if (String(b.roomId) !== String(roomId)) return false;
       if (b.status === 'cancelled') return false;
 
       if (b.bookingType === 'daily') {
@@ -666,6 +670,8 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         deleteInquiry,
         refreshInquiries,
         refreshBookings,
+        refreshRooms,
+        refreshRoomLocks,
         getAvailableRoomsCount,
         isRoomAvailableOnDates,
       }}

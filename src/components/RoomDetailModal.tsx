@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useBookings } from '../context/BookingContext';
 import { Room } from '../types';
@@ -23,13 +23,19 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
   onBookNow,
 }) => {
   const { lang, t } = useLanguage();
-  const { getAvailableRoomsCount, roomLocks } = useBookings();
+  const { getAvailableRoomsCount, roomLocks, refreshRoomLocks, refreshBookings } = useBookings();
   
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
   const [selectedDateStr, setSelectedDateStr] = useState<string>(() => {
     return getLocalDateStr();
   });
+
+  // Re-fetch live inventory and locks on modal open
+  useEffect(() => {
+    refreshRoomLocks();
+    refreshBookings();
+  }, [room?.id, isOpen]);
 
   if (!room) return null;
 
@@ -42,9 +48,9 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
   const roomFeatures = getBilingualList(room.features, lang);
 
   const activeSetting = roomLocks.find(
-    l => l.roomId === room.id && selectedDateStr >= l.startDate && selectedDateStr <= l.endDate
+    l => String(l.roomId) === String(room.id) && selectedDateStr >= l.startDate && selectedDateStr <= l.endDate
   );
-  const isSelectedDateLocked = activeSetting?.isLocked === true && (!activeSetting.customInventory || activeSetting.customInventory <= 0);
+  const isSelectedDateLocked = (room.status === 'maintenance') || (activeSetting?.isLocked === true && (!activeSetting.customInventory || activeSetting.customInventory <= 0));
   const dateBaseInventory = (activeSetting && typeof activeSetting.customInventory === 'number' && activeSetting.customInventory > 0)
     ? activeSetting.customInventory
     : (room.totalInventory ?? 4);
@@ -373,9 +379,10 @@ export const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
                 const dayNum = i + 1;
                 const dayDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
                 const availableCount = getAvailableRoomsCount(room.id, dayDateStr);
-                const isLocked = roomLocks.some(
-                  l => l.roomId === room.id && dayDateStr >= l.startDate && dayDateStr <= l.endDate
+                const activeSettingForDay = roomLocks.find(
+                  l => String(l.roomId) === String(room.id) && dayDateStr >= l.startDate && dayDateStr <= l.endDate
                 );
+                const isLocked = (room.status === 'maintenance') || (activeSettingForDay?.isLocked === true && (!activeSettingForDay.customInventory || activeSettingForDay.customInventory <= 0));
                 const isSelected = selectedDateStr === dayDateStr;
                 const isToday = todayStr === dayDateStr;
 
