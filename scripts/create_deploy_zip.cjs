@@ -43,16 +43,14 @@ if (fs.existsSync(distDir)) {
   });
 }
 
-// 2. Thêm thư mục api/ vào zip (bảo vệ uploads, bookings thực tế và logs)
+// 2. Thêm thư mục api/ vào zip (bảo vệ uploads, bookings, data thực tế và logs)
 if (fs.existsSync(apiDir)) {
   archive.directory(apiDir, 'api', (entry) => {
-    // Không đóng gói thư mục uploads, logs, dữ liệu json và smtp_config.json thực tế của khách hàng
+    // Không đóng gói thư mục uploads, logs, toàn bộ dữ liệu data/ và smtp_config.json thực tế của khách hàng
     if (
       entry.name.includes('uploads/') || 
       entry.name.endsWith('.log') || 
-      entry.name.includes('data/bookings.json') ||
-      entry.name.includes('data/room_locks.json') ||
-      entry.name.includes('data/inquiries.json') ||
+      entry.name.includes('data/') ||
       entry.name.includes('smtp_config.json')
     ) {
       return false;
