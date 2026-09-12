@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useBookings } from '../context/BookingContext';
 import { useScrollReveal } from '../hooks/useScrollReveal';
-import { MapPin, Phone, Mail, Clock, Send, Check } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Send, Check, Loader2 } from 'lucide-react';
 
 export const LocationContactSection: React.FC = () => {
   const { t, lang } = useLanguage();
   const { submitInquiry } = useBookings();
   const { ref: sectionRef, isVisible } = useScrollReveal<HTMLElement>(0.1);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -18,20 +19,25 @@ export const LocationContactSection: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim() || !formData.phone.trim()) return;
+    if (!formData.name.trim() || !formData.phone.trim() || isSubmitting) return;
 
-    await submitInquiry({
-      fullName: formData.name.trim(),
-      phone: formData.phone.trim(),
-      email: formData.email.trim(),
-      message: formData.message.trim() || 'Yêu cầu tư vấn qua website'
-    });
+    setIsSubmitting(true);
+    try {
+      await submitInquiry({
+        fullName: formData.name.trim(),
+        phone: formData.phone.trim(),
+        email: formData.email.trim(),
+        message: formData.message.trim() || 'Yêu cầu tư vấn qua website'
+      });
 
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({ name: '', phone: '', email: '', message: '' });
-    }, 4000);
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({ name: '', phone: '', email: '', message: '' });
+      }, 4000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -200,10 +206,20 @@ export const LocationContactSection: React.FC = () => {
 
                 <button
                   type="submit"
-                  className="btn-magnetic w-full py-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2 transition-colors shadow-sm"
+                  disabled={isSubmitting}
+                  className={`btn-magnetic w-full py-3.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-sm ${isSubmitting ? 'opacity-80 cursor-not-allowed' : ''}`}
                 >
-                  <Send className="w-3.5 h-3.5 text-[#B89369]" />
-                  <span>{t('contact.form_submit')}</span>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 text-[#B89369] animate-spin" />
+                      <span>{lang === 'vi' ? 'Đang Gửi Yêu Cầu...' : 'Sending Request...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-3.5 h-3.5 text-[#B89369]" />
+                      <span>{t('contact.form_submit')}</span>
+                    </>
+                  )}
                 </button>
               </form>
             )}

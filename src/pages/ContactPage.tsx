@@ -3,7 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useBookings } from '../context/BookingContext';
 import { 
   Home, ChevronRight, MapPin, Phone, Mail, 
-  Clock, Navigation, Send, CheckCircle2, MessageSquare 
+  Clock, Navigation, Send, CheckCircle2, MessageSquare, Loader2 
 } from 'lucide-react';
 
 interface ContactPageProps {
@@ -15,23 +15,29 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
   const { submitInquiry } = useBookings();
   const [formData, setFormData] = useState({ name: '', phone: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim() || !formData.phone.trim()) return;
+    if (!formData.name.trim() || !formData.phone.trim() || isSubmitting) return;
 
-    await submitInquiry({
-      fullName: formData.name.trim(),
-      phone: formData.phone.trim(),
-      email: formData.email.trim(),
-      message: formData.message.trim() || 'Yêu cầu liên hệ qua trang Contact'
-    });
+    setIsSubmitting(true);
+    try {
+      await submitInquiry({
+        fullName: formData.name.trim(),
+        phone: formData.phone.trim(),
+        email: formData.email.trim(),
+        message: formData.message.trim() || 'Yêu cầu liên hệ qua trang Contact'
+      });
 
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({ name: '', phone: '', email: '', message: '' });
-    }, 4000);
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({ name: '', phone: '', email: '', message: '' });
+      }, 4000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -246,10 +252,20 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
 
                 <button
                   type="submit"
-                  className="w-full py-3 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2 transition-colors shadow-sm"
+                  disabled={isSubmitting}
+                  className={`w-full py-3.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-sm ${isSubmitting ? 'opacity-80 cursor-not-allowed' : ''}`}
                 >
-                  <Send className="w-3.5 h-3.5 text-[#E8DCB9]" />
-                  <span>{lang === 'vi' ? 'Gửi Yêu Cầu Liên Hệ' : 'Submit Message'}</span>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 text-[#E8DCB9] animate-spin" />
+                      <span>{lang === 'vi' ? 'Đang Gửi Yêu Cầu...' : 'Sending Request...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-3.5 h-3.5 text-[#E8DCB9]" />
+                      <span>{lang === 'vi' ? 'Gửi Yêu Cầu Liên Hệ' : 'Submit Message'}</span>
+                    </>
+                  )}
                 </button>
               </form>
             )}
