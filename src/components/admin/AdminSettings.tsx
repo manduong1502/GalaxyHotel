@@ -42,8 +42,13 @@ export const AdminSettings: React.FC = () => {
         if (data.success && data.config) {
           if (data.config.username) {
             setSmtpUser(data.config.username);
-            setNotificationEmail(data.config.username);
             localStorage.setItem('galaxy_hotel_smtp_user', data.config.username);
+          }
+          if (data.config.notification_email) {
+            setNotificationEmail(data.config.notification_email);
+            localStorage.setItem('galaxy_hotel_admin_email', data.config.notification_email);
+          } else if (data.config.username) {
+            setNotificationEmail(data.config.username);
             localStorage.setItem('galaxy_hotel_admin_email', data.config.username);
           }
           if (data.config.password) {
@@ -69,6 +74,9 @@ export const AdminSettings: React.FC = () => {
 
     localStorage.setItem('galaxy_hotel_smtp_user', smtpUser.trim());
     localStorage.setItem('galaxy_hotel_smtp_pass', smtpPass.trim());
+    if (notificationEmail.trim()) {
+      localStorage.setItem('galaxy_hotel_admin_email', notificationEmail.trim());
+    }
 
     try {
       const res = await fetch('/api/save_smtp.php', {
@@ -77,6 +85,7 @@ export const AdminSettings: React.FC = () => {
         body: JSON.stringify({
           username: smtpUser.trim(),
           password: smtpPass.trim(),
+          notification_email: notificationEmail.trim() || smtpUser.trim(),
           host: 'smtp.gmail.com',
           port: 465
         })

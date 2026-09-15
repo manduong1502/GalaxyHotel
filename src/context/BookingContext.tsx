@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { BookingRecord, BookingFormData, BookingStatus, Room, RoomStatus, RoomLock, Inquiry } from '../types';
 import { roomsData as initialRooms } from '../data/mockData';
+import { getBilingualText } from '../utils/bilingual';
 
 interface BookingContextType {
   bookings: BookingRecord[];
@@ -365,12 +366,14 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       nights = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
     }
 
+    const safeRoomName = getBilingualText(selectedRoom?.name, 'vi', 'Phòng Khách Sạn Galaxy');
+
     const newRecord: BookingRecord = {
       id: 'bk-' + Date.now(),
       bookingCode: newCode,
       bookingType: formData.bookingType,
       roomId: formData.roomId,
-      roomName: selectedRoom.name.vi,
+      roomName: safeRoomName,
       guestName: formData.guestName,
       guestPhone: formData.guestPhone,
       guestEmail: formData.guestEmail || '',
@@ -400,7 +403,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
           bookingCode: newCode,
           bookingType: formData.bookingType,
           roomId: formData.roomId,
-          roomName: selectedRoom.name.vi,
+          roomName: safeRoomName,
           guestName: formData.guestName,
           guestPhone: formData.guestPhone,
           guestEmail: formData.guestEmail || '',

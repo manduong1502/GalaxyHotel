@@ -72,8 +72,9 @@ if ($method === 'POST') {
     $existingConfig = loadSmtpConfig();
     
     // Nếu người dùng không nhập pass mới và pass cũ đang là mask
-    if ($password === '••••••••••••••••' && $existingConfig) {
-        $password = $existingConfig['password'] ?? '';
+    $notificationEmail = trim($input['notification_email'] ?? $input['email'] ?? '');
+    if (empty($notificationEmail)) {
+        $notificationEmail = $existingConfig['notification_email'] ?? $username;
     }
 
     $configData = [
@@ -81,6 +82,7 @@ if ($method === 'POST') {
         'port' => $port,
         'username' => $username,
         'password' => $password,
+        'notification_email' => $notificationEmail,
         'from_name' => 'Galaxy Boutique Hotel',
         'updated_at' => date('d/m/Y H:i:s')
     ];

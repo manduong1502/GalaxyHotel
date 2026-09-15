@@ -5,6 +5,17 @@
 // =========================================================================
 
 /**
+ * Trợ giúp chuyển đổi dữ liệu an toàn thành chuỗi (hỗ trợ cả mảng đa ngữ { vi: '...', en: '...' })
+ */
+function safeStringVal($val, $default = '') {
+    if ($val === null || $val === false) return $default;
+    if (is_array($val)) {
+        return (string)($val['vi'] ?? $val['en'] ?? reset($val) ?? $default);
+    }
+    return (string)$val;
+}
+
+/**
  * Gửi email qua giao thức SMTP Socket (Google Gmail / cPanel Webmail)
  */
 function sendSmtpEmail($to, $subject, $htmlContent, $smtpConfig) {
@@ -18,10 +29,12 @@ function sendSmtpEmail($to, $subject, $htmlContent, $smtpConfig) {
         return false;
     }
 
-    $socket = @fsockopen("ssl://{$host}", $port, $errno, $errstr, 15);
+    $prefix = ($port === 465) ? 'ssl://' : '';
+    $socket = @fsockopen($prefix . $host, $port, $errno, $errstr, 8);
     if (!$socket) {
         return false;
     }
+    @stream_set_timeout($socket, 8);
 
     // Đọc lời chào ban đầu từ SMTP server
     $res = fgets($socket, 515);
@@ -137,20 +150,24 @@ function sendReceptionNotificationEmail($booking, $recipientEmail = null) {
     if (!$recipientEmail) {
         $recipientEmail = getReceptionEmail();
     }
-    $code = htmlspecialchars($booking['bookingCode'] ?? $booking['booking_code'] ?? 'GBH-0000');
-    $guestName = htmlspecialchars($booking['guestName'] ?? $booking['guest_name'] ?? 'Khách hàng');
-    $guestPhone = htmlspecialchars($booking['guestPhone'] ?? $booking['guest_phone'] ?? '');
-    $guestEmail = htmlspecialchars($booking['guestEmail'] ?? $booking['guest_email'] ?? 'Không có');
-    $roomName = htmlspecialchars($booking['roomName'] ?? $booking['room_name'] ?? 'Phòng Khách Sạn');
+    $code = htmlspecialchars(safeStringVal($booking['bookingCode'] ?? $booking['booking_code'] ?? 'GBH-0000'));
+    $guestName = htmlspecialchars(safeStringVal($booking['guestName'] ?? $booking['guest_name'] ?? 'Khách hàng'));
+    $guestPhone = htmlspecialchars(safeStringVal($booking['guestPhone'] ?? $booking['guest_phone'] ?? ''));
+    $guestEmail = htmlspecialchars(safeStringVal($booking['guestEmail'] ?? $booking['guest_email'] ?? 'Không có'));
+    $roomName = htmlspecialchars(safeStringVal($booking['roomName'] ?? $booking['room_name'] ?? 'Phòng Khách Sạn'));
     $bookingType = ($booking['bookingType'] ?? $booking['booking_type'] ?? 'daily') === 'daily' ? 'Theo Ngày / Đêm' : 'Theo Giờ Linh Hoạt';
     $duration = ($booking['bookingType'] ?? $booking['booking_type'] ?? 'daily') === 'daily' 
         ? (($booking['nightsCount'] ?? $booking['nights_count'] ?? 1) . ' đêm') 
         : (($booking['hoursCount'] ?? $booking['hours_count'] ?? 2) . ' giờ');
-    $checkIn = htmlspecialchars(($booking['checkInDate'] ?? $booking['check_in_date'] ?? '') . ' (' . ($booking['checkInTime'] ?? $booking['check_in_time'] ?? '14:00') . ')');
-    $checkOut = htmlspecialchars(($booking['checkOutDate'] ?? $booking['check_out_date'] ?? '') . ' (' . ($booking['checkOutTime'] ?? $booking['check_out_time'] ?? '12:00') . ')');
+    $checkInDate = safeStringVal($booking['checkInDate'] ?? $booking['check_in_date'] ?? '');
+    $checkInTime = safeStringVal($booking['checkInTime'] ?? $booking['check_in_time'] ?? '14:00');
+    $checkIn = htmlspecialchars($checkInDate . ' (' . $checkInTime . ')');
+    $checkOutDate = safeStringVal($booking['checkOutDate'] ?? $booking['check_out_date'] ?? '');
+    $checkOutTime = safeStringVal($booking['checkOutTime'] ?? $booking['check_out_time'] ?? '12:00');
+    $checkOut = htmlspecialchars($checkOutDate . ' (' . $checkOutTime . ')');
     $guests = intval($booking['adults'] ?? 1) . ' Người lớn' . (intval($booking['children'] ?? 0) > 0 ? (', ' . intval($booking['children']) . ' Trẻ em') : '');
     $totalPrice = number_format(floatval($booking['totalPrice'] ?? $booking['total_price'] ?? 0), 0, ',', '.') . ' ₫';
-    $specialRequests = htmlspecialchars($booking['specialRequests'] ?? $booking['special_requests'] ?? 'Không có');
+    $specialRequests = htmlspecialchars(safeStringVal($booking['specialRequests'] ?? $booking['special_requests'] ?? 'Không có'));
     $createdAt = date('d/m/Y H:i:s');
 
     $subject = "🔔 [ĐƠN ĐẶT PHÒNG MỚI #{$code}] {$guestName} - {$roomName}";
@@ -304,21 +321,25 @@ HTML;
  * Gửi email xác nhận đặt phòng cho Khách hàng
  */
 function sendCustomerConfirmationEmail($booking) {
-    $guestEmail = trim($booking['guestEmail'] ?? $booking['guest_email'] ?? '');
+    $guestEmail = trim(safeStringVal($booking['guestEmail'] ?? $booking['guest_email'] ?? ''));
     if (empty($guestEmail) || !filter_var($guestEmail, FILTER_VALIDATE_EMAIL)) {
         return false;
     }
 
-    $code = htmlspecialchars($booking['bookingCode'] ?? $booking['booking_code'] ?? 'GBH-0000');
-    $guestName = htmlspecialchars($booking['guestName'] ?? $booking['guest_name'] ?? 'Quý khách');
-    $guestPhone = htmlspecialchars($booking['guestPhone'] ?? $booking['guest_phone'] ?? '');
-    $roomName = htmlspecialchars($booking['roomName'] ?? $booking['room_name'] ?? 'Phòng Khách Sạn');
+    $code = htmlspecialchars(safeStringVal($booking['bookingCode'] ?? $booking['booking_code'] ?? 'GBH-0000'));
+    $guestName = htmlspecialchars(safeStringVal($booking['guestName'] ?? $booking['guest_name'] ?? 'Quý khách'));
+    $guestPhone = htmlspecialchars(safeStringVal($booking['guestPhone'] ?? $booking['guest_phone'] ?? ''));
+    $roomName = htmlspecialchars(safeStringVal($booking['roomName'] ?? $booking['room_name'] ?? 'Phòng Khách Sạn'));
     $bookingType = ($booking['bookingType'] ?? $booking['booking_type'] ?? 'daily') === 'daily' ? 'Theo Ngày / Đêm' : 'Theo Giờ';
     $duration = ($booking['bookingType'] ?? $booking['booking_type'] ?? 'daily') === 'daily' 
         ? (($booking['nightsCount'] ?? $booking['nights_count'] ?? 1) . ' đêm') 
         : (($booking['hoursCount'] ?? $booking['hours_count'] ?? 2) . ' giờ');
-    $checkIn = htmlspecialchars(($booking['checkInDate'] ?? $booking['check_in_date'] ?? '') . ' (' . ($booking['checkInTime'] ?? $booking['check_in_time'] ?? '14:00') . ')');
-    $checkOut = htmlspecialchars(($booking['checkOutDate'] ?? $booking['check_out_date'] ?? '') . ' (' . ($booking['checkOutTime'] ?? $booking['check_out_time'] ?? '12:00') . ')');
+    $checkInDate = safeStringVal($booking['checkInDate'] ?? $booking['check_in_date'] ?? '');
+    $checkInTime = safeStringVal($booking['checkInTime'] ?? $booking['check_in_time'] ?? '14:00');
+    $checkIn = htmlspecialchars($checkInDate . ' (' . $checkInTime . ')');
+    $checkOutDate = safeStringVal($booking['checkOutDate'] ?? $booking['check_out_date'] ?? '');
+    $checkOutTime = safeStringVal($booking['checkOutTime'] ?? $booking['check_out_time'] ?? '12:00');
+    $checkOut = htmlspecialchars($checkOutDate . ' (' . $checkOutTime . ')');
     $totalPrice = number_format(floatval($booking['totalPrice'] ?? $booking['total_price'] ?? 0), 0, ',', '.') . ' ₫';
 
     $subject = "Xác nhận yêu cầu đặt phòng #{$code} - Galaxy Boutique Hotel Saigon";
@@ -487,14 +508,14 @@ function sendInquiryNotificationEmail($inquiry, $recipientEmail = null) {
     if (!$recipientEmail) {
         $recipientEmail = getReceptionEmail();
     }
-    $fullName = htmlspecialchars($inquiry['fullName'] ?? $inquiry['full_name'] ?? 'Khách hàng');
-    $phone = htmlspecialchars($inquiry['phone'] ?? '');
-    $email = htmlspecialchars($inquiry['email'] ?? 'Không có');
-    $roomType = htmlspecialchars($inquiry['roomType'] ?? $inquiry['room_type'] ?? 'Tư vấn chung');
-    $checkIn = htmlspecialchars($inquiry['checkInDate'] ?? $inquiry['check_in_date'] ?? 'Chưa xác định');
-    $checkOut = htmlspecialchars($inquiry['checkOutDate'] ?? $inquiry['check_out_date'] ?? 'Chưa xác định');
-    $guestsCount = htmlspecialchars($inquiry['guestsCount'] ?? $inquiry['guests_count'] ?? '1');
-    $message = nl2br(htmlspecialchars($inquiry['message'] ?? ''));
+    $fullName = htmlspecialchars(safeStringVal($inquiry['fullName'] ?? $inquiry['full_name'] ?? 'Khách hàng'));
+    $phone = htmlspecialchars(safeStringVal($inquiry['phone'] ?? ''));
+    $email = htmlspecialchars(safeStringVal($inquiry['email'] ?? 'Không có'));
+    $roomType = htmlspecialchars(safeStringVal($inquiry['roomType'] ?? $inquiry['room_type'] ?? 'Tư vấn chung'));
+    $checkIn = htmlspecialchars(safeStringVal($inquiry['checkInDate'] ?? $inquiry['check_in_date'] ?? 'Chưa xác định'));
+    $checkOut = htmlspecialchars(safeStringVal($inquiry['checkOutDate'] ?? $inquiry['check_out_date'] ?? 'Chưa xác định'));
+    $guestsCount = htmlspecialchars(safeStringVal($inquiry['guestsCount'] ?? $inquiry['guests_count'] ?? '1'));
+    $message = nl2br(htmlspecialchars(safeStringVal($inquiry['message'] ?? '')));
     $createdAt = date('d/m/Y H:i:s');
 
     $subject = "🔔 [YÊU CẦU TƯ VẤN] Từ khách hàng: {$fullName} - SĐT: {$phone}";
