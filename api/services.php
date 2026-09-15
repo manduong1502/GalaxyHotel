@@ -69,41 +69,98 @@ function loadServicesJson() {
 $defaultBoxes = [
     [
         'id' => 'box-1',
-        'tag' => 'TOUR TRẢI NGHIỆM',
-        'title' => 'Tour Trải Nghiệm & Khám Phá',
-        'desc' => 'Hỗ trợ đặt tour chất lượng cao khám phá vẻ đẹp Nam Bộ và lịch sử Sài Gòn hào hùng.',
+        'tag' => [
+            'vi' => 'TOUR TRẢI NGHIỆM',
+            'en' => 'LOCAL TOURS'
+        ],
+        'title' => [
+            'vi' => 'Tour Trải Nghiệm & Khám Phá',
+            'en' => 'Discovery & Sightseeing Tours'
+        ],
+        'desc' => [
+            'vi' => 'Hỗ trợ đặt tour chất lượng cao khám phá vẻ đẹp Nam Bộ và lịch sử Sài Gòn hào hùng.',
+            'en' => 'High-quality local tour booking assistance exploring Southern Vietnam beauty and historical landmarks.'
+        ],
         'image' => '/images/tour-mekong.jpg',
-        'hours' => '24/7 Hỗ trợ',
+        'hours' => [
+            'vi' => '24/7 Hỗ trợ',
+            'en' => '24/7 Support'
+        ],
         'items' => [
-            'Hành Trình Miền Tây (Mekong delta)',
-            'Khám phá Địa đạo Củ Chi (Cu Chi Tunnels)',
-            'Một vòng Sài Gòn (City Tour)'
+            'vi' => [
+                'Hành Trình Miền Tây (Mekong delta)',
+                'Khám phá Địa đạo Củ Chi (Cu Chi Tunnels)',
+                'Một vòng Sài Gòn (City Tour)'
+            ],
+            'en' => [
+                'Mekong Delta Discovery Tour',
+                'Cu Chi Tunnels Historical Journey',
+                'Ho Chi Minh City Highlights Tour'
+            ]
         ]
     ],
     [
         'id' => 'box-2',
-        'tag' => 'GIẶT ỦI LẤY NHANH',
-        'title' => 'Dịch Vụ Giặt Sấy',
-        'desc' => 'Dịch vụ giặt sấy thơm tho sạch sẽ trong ngày, giao nhận tận phòng nhanh chóng và chu đáo.',
+        'tag' => [
+            'vi' => 'GIẶT ỦI LẤY NHANH',
+            'en' => 'EXPRESS LAUNDRY'
+        ],
+        'title' => [
+            'vi' => 'Dịch Vụ Giặt Sấy',
+            'en' => 'Laundry & Dry Cleaning'
+        ],
+        'desc' => [
+            'vi' => 'Dịch vụ giặt sấy thơm tho sạch sẽ trong ngày, giao nhận tận phòng nhanh chóng và chu đáo.',
+            'en' => 'Same-day fresh and clean laundry service with convenient room pickup and delivery.'
+        ],
         'image' => '/images/towels.png',
-        'hours' => 'Lấy trong ngày',
+        'hours' => [
+            'vi' => 'Lấy trong ngày',
+            'en' => 'Same-day Service'
+        ],
         'items' => [
-            'Giặt sấy khô thơm tho lấy ngay trong ngày',
-            'Ủi và chăm sóc trang phục theo yêu cầu',
-            'Giá cả bình dân, hỗ trợ giao nhận tại phòng'
+            'vi' => [
+                'Giặt sấy khô thơm tho lấy ngay trong ngày',
+                'Ủi và chăm sóc trang phục theo yêu cầu',
+                'Giá cả bình dân, hỗ trợ giao nhận tại phòng'
+            ],
+            'en' => [
+                'Fresh express wash & dry within the day',
+                'Garment steaming & ironing upon request',
+                'Affordable rates with room doorstep delivery'
+            ]
         ]
     ],
     [
         'id' => 'box-3',
-        'tag' => 'TRUNG TÂM QUẬN 1',
-        'title' => 'Vị Trí Vàng Trung Tâm Sài Gòn',
-        'desc' => 'Nằm trong hẻm 269 Đề Thám yên tĩnh nhưng chỉ cách phố đi bộ Bùi Viện và chợ Bến Thành vài bước chân.',
+        'tag' => [
+            'vi' => 'TRUNG TÂM QUẬN 1',
+            'en' => 'PRIME DISTRICT 1'
+        ],
+        'title' => [
+            'vi' => 'Vị Trí Vàng Trung Tâm Sài Gòn',
+            'en' => 'Golden Central Location'
+        ],
+        'desc' => [
+            'vi' => 'Nằm trong hẻm 269 Đề Thám yên tĩnh nhưng chỉ cách phố đi bộ Bùi Viện và chợ Bến Thành vài bước chân.',
+            'en' => 'Quiet alley at 269 De Tham, steps away from vibrant Bui Vien Walking Street & Ben Thanh Market.'
+        ],
         'image' => '/images/bui-vien-night.jpg',
-        'hours' => 'Vị trí đắc địa',
+        'hours' => [
+            'vi' => 'Vị trí đắc địa',
+            'en' => 'Prime Location'
+        ],
         'items' => [
-            'Đi bộ 2 phút ra Phố Tây Bùi Viện',
-            'Đi bộ 5 phút đến Chợ Bến Thành & Công viên 23/9',
-            'Gần Dinh Độc Lập, Nhà thờ Đức Bà & Bến Bạch Đằng'
+            'vi' => [
+                'Đi bộ 2 phút ra Phố Tây Bùi Viện',
+                'Đi bộ 5 phút đến Chợ Bến Thành & Công viên 23/9',
+                'Gần Dinh Độc Lập, Nhà thờ Đức Bà & Bến Bạch Đằng'
+            ],
+            'en' => [
+                '2-minute walk to Bui Vien Walking Street',
+                '5-minute walk to Ben Thanh Market & September 23rd Park',
+                'Close to Independence Palace, Notre Dame Cathedral & Bach Dang Wharf'
+            ]
         ]
     ]
 ];

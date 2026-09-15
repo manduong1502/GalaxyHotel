@@ -124,7 +124,9 @@ switch ($method) {
         // Gửi email thông báo cho Lễ tân / Admin
         try {
             sendInquiryNotificationEmail($inquiryItem);
-        } catch (Exception $e) {}
+        } catch (Throwable $e) {
+            @error_log("Inquiry email error: " . $e->getMessage());
+        }
 
         echo json_encode([
             'success' => true,

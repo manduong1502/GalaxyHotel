@@ -7,10 +7,43 @@ header('Content-Type: application/json; charset=UTF-8');
 
 $method = $_SERVER['REQUEST_METHOD'];
 
+function getPossibleSmtpConfigFiles() {
+    $webRoot = dirname(__DIR__);
+    return [
+        __DIR__ . '/data/smtp_config.json',
+        __DIR__ . '/smtp_config.json',
+        $webRoot . '/uploads/smtp_config.json'
+    ];
+}
+
+function loadSmtpConfig() {
+    foreach (getPossibleSmtpConfigFiles() as $path) {
+        if (file_exists($path)) {
+            $content = @file_get_contents($path);
+            if ($content) {
+                $cfg = json_decode($content, true);
+                if (is_array($cfg)) return $cfg;
+            }
+        }
+    }
+    return null;
+}
+
+function saveSmtpConfig($configData) {
+    $encoded = json_encode($configData, JSON_PRETTY_PRINT);
+    foreach (getPossibleSmtpConfigFiles() as $path) {
+        $dir = dirname($path);
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0777, true);
+        }
+        @file_put_contents($path, $encoded);
+        @chmod($path, 0666);
+    }
+}
+
 if ($method === 'GET') {
-    $configFile = __DIR__ . '/smtp_config.json';
-    if (file_exists($configFile)) {
-        $config = json_decode(file_get_contents($configFile), true);
+    $config = loadSmtpConfig();
+    if ($config) {
         // Ẩn mật khẩu khi trả về
         if (!empty($config['password'])) {
             $config['password'] = '••••••••••••••••';
@@ -36,12 +69,11 @@ if ($method === 'POST') {
         exit();
     }
 
-    $configFile = __DIR__ . '/smtp_config.json';
+    $existingConfig = loadSmtpConfig();
     
     // Nếu người dùng không nhập pass mới và pass cũ đang là mask
-    if ($password === '••••••••••••••••' && file_exists($configFile)) {
-        $oldConfig = json_decode(file_get_contents($configFile), true);
-        $password = $oldConfig['password'] ?? '';
+    if ($password === '••••••••••••••••' && $existingConfig) {
+        $password = $existingConfig['password'] ?? '';
     }
 
     $configData = [
@@ -53,7 +85,7 @@ if ($method === 'POST') {
         'updated_at' => date('d/m/Y H:i:s')
     ];
 
-    file_put_contents($configFile, json_encode($configData, JSON_PRETTY_PRINT));
+    saveSmtpConfig($configData);
 
     echo json_encode([
         'success' => true,

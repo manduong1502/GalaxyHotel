@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Compass, Check, CheckCircle, Save, Upload, FolderOpen, 
-  Image as ImageIcon, Loader2, Sparkles, AlertCircle, RefreshCw, Globe
+  Image as ImageIcon, Loader2, Sparkles, AlertCircle, RefreshCw, Globe, Clock
 } from 'lucide-react';
 import { compressImage } from '../../utils/imageCompressor';
 import { MediaLibraryModal } from './MediaLibraryModal';
@@ -58,7 +58,7 @@ const defaultBoxes: ServiceBox[] = [
     image: '/images/towels.png',
     hours: {
       vi: 'Lấy trong ngày',
-      en: 'Same day return'
+      en: 'Same-day Service'
     },
     items: {
       vi: [
@@ -90,7 +90,7 @@ const defaultBoxes: ServiceBox[] = [
     image: '/images/bui-vien-night.jpg',
     hours: {
       vi: 'Vị trí đắc địa',
-      en: 'Heart of city'
+      en: 'Prime Location'
     },
     items: {
       vi: [
@@ -432,6 +432,12 @@ export const ServicesManager: React.FC = () => {
                       </span>
                     </div>
 
+                    {/* Hours / Badge Overlay Preview */}
+                    <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 text-[9px] text-white bg-black/70 backdrop-blur-sm px-2.5 py-1 rounded-lg font-medium shadow">
+                      <Clock className="w-3 h-3 text-[#E8DCB9]" />
+                      <span>{getBoxTextVal(box, 'hours', currentTab) || (currentTab === 'vi' ? '24/7 Hỗ trợ' : '24/7 Support')}</span>
+                    </div>
+
                     {uploadingIdx === boxIdx && (
                       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center text-white text-xs font-bold gap-2">
                         <Loader2 className="w-6 h-6 animate-spin text-[#E8DCB9]" />
@@ -501,6 +507,21 @@ export const ServicesManager: React.FC = () => {
                       value={getBoxTextVal(box, 'tag', currentTab)}
                       onChange={(e) => handleUpdateBoxText(boxIdx, 'tag', currentTab, e.target.value)}
                       placeholder={currentTab === 'vi' ? 'Ví dụ: TOUR TRẢI NGHIỆM' : 'e.g. LOCAL TOURS'}
+                      className="w-full px-3 py-1.5 rounded-xl border border-neutral-300 text-xs font-bold text-neutral-800 bg-white"
+                    />
+                  </div>
+
+                  {/* Hours / Special Feature Badge on Image */}
+                  <div>
+                    <label className="block text-[10px] font-bold text-neutral-600 mb-1 flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-[#8A6943]" />
+                      <span>{currentTab === 'vi' ? 'Thẻ Nổi Bật Dưới Ảnh (Badge VI)' : 'Image Badge / Hours Tag (EN)'}</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={getBoxTextVal(box, 'hours', currentTab)}
+                      onChange={(e) => handleUpdateBoxText(boxIdx, 'hours', currentTab, e.target.value)}
+                      placeholder={currentTab === 'vi' ? (boxIdx === 0 ? 'Ví dụ: 24/7 Hỗ trợ' : boxIdx === 1 ? 'Ví dụ: Lấy trong ngày' : 'Ví dụ: Vị trí đắc địa') : (boxIdx === 0 ? 'e.g. 24/7 Support' : boxIdx === 1 ? 'e.g. Same-day Service' : 'e.g. Prime Location')}
                       className="w-full px-3 py-1.5 rounded-xl border border-neutral-300 text-xs font-bold text-neutral-800 bg-white"
                     />
                   </div>

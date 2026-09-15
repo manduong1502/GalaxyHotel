@@ -32,6 +32,39 @@ export const GymFacilitySection: React.FC = () => {
       .catch(() => {});
   }, []);
 
+  const getBoxHoursText = (hoursField: any, defaultVi: string, defaultEn: string): string => {
+    if (!hoursField) {
+      return lang === 'vi' ? defaultVi : defaultEn;
+    }
+    if (typeof hoursField === 'object' && hoursField !== null) {
+      const direct = hoursField[lang];
+      if (direct && typeof direct === 'string' && direct.trim()) return direct;
+      const alt = hoursField['vi'] || hoursField['en'];
+      if (alt && typeof alt === 'string' && alt.trim()) {
+        if (lang === 'en') {
+          if (alt.includes('24/7 Hỗ trợ')) return '24/7 Support';
+          if (alt.includes('Lấy trong ngày')) return 'Same-day Service';
+          if (alt.includes('Vị trí đắc địa')) return 'Prime Location';
+        }
+        return alt;
+      }
+    }
+    if (typeof hoursField === 'string') {
+      const str = hoursField.trim();
+      if (lang === 'en') {
+        if (str === '24/7 Hỗ trợ' || str === '24/7 Support') return '24/7 Support';
+        if (str === 'Lấy trong ngày' || str === 'Same day' || str === 'Same-day Service' || str === 'Same day return') return 'Same-day Service';
+        if (str === 'Vị trí đắc địa' || str === 'Prime location' || str === 'Prime Location' || str === 'Heart of city') return 'Prime Location';
+      } else {
+        if (str === '24/7 Support') return '24/7 Hỗ trợ';
+        if (str === 'Same day' || str === 'Same-day Service' || str === 'Same day return') return 'Lấy trong ngày';
+        if (str === 'Prime location' || str === 'Prime Location' || str === 'Heart of city') return 'Vị trí đắc địa';
+      }
+      return str;
+    }
+    return lang === 'vi' ? defaultVi : defaultEn;
+  };
+
   const defaultServices = [
     {
       icon: Compass,
@@ -48,7 +81,7 @@ export const GymFacilitySection: React.FC = () => {
       desc: t('facilities.spa_desc'),
       image: '/images/towels.png',
       tag: t('facilities.spa_tag'),
-      hours: lang === 'vi' ? 'Lấy trong ngày' : 'Same day',
+      hours: lang === 'vi' ? 'Lấy trong ngày' : 'Same-day Service',
       highlights: [t('facilities.spa_hl1'), t('facilities.spa_hl2'), t('facilities.spa_hl3')]
     },
     {
@@ -57,7 +90,7 @@ export const GymFacilitySection: React.FC = () => {
       desc: t('facilities.pool_desc'),
       image: '/images/bui-vien-night.jpg',
       tag: t('facilities.pool_tag'),
-      hours: lang === 'vi' ? 'Vị trí đắc địa' : 'Prime location',
+      hours: lang === 'vi' ? 'Vị trí đắc địa' : 'Prime Location',
       highlights: [t('facilities.pool_hl1'), t('facilities.pool_hl2'), t('facilities.pool_hl3')]
     }
   ];
@@ -69,7 +102,7 @@ export const GymFacilitySection: React.FC = () => {
       desc: customBoxes[0]?.desc ? getBilingualText(customBoxes[0].desc, lang) : t('facilities.gym_desc'),
       image: customBoxes[0]?.image || '/images/tour-mekong.jpg',
       tag: customBoxes[0]?.tag ? getBilingualText(customBoxes[0].tag, lang) : t('facilities.gym_tag'),
-      hours: customBoxes[0]?.hours ? getBilingualText(customBoxes[0].hours, lang) : (lang === 'vi' ? '24/7 Hỗ trợ' : '24/7 Support'),
+      hours: getBoxHoursText(customBoxes[0]?.hours, '24/7 Hỗ trợ', '24/7 Support'),
       highlights: customBoxes[0]?.items ? getBilingualList(customBoxes[0].items, lang) : [t('facilities.gym_hl1'), t('facilities.gym_hl2'), t('facilities.gym_hl3')]
     },
     {
@@ -78,7 +111,7 @@ export const GymFacilitySection: React.FC = () => {
       desc: customBoxes[1]?.desc ? getBilingualText(customBoxes[1].desc, lang) : t('facilities.spa_desc'),
       image: customBoxes[1]?.image || '/images/towels.png',
       tag: customBoxes[1]?.tag ? getBilingualText(customBoxes[1].tag, lang) : t('facilities.spa_tag'),
-      hours: customBoxes[1]?.hours ? getBilingualText(customBoxes[1].hours, lang) : (lang === 'vi' ? 'Lấy trong ngày' : 'Same day'),
+      hours: getBoxHoursText(customBoxes[1]?.hours, 'Lấy trong ngày', 'Same-day Service'),
       highlights: customBoxes[1]?.items ? getBilingualList(customBoxes[1].items, lang) : [t('facilities.spa_hl1'), t('facilities.spa_hl2'), t('facilities.spa_hl3')]
     },
     {
@@ -87,7 +120,7 @@ export const GymFacilitySection: React.FC = () => {
       desc: customBoxes[2]?.desc ? getBilingualText(customBoxes[2].desc, lang) : t('facilities.pool_desc'),
       image: customBoxes[2]?.image || '/images/bui-vien-night.jpg',
       tag: customBoxes[2]?.tag ? getBilingualText(customBoxes[2].tag, lang) : t('facilities.pool_tag'),
-      hours: customBoxes[2]?.hours ? getBilingualText(customBoxes[2].hours, lang) : (lang === 'vi' ? 'Vị trí đắc địa' : 'Prime location'),
+      hours: getBoxHoursText(customBoxes[2]?.hours, 'Vị trí đắc địa', 'Prime Location'),
       highlights: customBoxes[2]?.items ? getBilingualList(customBoxes[2].items, lang) : [t('facilities.pool_hl1'), t('facilities.pool_hl2'), t('facilities.pool_hl3')]
     }
   ] : defaultServices;

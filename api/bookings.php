@@ -139,10 +139,12 @@ switch ($method) {
         array_unshift($bookings, $bookingRecord);
         saveBookings($bookings);
 
-        // Gửi email xác nhận đặt phòng
+        // Gửi email thông báo cho Lễ tân & Khách hàng
         try {
-            sendBookingNotificationEmail($bookingRecord);
-        } catch (Exception $e) {}
+            sendBookingEmails($bookingRecord);
+        } catch (Throwable $e) {
+            @error_log("Booking email error: " . $e->getMessage());
+        }
 
         echo json_encode([
             'success' => true,

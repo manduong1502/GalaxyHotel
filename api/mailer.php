@@ -80,18 +80,28 @@ function sendSmtpEmail($to, $subject, $htmlContent, $smtpConfig) {
     return (substr($dataRes, 0, 3) === '250');
 }
 
+function getPossibleSmtpConfigFiles() {
+    $webRoot = dirname(__DIR__);
+    return [
+        __DIR__ . '/data/smtp_config.json',
+        __DIR__ . '/smtp_config.json',
+        $webRoot . '/uploads/smtp_config.json'
+    ];
+}
+
 /**
  * Gửi email HTML (Ưu tiên SMTP Gmail nếu có cấu hình, nếu không dùng PHP mail)
  */
 function sendHtmlEmail($to, $subject, $htmlContent, $fromName = 'Galaxy Boutique Hotel', $fromEmail = null, $replyTo = 'galaxyboutiquehotel2022@gmail.com') {
     // 1. Kiểm tra cấu hình SMTP file
-    $configFile = __DIR__ . '/smtp_config.json';
-    if (file_exists($configFile)) {
-        $config = json_decode(file_get_contents($configFile), true);
-        if (!empty($config['username']) && !empty($config['password'])) {
-            $smtpResult = sendSmtpEmail($to, $subject, $htmlContent, $config);
-            if ($smtpResult) {
-                return true;
+    foreach (getPossibleSmtpConfigFiles() as $configFile) {
+        if (file_exists($configFile)) {
+            $config = json_decode(file_get_contents($configFile), true);
+            if (!empty($config['username']) && !empty($config['password'])) {
+                $smtpResult = sendSmtpEmail($to, $subject, $htmlContent, $config);
+                if ($smtpResult) {
+                    return true;
+                }
             }
         }
     }
@@ -429,11 +439,15 @@ HTML;
  * Lấy email nhận thông báo của Lễ tân / Chủ từ cấu hình SMTP
  */
 function getReceptionEmail() {
-    $configFile = __DIR__ . '/smtp_config.json';
-    if (file_exists($configFile)) {
-        $config = json_decode(file_get_contents($configFile), true);
-        if (!empty($config['username'])) {
-            return $config['username'];
+    foreach (getPossibleSmtpConfigFiles() as $configFile) {
+        if (file_exists($configFile)) {
+            $config = json_decode(file_get_contents($configFile), true);
+            if (!empty($config['notification_email'])) {
+                return $config['notification_email'];
+            }
+            if (!empty($config['username'])) {
+                return $config['username'];
+            }
         }
     }
     return 'galaxyboutiquehotel2022@gmail.com';
@@ -456,8 +470,12 @@ function sendBookingEmails($booking, $receptionEmail = null) {
 }
 
 /**
- * Alias function for backward compatibility
+ * Alias functions for booking notifications
  */
+function sendBookingNotificationEmail($booking, $recipientEmail = null) {
+    return sendBookingEmails($booking, $recipientEmail);
+}
+
 function sendBookingConfirmationEmail($booking) {
     return sendBookingEmails($booking);
 }
