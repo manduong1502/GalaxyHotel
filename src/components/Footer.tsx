@@ -46,7 +46,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   rel="noreferrer"
                   className="hover:underline hover:text-white transition-colors"
                 >
-                  269/19 Đề Thám, P. Bến Thành, Quận 1, TP. HCM
+                  {lang === 'vi' 
+                    ? '269/19 Đề Thám, P. Bến Thành, Quận 1, TP. HCM' 
+                    : '269/19 De Tham, Ben Thanh Ward, District 1, Ho Chi Minh City'}
                 </a>
               </div>
               <div className="flex items-center gap-2">

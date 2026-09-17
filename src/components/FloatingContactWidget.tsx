@@ -47,7 +47,7 @@ export const FloatingContactWidget: React.FC = () => {
     {
       id: 'maps',
       name: 'Google Maps',
-      subtitle: '269/19 Đề Thám, Q.1',
+      subtitle: lang === 'vi' ? '269/19 Đề Thám, Q.1' : '269/19 De Tham, Dist. 1',
       icon: (
         <span className="w-10 h-10 rounded-2xl bg-[#EA4335] text-white flex items-center justify-center shadow-sm">
           <MapPin className="w-5 h-5" />

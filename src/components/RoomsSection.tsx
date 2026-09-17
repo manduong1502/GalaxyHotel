@@ -197,7 +197,9 @@ export const RoomsSection: React.FC<RoomsSectionProps> = ({ onSelectRoom, onBook
                       <span className="text-xl font-bold text-neutral-900 font-sans tracking-tight">
                         {formatCurrency(room.pricePerNight)}
                       </span>
-                      <span className="text-xs text-neutral-500 font-normal">/ đêm</span>
+                      <span className="text-xs text-neutral-500 font-normal">
+                        {lang === 'vi' ? '/ đêm' : '/ night'}
+                      </span>
                     </div>
                   </div>
 

@@ -96,7 +96,9 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
                   {lang === 'vi' ? 'Địa Chỉ Khách Sạn' : 'Hotel Address'}
                 </h4>
                 <p className="text-xs text-neutral-600 font-sans leading-relaxed">
-                  269/19 Đề Thám, P. Bến Thành, Quận 1, TP. Hồ Chí Minh
+                  {lang === 'vi' 
+                    ? '269/19 Đề Thám, P. Bến Thành, Quận 1, TP. Hồ Chí Minh' 
+                    : '269/19 De Tham, Ben Thanh Ward, District 1, Ho Chi Minh City'}
                 </p>
                 <a
                   href="https://maps.app.goo.gl/nRiJu2PQHPtAZEt16"

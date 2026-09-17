@@ -361,7 +361,7 @@ const translations: Record<Language, Record<string, string>> = {
     'contact.eyebrow': 'GET IN TOUCH',
     'contact.title': 'Location & Contact Details',
     'contact.address_title': 'Hotel Address',
-    'contact.address': '269/19 De Tham Street, Pham Ngu Lao (near Ben Thanh), District 1, Ho Chi Minh City',
+    'contact.address': '269/19 De Tham, Ben Thanh Ward, District 1, Ho Chi Minh City',
     'contact.phone_title': 'Phone & Hotline',
     'contact.phone': '028 2248 7782 • Zalo/WhatsApp: +84 79 329 5664',
     'contact.email_title': 'Email Address',

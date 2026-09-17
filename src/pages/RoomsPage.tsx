@@ -234,7 +234,7 @@ export const RoomsPage: React.FC<RoomsPageProps> = ({
                         {pricingMode === 'nightly' ? formatCurrency(room.pricePerNight) : formatCurrency(room.priceHourlyFirst2h)}
                       </span>
                       <span className="text-xs text-neutral-500 font-normal">
-                        {pricingMode === 'nightly' ? '/ đêm' : '/ 2h'}
+                        {pricingMode === 'nightly' ? (lang === 'vi' ? '/ đêm' : '/ night') : '/ 2h'}
                       </span>
                     </div>
                   </div>

@@ -64,7 +64,11 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Address */}
           <div className="flex items-center gap-2">
             <MapPin className="w-3 h-3 text-[#C29A64]" />
-            <span className="font-medium tracking-wide">269/19 Đề Thám, P. Bến Thành, Quận 1, TP. Hồ Chí Minh</span>
+            <span className="font-medium tracking-wide">
+              {lang === 'vi' 
+                ? '269/19 Đề Thám, P. Bến Thành, Quận 1, TP. Hồ Chí Minh' 
+                : '269/19 De Tham, Ben Thanh Ward, District 1, Ho Chi Minh City'}
+            </span>
           </div>
 
           {/* Contact & Language */}

@@ -79,7 +79,7 @@ export const WelcomeSection: React.FC = () => {
                     Galaxy Boutique Hotel Saigon
                   </h4>
                   <p className="text-xs text-neutral-300 mt-0.5">
-                    269/19 Đề Thám, P. Bến Thành, Quận 1
+                    {lang === 'vi' ? '269/19 Đề Thám, P. Bến Thành, Quận 1' : '269/19 De Tham, Ben Thanh, District 1'}
                   </p>
                 </div>
                 <div className="px-3 py-1.5 rounded-lg bg-white/10 text-white font-serif font-bold text-sm">
